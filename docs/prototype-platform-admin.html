@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平台管理後台 · 可測試原型</title>
+<style>
+  :root{
+    --primary:#3d5a8a; --primary-ink:#fff; --accent:#2ba58c;
+    --bg:#f4f6f9; --card:#fff; --line:#dfe4ec; --line2:#eef1f6;
+    --ink:#2b3038; --muted:#7c8697; --deep:#2b3038;
+    --ok:#0a7d3a; --okbg:#e3f6ea; --warn:#b26a00; --warnbg:#fff4e2;
+    --bad:#b3261e; --badbg:#fdecea; --off:#c3c9d4;
+    --radius:12px; --shadow:0 1px 2px rgba(40,60,90,.05),0 2px 10px rgba(40,60,90,.07);
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.65 "Noto Sans TC","PingFang TC",Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .btn{display:inline-block;border:none;cursor:pointer;text-decoration:none;text-align:center;
+    background:var(--primary);color:var(--primary-ink);font-weight:700;padding:9px 18px;border-radius:10px;}
+  .btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed;}
+  .btn.ghost{background:transparent;color:var(--primary);border:1.5px solid var(--primary);}
+  .btn.plain{background:var(--line2);color:var(--deep);}
+  .btn.small{padding:5px 12px;font-size:.85rem;border-radius:8px;}
+  .btn.tiny{padding:3px 9px;font-size:.76rem;border-radius:7px;}
+  .btn.danger{background:var(--bad);}
+  .btn.ok{background:var(--ok);}
+  a.lnk{color:var(--primary);cursor:pointer;text-decoration:underline;}
+
+  .authwrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:linear-gradient(160deg,#eef2f8 0%,#e2e8f2 100%);}
+  .authcard{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 30px rgba(40,60,90,.12);
+    width:100%;max-width:440px;padding:30px 30px 26px;}
+  .authcard .lg{width:46px;height:46px;border-radius:13px;background:var(--primary);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;font-size:.9rem;margin-bottom:14px;}
+  .authcard h1{font-size:1.2rem;margin:0 0 4px;}
+  .authcard p.sub{color:var(--muted);font-size:.85rem;margin:0 0 20px;}
+  .fld{margin-bottom:14px;}
+  .fld label{display:block;font-size:.8rem;font-weight:700;margin-bottom:5px;}
+  .fld label .req{color:var(--bad);}
+  .fld input,.fld select,.fld textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--primary);}
+  .fld input[type=checkbox],.fld input[type=radio]{width:auto;padding:0;margin:0;border-width:1px;flex:0 0 auto;}
+  .fld label.opt{display:flex;gap:8px;align-items:center;font-size:.88rem;font-weight:400;padding:3px 0;margin:0;cursor:pointer;}
+  .fld .hint{font-size:.75rem;color:var(--muted);margin-top:4px;}
+  .msg{border-radius:10px;padding:10px 12px;font-size:.84rem;margin-bottom:14px;display:none;}
+  .msg.show{display:block;}
+  .msg.err{background:var(--badbg);color:var(--bad);border:1px solid #f3c9c4;}
+  .msg.info{background:#eaf1fb;color:#1c4f8f;border:1px solid #cfdff5;}
+  .msg.ok{background:var(--okbg);color:var(--ok);border:1px solid #c3e8d1;}
+  .msg.warn{background:var(--warnbg);color:var(--warn);border:1px solid #f0dfc0;}
+  .authfoot{margin-top:16px;font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .demo{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);font-size:.76rem;color:var(--muted);}
+  .demo code{background:var(--line2);border-radius:5px;padding:1px 6px;color:var(--deep);}
+  .codes{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:10px 0;}
+  .codes span{font-family:ui-monospace,monospace;background:var(--line2);border-radius:7px;padding:6px 9px;text-align:center;font-size:.86rem;}
+  .codes span.used{text-decoration:line-through;color:var(--muted);background:transparent;border:1px dashed var(--line);}
+
+  #app{display:none;}
+  .topbar{position:sticky;top:0;z-index:30;background:var(--card);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:10px 20px;}
+  .topbar .brand{display:flex;align-items:center;gap:9px;font-weight:800;}
+  .topbar .brand .lg{width:32px;height:32px;border-radius:9px;background:var(--primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:.78rem;}
+  .topbar .brand small{display:block;font-size:.7rem;color:var(--muted);font-weight:400;margin-top:-3px;}
+  .topbar .sp{margin-left:auto;}
+  .topbar .me{display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer;}
+  .topbar .me .av{width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;}
+  .rolechip{font-size:.7rem;background:var(--line2);border-radius:99px;padding:2px 9px;font-weight:700;color:var(--deep);}
+
+  /* 代操橫幅 */
+  #imp{display:none;background:#5a3d8a;color:#fff;padding:9px 20px;font-size:.85rem;align-items:center;gap:14px;flex-wrap:wrap;
+    position:sticky;top:52px;z-index:29;}
+  #imp.on{display:flex;}
+  #imp b{color:#ffe9a8;}
+  #imp .cd{background:rgba(255,255,255,.16);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums;}
+  #imp button{margin-left:auto;}
+
+  .shell{display:flex;align-items:flex-start;}
+  .side{flex:0 0 216px;background:var(--card);border-right:1px solid var(--line);min-height:calc(100vh - 60px);padding:14px 12px;}
+  .side .grp{font-size:.68rem;color:var(--muted);letter-spacing:1px;padding:10px 10px 4px;}
+  .side a{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;text-decoration:none;
+    color:var(--ink);font-size:.9rem;border-left:3px solid transparent;cursor:pointer;}
+  .side a:hover{background:var(--bg);}
+  .side a.on{background:var(--bg);color:var(--primary);font-weight:700;border-left-color:var(--primary);}
+  .side a.locked{opacity:.45;}
+  .side a .ic{width:20px;text-align:center;}
+  .side a .n{margin-left:auto;font-size:.68rem;background:var(--bad);color:#fff;border-radius:99px;padding:1px 7px;font-weight:700;}
+  .main{flex:1;min-width:0;padding:20px 24px 90px;}
+  @media(max-width:900px){.shell{display:block}.side{min-height:0;border-right:none;border-bottom:1px solid var(--line);
+    display:flex;gap:4px;overflow-x:auto;padding:10px}.side .grp{display:none}.side a{white-space:nowrap;border-left:none;border-bottom:3px solid transparent}
+    .side a.on{border-bottom-color:var(--primary)}.main{padding:16px 14px 90px}}
+
+  h1.pg{font-size:1.26rem;margin:0 0 4px;}
+  p.pgsub{color:var(--muted);font-size:.85rem;margin:0 0 18px;}
+  .page{display:none;} .page.on{display:block;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:15px 17px;margin-bottom:15px;}
+  .card h2{font-size:1rem;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .card h2 .hint{margin-left:auto;font-size:.73rem;color:var(--muted);font-weight:400;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  @media(max-width:960px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+  table{border-collapse:collapse;width:100%;font-size:.89rem;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line2);vertical-align:middle;}
+  th{color:var(--muted);font-size:.76rem;font-weight:700;}
+  tr:last-child td{border-bottom:none;}
+  tr.clk{cursor:pointer} tr.clk:hover{background:var(--line2)}
+  .tw{overflow-x:auto;}
+  .pill{font-size:.71rem;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap;display:inline-block;}
+  .pill.ok{color:var(--ok);background:var(--okbg);}
+  .pill.wait{color:var(--warn);background:var(--warnbg);}
+  .pill.bad{color:var(--bad);background:var(--badbg);}
+  .pill.grey{color:var(--muted);background:var(--line2);}
+  .pill.blue{color:#1c4f8f;background:#eaf1fb;}
+  .pill.pur{color:#5a3d8a;background:#f0e9fa;}
+  .note{font-size:.79rem;color:var(--muted);background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:9px 12px;margin-top:11px;}
+  .note b{color:var(--ink);}
+  .note.spec{border-color:#cfdff5;background:#f4f8fd;color:#3a6394;}
+  .note.spec b{color:#1c4f8f;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;}
+  .kpi .lb{font-size:.75rem;color:var(--muted);}
+  .kpi .vl{font-size:1.45rem;font-weight:800;line-height:1.3;}
+  .kpi .vl small{font-size:.78rem;font-weight:600;color:var(--muted);}
+  .kpi .dl{font-size:.76rem;font-weight:700;}
+  .up{color:var(--ok)} .dn{color:var(--bad)}
+  .tabs{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap;}
+  .tabs button{background:var(--line2);border:none;border-radius:9px;padding:6px 14px;font-size:.85rem;cursor:pointer;color:var(--deep);}
+  .tabs button.on{background:var(--primary);color:#fff;font-weight:700;}
+  .bars{display:flex;align-items:flex-end;gap:8px;height:150px;margin-top:10px;
+    border-bottom:2px solid var(--line);padding-bottom:0;}
+  .bars .col{flex:1;background:linear-gradient(180deg,#5b7cb0,var(--primary));border-radius:5px 5px 0 0;min-height:4px;position:relative;
+    transition:.15s;}
+  .bars .col:hover{filter:brightness(1.12);}
+  .bars .col.cur{background:linear-gradient(180deg,#3ec4a4,var(--accent));}
+  .bars .col em{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:.66rem;font-style:normal;
+    color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .bars .col span{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:.66rem;color:var(--muted);white-space:nowrap;}
+  .ico{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;
+    cursor:pointer;user-select:none;transition:.13s;}
+  .ico:hover{background:var(--line2);}
+  .ico.off{opacity:.35;}
+  .ico.off:hover{background:var(--badbg);opacity:.6;}
+  .barwrap{background:var(--line2);border-radius:99px;height:8px;overflow:hidden;margin-top:5px;}
+  .bar{height:100%;background:var(--accent);}
+  .bar.hi{background:var(--warn);} .bar.over{background:var(--bad);}
+  .mask{position:fixed;inset:0;background:rgba(30,40,60,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:24px 14px;overflow-y:auto;}
+  .mask.on{display:flex;}
+  .modal{background:var(--card);border-radius:14px;width:100%;max-width:640px;box-shadow:0 12px 50px rgba(30,40,60,.35);}
+  .modal .mh{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+  .modal .mh h3{margin:0;font-size:1rem;flex:1;}
+  .modal .mb{padding:16px 18px;}
+  .modal .mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+  .x{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);line-height:1;}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:90;
+    background:var(--deep);color:#fff;padding:11px 18px;border-radius:11px;font-size:.86rem;max-width:min(600px,92vw);
+    opacity:0;pointer-events:none;transition:.22s;box-shadow:0 8px 26px rgba(0,0,0,.25);}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.bad{background:var(--bad);} #toast.ok{background:var(--ok);}
+
+  #tp{position:fixed;right:16px;bottom:16px;z-index:80;width:290px;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;box-shadow:0 10px 34px rgba(30,40,60,.24);font-size:.82rem;overflow:hidden;}
+  #tp .tph{background:var(--deep);color:#fff;padding:9px 13px;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;font-size:.84rem;}
+  #tp .tpb{padding:11px 13px;display:none;max-height:64vh;overflow-y:auto;}
+  #tp.open .tpb{display:block;}
+  #tp .row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line2);}
+  #tp .row:last-child{border-bottom:none;}
+  #tp .row span{flex:1;line-height:1.35;}
+  #tp select,#tp input{padding:4px 6px;border:1px solid var(--line);border-radius:7px;font-size:.78rem;max-width:126px;}
+  .sw{position:relative;width:38px;height:21px;flex:0 0 auto;}
+  .sw input{opacity:0;width:0;height:0;position:absolute;}
+  .sw i{position:absolute;inset:0;background:var(--off);border-radius:99px;transition:.18s;cursor:pointer;}
+  .sw i::after{content:"";position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.18s;}
+  .sw input:checked + i{background:var(--accent);}
+  .sw input:disabled + i{opacity:.55;cursor:not-allowed;}
+  .sw input:checked + i::after{transform:translateX(17px);}
+  .masked{background:var(--line2);color:var(--muted);border-radius:5px;padding:0 7px;font-family:ui-monospace,monospace;font-size:.82rem;}
+  ol.steps{padding-left:1.2rem;font-size:.88rem;}
+  ol.steps li{margin:9px 0;}
+  ol.steps code{background:var(--line2);border-radius:5px;padding:1px 6px;font-size:.85em;}
+  .exp{color:var(--ok);font-weight:600;}
+  h4.sh{font-size:.86rem;margin:16px 0 7px;color:var(--muted);letter-spacing:.5px;}
+</style>
+</head>
+<body>
+
+<!-- ═══════ 認證 ═══════ -->
+<div id="auth" class="authwrap">
+
+  <div class="authcard" id="vLogin">
+    <div class="lg">平台</div>
+    <h1>課程預訂 SaaS · 平台管理後台</h1>
+    <p class="sub">平台專用入口，與所有租戶網域完全分開。</p>
+    <div class="msg err" id="loginErr"></div>
+    <div class="fld"><label>Email</label><input id="liEmail" type="email" placeholder="you@platform.example"></div>
+    <div class="fld"><label>密碼</label><input id="liPw" type="password"></div>
+    <button class="btn" style="width:100%" onclick="doLogin()">下一步</button>
+    <div class="authfoot">
+      <a class="lnk" onclick="showAuth('vForgot')">忘記密碼？</a>
+    </div>
+    <div class="demo">
+      測試帳號 <code>admin@platform.example</code>　密碼 <code>plat1234</code>　驗證碼 <code>123456</code><br>
+      其他任何帳號都回同一句錯誤訊息。連續失敗 5 次鎖定 15 分鐘。
+    </div>
+  </div>
+
+  <div class="authcard" id="v2fa" style="display:none">
+    <div class="lg">🔐</div>
+    <h1>兩階段驗證</h1>
+    <p class="sub">平台帳號一律強制 2FA，不可關閉。請輸入驗證器 App 顯示的 6 位數字。</p>
+    <div class="msg err" id="tfErr"></div>
+    <div class="fld"><label>驗證碼</label><input id="tfCode" inputmode="numeric" maxlength="6" placeholder="000000"></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:.82rem;margin-bottom:14px">
+      <input type="checkbox" id="tfTrust"> 記住這台裝置 30 天</label>
+    <button class="btn" style="width:100%" onclick="doTfa()">驗證並登入</button>
+    <div class="authfoot"><a class="lnk" onclick="useBackup()">改用備援碼</a><a class="lnk" onclick="lostDevice()">驗證器遺失了？</a></div>
+    <div class="demo">正確碼 <code>123456</code>。連錯 5 次同樣鎖定 15 分鐘。</div>
+  </div>
+
+  <div class="authcard" id="vBind" style="display:none">
+    <div class="lg">🔐</div>
+    <h1>綁定兩階段驗證</h1>
+    <p class="sub">未完成綁定前，進不了平台後台的任何頁面。</p>
+    <div class="fld"><label>把這組金鑰加進驗證器 App</label>
+      <div style="font-family:ui-monospace,monospace;background:var(--line2);border-radius:9px;padding:11px;text-align:center;letter-spacing:2px">JBSW Y3DP EHPK 3PXP</div></div>
+    <div class="fld"><label>備援碼（只顯示這一次）</label><div class="codes" id="bindCodes"></div>
+      <div class="hint">請自行保存。用掉即失效；重新產生會讓舊的全部失效。</div></div>
+    <div class="msg err" id="bindErr"></div>
+    <div class="fld"><label>輸入驗證器顯示的 6 位數字完成綁定</label><input id="bindCode" inputmode="numeric" maxlength="6" placeholder="000000"></div>
+    <button class="btn" style="width:100%" onclick="doBind()">完成綁定</button>
+  </div>
+
+  <div class="authcard" id="vForgot" style="display:none">
+    <div class="lg">平台</div>
+    <h1>忘記密碼</h1>
+    <p class="sub">填入 Email，我們會寄出重設連結。</p>
+    <div class="msg info" id="fgMsg"></div>
+    <div class="fld"><label>Email</label><input id="fgEmail" type="email"></div>
+    <button class="btn" style="width:100%" onclick="doForgot()">寄出重設信</button>
+    <div class="authfoot"><a class="lnk" onclick="showAuth('vLogin')">← 回登入</a></div>
+    <div class="demo">不論 Email 是否存在，回應都相同。重設後所有裝置失效，且下次登入仍需通過 2FA。</div>
+  </div>
+</div>
+
+<!-- ═══════ 後台 ═══════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand"><div class="lg">平台</div><div>平台管理後台<small>課程預訂 SaaS</small></div></div>
+    <div class="sp"></div>
+    <span class="rolechip" id="tbRole"></span>
+    <div class="me" onclick="go('me')"><div class="av">A</div><span>陳平台</span></div>
+  </div>
+
+  <div id="imp">
+    🛠️ 正在代操 <b id="impName"></b>
+    <span class="cd" id="impCd"></span>
+    <span id="impTicket"></span>
+    <span id="impUnmask"></span>
+    <button class="btn tiny plain" onclick="viewLearners()">看學員與訂單</button> <button class="btn tiny plain" onclick="exitImp('主動')">退出代操</button>
+  </div>
+
+  <div class="shell">
+    <nav class="side" id="nav">
+      <div class="grp">租戶</div>
+      <a data-p="tenants"><span class="ic">🏢</span>租戶總覽</a>
+      <a data-p="usage"><span class="ic">📊</span>接近上限<span class="n" id="bgUsage"></span></a>
+      <a data-p="lifecycle"><span class="ic">⏸️</span>停用租戶<span class="n" id="bgDel"></span></a>
+      <div class="grp">訂閱</div>
+      <a data-p="billing"><span class="ic">💳</span>訂閱與催繳<span class="n" id="bgDun"></span></a>
+      <a data-p="plans" data-need="super"><span class="ic">📦</span>方案管理</a>
+      <a data-p="metrics"><span class="ic">📈</span>經營數字</a>
+      <div class="grp">客服</div>
+      <a data-p="tickets"><span class="ic">🎫</span>工單<span class="n" id="bgTk"></span></a>
+      <div class="grp">平台</div>
+      <a data-p="announce"><span class="ic">📢</span>系統公告</a>
+      <a data-p="ops"><span class="ic">🩺</span>維運與通知</a>
+      <a data-p="templates" data-need="super"><span class="ic">🎨</span>範本與主題預設</a>
+      <a data-p="audit"><span class="ic">📜</span>平台紀錄</a>
+      <a data-p="me"><span class="ic">⚙️</span>我的帳號</a>
+      <div class="grp">原型</div>
+      <a data-p="script"><span class="ic">🧪</span>測試腳本</a>
+    </nav>
+
+    <main class="main">
+      <!-- 租戶總覽 -->
+      <section class="page on" id="p-tenants">
+        <h1 class="pg">租戶總覽</h1>
+        <p class="pgsub">唯一能跨租戶看的地方。只看訂閱健康度，<b>不看租戶的課程營收</b>。</p>
+        <div class="card">
+          <h2>搜尋與篩選 <span class="hint">可搜名稱／子網域／自訂網域／擁有者 Email</span></h2>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end">
+            <div class="fld" style="flex:1;min-width:220px;margin:0"><label>搜尋</label>
+              <input id="tqQ" placeholder="例：小樹　或　owner@smalltree.example" oninput="renderTenants()"></div>
+            <div class="fld" style="margin:0"><label>狀態</label><select id="tqS" onchange="renderTenants()"></select></div>
+            <div class="fld" style="margin:0"><label>範本</label><select id="tqT" onchange="renderTenants()"></select></div>
+            <button class="btn small plain" onclick="exportTenants()">匯出目前結果</button>
+          </div>
+        </div>
+        <div class="card"><h2>租戶清單 <span class="hint" id="tqCount"></span></h2>
+          <div class="tw"><table id="tTbl"></table></div>
+          <div class="note spec"><b>規格</b>：匯出有三種範圍——目前篩選結果／<b>只匯出已勾選的列</b>／在對話框裡重新指定狀態；欄位以 checkbox 逐項勾選並記住上次選擇；課程營運資料<b>根本不出現在清單裡</b>；匯出動作連同筆數、欄位與篩選條件寫入平台紀錄。</div>
+        </div>
+      </section>
+
+      <!-- 租戶詳情 -->
+      <section class="page" id="p-detail"></section>
+
+      <!-- 接近上限 -->
+      <section class="page" id="p-usage">
+        <h1 class="pg">接近上限／超量清單</h1>
+        <p class="pgsub">平台的擴張訊號——快撞上限的租戶就是該談升級的對象。與寄給租戶的「快到上限」提醒共用同一個門檻。</p>
+        <div class="card">
+          <h2>門檻 <span class="hint">全平台統一，不逐租戶設</span></h2>
+          <div class="fld" style="max-width:180px;margin:0"><label>提醒門檻</label>
+            <select id="thSel" onchange="THRESHOLD=+this.value;renderUsage();renderBadges()">
+              <option value="70">70%</option><option value="80" selected>80%（預設）</option><option value="90">90%</option></select></div>
+        </div>
+        <div class="card"><h2>達門檻的租戶</h2><div class="tw"><table id="uTbl"></table></div></div>
+      </section>
+
+      <!-- 生命週期 / 待刪除 -->
+      <section class="page" id="p-lifecycle">
+        <h1 class="pg">停用租戶</h1>
+        <p class="pgsub">退租與欠費停用的租戶都在這裡。資料<b>完整保留、不設期限</b>，隨時可一鍵復用。</p>
+        <div class="card"><h2>停用中 <span class="hint">含欠費停用與主動退租</span></h2><div class="tw"><table id="rTbl"></table></div>
+          <div class="note spec"><b>規格</b>：平台後台<b>不提供刪除租戶的功能</b>——刪除不可逆，不放進日常操作介面。真的要刪除時依「法遵與資料權利」的保存期政策與當事人請求<b>另循流程</b>辦理，法定必留的發票與帳務一律保留。</div></div>
+      </section>
+
+      <!-- 訂閱與催繳 -->
+      <section class="page" id="p-billing">
+        <h1 class="pg">訂閱狀況與催繳</h1>
+        <p class="pgsub">兩張重點名單，以及每一筆可以做什麼。</p>
+        <div class="grid2">
+          <div class="card"><h2>試用快到期 <span class="hint">7 天內</span></h2><div class="tw"><table id="trialTbl"></table></div></div>
+          <div class="card"><h2>欠費催繳 <span class="hint">催繳中／已停用</span></h2><div class="tw"><table id="dunTbl"></table></div></div>
+        </div>
+        <div class="card"><h2>爭議中 <span class="hint">暫停自動續扣，不因爭議直接停用</span></h2><div class="tw"><table id="dspTbl"></table></div></div>
+      </section>
+
+      <!-- 方案管理 -->
+      <section class="page" id="p-plans">
+        <h1 class="pg">方案管理</h1>
+        <p class="pgsub">方案由平台統一定義、不屬於任何租戶。<b>只能停售不能刪除</b>；改價不回溯既有訂閱。</p>
+        <div class="card">
+          <h2>方案清單 <span class="hint">限平台超管維護</span></h2>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+            <div class="fld" style="flex:1;min-width:180px;margin:0"><label>搜尋名稱</label><input id="plQ" oninput="renderPlans()" placeholder="例：成長"></div>
+            <div class="fld" style="margin:0"><label>狀態</label><select id="plS" onchange="renderPlans()">
+              <option value="上架">上架中（預設）</option><option value="">全部</option><option value="停售">停售</option></select></div>
+          </div>
+          <div class="tw"><table id="planTbl"></table></div>
+          <button class="btn small" style="margin-top:11px" onclick="editPlan(null)">新增方案</button>
+          <div class="note spec"><b>規格</b>：停售方案<b>整列以不同顏色顯示</b>避免誤選誤改；操作以圖示呈現，且<b>沒有刪除</b>——只能停售。因為正在用這個方案的租戶，計費與續約都要回頭讀方案定義，刪掉就沒有依據可讀。</div>
+        </div>
+      </section>
+
+      <!-- 經營數字 -->
+      <section class="page" id="p-metrics">
+        <h1 class="pg">經營數字</h1>
+        <p class="pgsub">只看訂閱收入與租戶健康度。⚠️ <b>不顯示任何一家租戶的課程營收</b>。</p>
+        <div class="card">
+          <div class="tabs" id="mTabs">
+            <button class="on" data-v="m0">本月</button><button data-v="m1">上月</button>
+            <button data-v="q">本季</button><button data-v="y">今年</button>
+          </div>
+          <div class="grid4" id="mKpi"></div>
+          <div class="note spec">每個數字都與<b>前一期</b>比較，箭頭是增減方向。</div>
+        </div>
+        <div class="card"><h2>MRR 趨勢 <span class="hint">近 12 個月　·　綠色為本月</span></h2>
+          <div style="padding-top:20px"><div class="bars" id="mBars"></div></div>
+          <div style="height:26px"></div>
+          <button class="btn small plain" onclick="exportMetrics()">匯出目前期間</button>
+        </div>
+      </section>
+
+      <!-- 工單 -->
+      <section class="page" id="p-tickets">
+        <h1 class="pg">工單</h1>
+        <p class="pgsub">平台 ↔ 租戶的支援工單。回覆時間依租戶方案分級，逾時未回覆另立清單。</p>
+        <div class="card">
+          <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end">
+            <div class="fld" style="flex:1;min-width:190px;margin:0"><label>搜尋工單編號或主旨</label><input id="tkQ" oninput="renderTickets()" placeholder="例：1042"></div>
+            <div class="fld" style="margin:0"><label>狀態</label><select id="tkS2" onchange="renderTickets()">
+              <option value="">全部狀態</option><option>待處理</option><option>處理中</option><option>待租戶回覆</option><option>結案</option></select></div>
+            <div class="fld" style="margin:0"><label>來源</label><select id="tkSrc" onchange="renderTickets()">
+              <option value="">全部來源</option><option>租戶後台提交</option><option>Email 轉入</option><option>平台代開</option><option>系統自動</option></select></div>
+            <div class="fld" style="margin:0"><label>快速檢視</label><select id="tkQuick" onchange="renderTickets()">
+              <option value="all">全部</option><option value="open">未結案</option><option value="late">逾時未回覆</option></select></div>
+          </div>
+        </div>
+        <div class="card"><div class="tw"><table id="tkTbl"></table></div>
+          <div class="note spec"><b>規格</b>：每張工單都要記錄<b>來源</b>——租戶後台提交／Email 轉入／平台代開（需註明代開者）／系統自動建單。</div></div>
+      </section>
+
+      <!-- 公告 -->
+      <section class="page" id="p-announce">
+        <h1 class="pg">系統公告</h1>
+        <p class="pgsub">公告只走站內，<b>不寄信</b>——需要寄信另走通知流程，避免一次誤觸大量寄信。</p>
+        <div class="card">
+          <h2>發布公告</h2>
+          <div class="grid2">
+            <div class="fld"><label>對象</label><select id="anTo" onchange="previewAudience()">
+              <option value="all">全體租戶</option><option value="plan">依方案</option>
+              <option value="status">依訂閱狀態</option><option value="pick">指定租戶</option></select></div>
+            <div class="fld"><label>等級</label><select id="anLv">
+              <option value="normal">一般</option><option value="important">重要</option><option value="urgent">緊急（不可關閉）</option></select></div>
+          </div>
+          <div class="fld" id="anSubWrap" style="display:none"><label>細部條件</label><select id="anSub" onchange="previewAudience()"></select></div>
+          <div class="fld"><label>標題</label><input id="anTitle" placeholder="例：3/15 02:00–04:00 系統維護"></div>
+          <div class="fld"><label>內文</label><textarea id="anBody" style="min-height:70px"></textarea></div>
+          <div class="grid2">
+            <div class="fld"><label>開始</label><input id="anFrom" type="date"></div>
+            <div class="fld"><label>結束（到期自動下架）</label><input id="anTo2" type="date"></div>
+          </div>
+          <div class="msg info show" id="anPreview"></div>
+          <button class="btn" onclick="publishAnnounce()">發布</button>
+        </div>
+        <div class="card"><h2>已發布</h2>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">
+            <div class="fld" style="flex:1;min-width:170px;margin:0"><label>搜尋標題</label><input id="anQ" oninput="renderAnnounce()"></div>
+            <div class="fld" style="margin:0"><label>等級</label><select id="anF" onchange="renderAnnounce()">
+              <option value="">全部等級</option><option value="normal">一般</option><option value="important">重要</option><option value="urgent">緊急</option></select></div>
+            <div class="fld" style="margin:0"><label>起</label><input id="anD1" type="date" onchange="renderAnnounce()"></div>
+            <div class="fld" style="margin:0"><label>迄</label><input id="anD2" type="date" onchange="renderAnnounce()"></div>
+            <button class="btn small plain" onclick="clearAnnFilter()">清除</button>
+          </div>
+          <div class="tw"><table id="anTbl"></table></div>
+          <div class="note spec"><b>規格</b>：<b>編輯</b>可改標題、內文、等級、期間；<b>改內文視為新內容，已讀歸零並重新推播</b>。<b>刪除</b>需二次確認，租戶端立即消失——與「提前下架」不同，下架保留紀錄與已讀率。</div>
+        </div>
+      </section>
+
+      <!-- 維運 -->
+      <section class="page" id="p-ops">
+        <h1 class="pg">平台自身維運</h1>
+        <p class="pgsub">狀態頁、單一租戶的功能開關覆寫，以及平台端通知。</p>
+        <div class="card">
+          <h2>狀態頁 <span class="hint">對租戶公開，不需登入即可查看</span></h2>
+          <div class="grid4" id="statusComp"></div>
+          <button class="btn small" style="margin-top:12px" onclick="newIncident()">發布事故</button>
+          <button class="btn small ghost" onclick="newMaint()">預定維護</button>
+          <div class="tw" style="margin-top:12px"><table id="incTbl"></table></div>
+        </div>
+        <div class="card">
+          <h2>功能開關覆寫 <span class="hint">限平台超管；到期自動回到方案預設</span></h2>
+          <div class="tw"><table id="ovTbl"></table></div>
+        </div>
+        <div class="card">
+          <h2>平台端通知</h2>
+          <div class="tw"><table id="ntTbl"></table></div>
+          <h4 class="sh">我要收哪些事件</h4>
+          <div class="tw"><table id="ntPref"></table></div>
+          <div class="note spec"><b>規格</b>：<b>隔離違規告警屬安全事件，任何人都不可關閉</b>——這同時是攻擊訊號。</div>
+        </div>
+      </section>
+
+      <!-- 範本與主題 -->
+      <section class="page" id="p-templates">
+        <h1 class="pg">範本與主題預設值</h1>
+        <p class="pgsub">改預設<b>不回溯</b>已開通的租戶——是複製一份的概念。</p>
+        <div class="card"><div class="tw"><table id="tplTbl"></table></div></div>
+      </section>
+
+      <!-- 平台紀錄 -->
+      <section class="page" id="p-audit">
+        <h1 class="pg">平台紀錄</h1>
+        <p class="pgsub">兩層，不是全部分開。</p>
+        <div class="card">
+          <div class="tabs" id="auTabs">
+            <button class="on" data-v="all">全部</button>
+            <button data-v="platform">平台層（無租戶歸屬）</button>
+            <button data-v="tenant">有租戶歸屬</button>
+          </div>
+          <div class="tw"><table id="auTbl"></table></div>
+          <div class="note spec"><b>規格</b>：判斷方式很單純——這筆紀錄<b>有沒有對應到某一家租戶</b>。<br><b>有對應的</b>（代操、開停、人工調整、更名換網域、轉移擁有者、開關覆寫）：平台紀錄與該租戶的稽核<b>各留一份</b>，租戶自己查得到。<br><b>沒對應的</b>（平台帳號登入、2FA、方案管理、公告、狀態頁、跨租戶查詢匯出）：只寫平台紀錄，租戶查不到，也不應該查到。</div>
+        </div>
+      </section>
+
+      <!-- 我的帳號 -->
+      <section class="page" id="p-me">
+        <h1 class="pg">我的帳號</h1>
+        <p class="pgsub">帳號、2FA 與平台成員管理的規格見「權限管理」1.6。</p>
+        <div class="grid2">
+          <div class="card">
+            <h2>兩階段驗證 <span class="pill ok">已啟用</span></h2>
+            <p style="font-size:.86rem;margin-top:0">平台帳號一律強制 2FA，<b>本人與超管都不能關閉或豁免</b>。</p>
+            <div class="fld"><label>備援碼</label><div class="codes" id="myCodes"></div>
+              <div class="hint" id="codeLeft"></div></div>
+            <button class="btn small plain" onclick="regenCodes()">重新產生備援碼</button>
+            <button class="btn small plain" onclick="tryDisable2fa()">關閉 2FA</button>
+            <div class="note">重新產生會讓舊的<b>全部失效</b>；剩餘低於 3 組時提醒。</div>
+          </div>
+          <div>
+            <div class="card">
+              <h2>平台成員 <span class="hint">限平台超管管理</span></h2>
+              <div class="tw"><table id="pmTbl"></table></div>
+              <button class="btn small" style="margin-top:10px" onclick="invitePm()">邀請平台成員</button>
+            </div>
+            <div class="card">
+              <h2>Session</h2>
+              <p style="font-size:.86rem;margin-top:0">平台端閒置逾時 <b>2 小時</b>（租戶端為 8 小時）；絕對上限 30 天。</p>
+              <button class="btn small" onclick="logout()">登出</button>
+              <button class="btn small plain" onclick="simTimeout()">模擬閒置逾時</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 測試腳本 -->
+      <section class="page" id="p-script">
+        <h1 class="pg">測試腳本</h1>
+        <p class="pgsub">每一條都對應規格的一條規則。右下角測試面板可切換身分（營運者／超管）與時間。</p>
+
+        <div class="card"><h2>A 平台帳號、2FA 與成員</h2><ol class="steps">
+          <li>用 <code>nobody@x.com</code> 登入 → <span class="exp">與密碼打錯同一句訊息，不透露帳號是否存在。</span>連錯 5 次 → <span class="exp">鎖定 15 分鐘。</span></li>
+          <li>密碼對了以後 → <span class="exp">一定會被要求輸入 2FA 驗證碼，跳不過去。</span></li>
+          <li>2FA 頁點「改用備援碼」，用一次某組碼 → <span class="exp">可登入；同一組再用第二次會被拒。</span></li>
+          <li>2FA 頁點「驗證器遺失了？」→ <span class="exp">不能自助重設，要另一位平台超管協助解除並留紀錄。</span></li>
+          <li>我的帳號 → 按「關閉 2FA」→ <span class="exp">被擋下：平台帳號強制啟用，本人與超管都不能關。</span></li>
+          <li>我的帳號 → 重新產生備援碼 → <span class="exp">舊的全部失效，新的只顯示一次。</span></li>
+          <li>把身分切成<b>平台營運者</b> → <span class="exp">「邀請平台成員」被擋（限超管）；左側「方案管理」「範本與主題預設」變灰。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>B 租戶總覽與詳情頁</h2><ol class="steps">
+          <li>搜尋框輸入 <code>owner@smalltree.example</code> → <span class="exp">用擁有者 Email 也搜得到那一家。</span></li>
+            <li>按「匯出目前結果」→ <span class="exp">出現對話框而不是直接下載：可選範圍（目前篩選／已勾選的列／重新指定狀態）與要匯出的欄位。</span></li>
+          <li>清單上勾兩三家，再按匯出 → <span class="exp">「只匯出已勾選的列」可選且顯示筆數；沒勾任何列時該選項是停用的。</span></li>
+          <li>勾了幾家之後改變篩選條件 → <span class="exp">勾選被清空（不會偷偷匯出被篩掉的租戶）。</span></li>
+          <li>欄位全部取消勾選 → <span class="exp">匯出按鈕停用並提示「至少要留一個欄位」。</span></li>
+          <li>關掉對話框再打開 → <span class="exp">上次的欄位選擇被記住。</span></li>
+          <li>對話框裡找「訂單」「學員」「課程營收」→ <span class="exp">根本不在欄位清單裡；匯出後平台紀錄那筆會記下筆數、欄位與當時的篩選條件。</span></li>
+          <li>點任一租戶進詳情頁 → <span class="exp">七個分頁都在；找不到訂單、學員或課程營收。</span></li>
+          <li>身分切成營運者，開「功能開關」分頁 → <span class="exp">看得到但改不了（覆寫限超管）。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>C 訂閱、人工調整與退款</h2><ol class="steps">
+          <li>訂閱與催繳 → 對催繳中的租戶按「延長寬限」→ <span class="exp">必須填原因才能送出；狀態維持催繳中不轉停用。</span></li>
+          <li>按「手動標記已收款」→ <span class="exp">狀態轉回使用中。</span></li>
+          <li>詳情頁 → 延長試用 → <span class="exp">需填原因；同一家累計超過 2 次會被擋。</span></li>
+          <li>詳情頁 → 退款，金額填 <code>5000</code>（超過門檻）且身分是<b>營運者</b> → <span class="exp">被擋，需平台超管核可。</span>切成超管再試 → <span class="exp">通過。</span></li>
+          <li>退款成功後看訂閱狀態 → <span class="exp">沒有自動改變，是否停用要另外決定。</span></li>
+          <li>訂閱與催繳 → 爭議中的租戶 → <span class="exp">自動續扣已暫停，但沒有被停用。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>D 方案管理</h2><ol class="steps">
+          <li>方案管理 → <span class="exp">預設只列上架中；狀態切「停售」看得到已停售的方案，<b>整列以不同顏色顯示</b>並標「停售」。</span></li>
+          <li>操作欄三個圖示 ✏️ 🚫 🗑️ → <span class="exp">滑過有 tooltip；點 🗑️ 會說明<b>方案不能刪除只能停售</b>。</span></li>
+          <li>搜尋框輸入「成長」→ <span class="exp">清單即時過濾。</span></li>
+          <li>編輯方案把價格調高 → <span class="exp">既有租戶的月費不變（讀成立時的價格快照），只有新訂閱吃新價。</span></li>
+          <li>把某方案的「老師數上限」調到比現有租戶用量還低 → <span class="exp">擋下，並列出已超過的租戶清單。</span></li>
+          <li>停售一個方案 → <span class="exp">既有訂閱照舊；開通與改方案的可選清單裡不再出現。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>E 經營數字</h2><ol class="steps">
+          <li>切本月／上月／本季／今年 → <span class="exp">數字跟著變，且每個都顯示與前一期的增減。</span></li>
+          <li>看趨勢圖 → <span class="exp">12 根長條、每根標數值、本月為綠色。</span></li>
+          <li>整頁搜尋「課程營收」→ <span class="exp">找不到，只有訂閱收入。匯出檔案同樣不含。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>F 退租與停用</h2><ol class="steps">
+          <li>停用租戶頁 → <span class="exp">欠費停用與主動退租都在同一張清單，資料標示「完整保留・不設期限」。</span></li>
+          <li>任一筆按「一鍵復用」→ <span class="exp">直接回到使用中，資料完好，不需重新開通。</span></li>
+          <li>整份後台搜尋刪除租戶的入口 → <span class="exp">找不到——<b>平台後台不提供刪除</b>，刪除依「法遵與資料權利」另循流程。</span></li>
+          <li>詳情頁 → 換子網域 → <span class="exp">提示舊子網域保留轉址 30 天才釋出。</span></li>
+          <li>詳情頁 → 轉移擁有者，選一個不在成員名單的人 → <span class="exp">被擋，要先邀請加入；並會明確詢問帳務聯絡人是否一併更換。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>G' 工單</h2><ol class="steps">
+          <li>工單清單 → <span class="exp">每張都標<b>來源</b>：租戶後台提交／Email 轉入／平台代開（附代開者）／系統自動。</span></li>
+          <li>搜尋框輸入 <code>1042</code> → <span class="exp">用編號就找得到。</span></li>
+          <li>狀態選「待處理」、來源選「系統自動」→ <span class="exp">兩個條件同時生效。</span></li>
+          <li>快速檢視選「逾時未回覆」→ <span class="exp">只留超過回覆時限的工單。</span></li>
+        </ol></div>
+        <div class="card"><h2>G 用量</h2><ol class="steps">
+          <li>接近上限清單 → <span class="exp">預設門檻 80%，列出達門檻的租戶與項目。</span></li>
+          <li>門檻改成 90% → <span class="exp">清單變短；左側徽章數字跟著變。</span></li>
+          <li>任一列按「談升級」→ <span class="exp">直接帶到該租戶的改方案。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>H 代操（最重要）</h2><ol class="steps">
+          <li>詳情頁按「進入代操」→ <span class="exp">即使今天已經登入過，還是要<b>再輸入一次 2FA</b>。</span></li>
+          <li>進入後看學員資料 → <span class="exp">聯絡資料被遮蔽；姓名與訂單編號看得到，足以定位問題。</span></li>
+          <li>按「解除遮蔽」→ <span class="exp">要填原因；<b>單次有效</b>，看完自動恢復遮蔽，而且在平台紀錄留<b>單獨一筆</b>。</span></li>
+          <li>按「匯出學員名單」「更改金流收款帳號」「刪除資料」→ <span class="exp">三個都被擋，即使切成超管也一樣。</span></li>
+          <li>代操中去點另一家租戶的「進入代操」→ <span class="exp">被擋：同一時間只能代操一家。</span></li>
+          <li>測試面板把代操逾時改成 20 秒，然後放著不動 → <span class="exp">自動退出，平台紀錄的退出原因寫「逾時」。</span></li>
+          <li>從工單按「從工單進代操」→ <span class="exp">代操橫幅顯示工單編號，紀錄裡也帶著它。</span></li>
+          <li>退出後回平台紀錄 → <span class="exp">代操那筆是「有租戶歸屬」，切到租戶詳情頁的稽核分頁也看得到同一筆。</span></li>
+        </ol></div>
+
+        <div class="card"><h2>I 公告、維運與通知</h2><ol class="steps">
+          <li>公告選「全體租戶」→ <span class="exp">送出前顯示預計送達的租戶數。</span>改成「依方案」→ <span class="exp">數字跟著變。</span></li>
+          <li>等級選「緊急」發布 → <span class="exp">標記為不可關閉，強制顯示直到已讀。</span></li>
+          <li>已發布清單 → <span class="exp">看得到已讀率；結束日到了會自動下架。</span></li>
+          <li>用標題、等級、日期區間篩選 → <span class="exp">三個條件都能單獨或合併使用；「清除」一鍵還原。</span></li>
+          <li>點 ✏️ 只改標題或等級 → <span class="exp">已讀率保留。</span>改內文再存 → <span class="exp">已讀歸零並重新推播。</span></li>
+          <li>點 🗑️ → <span class="exp">二次確認；刪除後租戶端立即消失，與「提前下架」不同（下架保留紀錄與已讀率）。</span></li>
+          <li>維運 → 功能開關覆寫 → <span class="exp">必填原因與到期日；到期自動回到方案預設（可用測試面板 +100 天驗證）。</span></li>
+          <li>維運 → 平台端通知偏好 → <span class="exp">其他事件都能關，<b>只有「隔離違規告警」關不掉</b>。</span></li>
+          <li>身分切營運者 → 按「發布事故」→ <span class="exp">被擋（限超管）。</span></li>
+        </ol></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="mask" id="mask" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><div class="mh"><h3 id="mTitle"></h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mb" id="mBody"></div><div class="mf" id="mFoot"></div></div>
+</div>
+<div id="toast"></div>
+
+<div id="tp">
+  <div class="tph" onclick="document.getElementById('tp').classList.toggle('open')">🧪 測試面板 <span style="margin-left:auto;font-weight:400;font-size:.76rem">展開／收合</span></div>
+  <div class="tpb">
+    <div class="row"><span><b>目前身分</b><br><small style="color:var(--muted)">切換後權限即時變動</small></span>
+      <select id="tpRole" onchange="setRole(this.value)">
+        <option value="super">平台超管</option><option value="op">平台營運者</option></select></div>
+    <div class="row"><span>代操逾時</span>
+      <select id="tpImp" onchange="IMP_TIMEOUT=+this.value">
+        <option value="1800">30 分鐘（預設）</option><option value="20">20 秒（測試用）</option></select></div>
+    <div class="row"><span>退款需超管核可的門檻</span>
+      <select id="tpRf" onchange="REFUND_LIMIT=+this.value">
+        <option value="3000">NT$3,000</option><option value="10000">NT$10,000</option></select></div>
+    <div class="row"><span>時間旅行</span>
+      <select id="tpClock" onchange="setClock(+this.value)">
+        <option value="0">真實時間</option><option value="30">+30 天</option>
+        <option value="100">+100 天</option><option value="200">+200 天</option></select></div>
+    <div class="row"><span><button class="btn tiny plain" style="width:100%" onclick="resetAll()">重置所有原型資料</button></span></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════ 工具 ═══════════ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const pad=n=>String(n).padStart(2,'0');
+let CLOCK=0;
+const now=()=>new Date(Date.now()+CLOCK);
+const D=86400000, H=3600000, MIN=60000;
+const fd=d=>d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate());
+const fdt=d=>fd(d)+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+const addD=(d,n)=>new Date(d.getTime()+n*D);
+const money=n=>'NT$'+n.toLocaleString();
+const days=(a,b)=>Math.round((b-a)/D);
+let _s=778899; const rnd=()=>(_s=(_s*1103515245+12345)%2147483648)/2147483648;
+
+function toast(m,k){const t=$('#toast');t.textContent=m;t.className='on'+(k?' '+k:'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='',3400);}
+function openModal(t,b,f){$('#mTitle').innerHTML=t;$('#mBody').innerHTML=b;$('#mFoot').innerHTML=f||'<button class="btn plain" onclick="closeModal()">關閉</button>';$('#mask').classList.add('on');}
+function closeModal(){$('#mask').classList.remove('on');}
+function setMsg(id,t,c){const e=$('#'+id);e.textContent=t;e.className='msg '+(c||'err')+(t?' show':'');}
+
+/* ═══════════ 設定與假資料 ═══════════ */
+let THRESHOLD=80, IMP_TIMEOUT=1800, REFUND_LIMIT=3000, ROLE='super';
+const SUBDOMAIN_HOLD=30, TRIAL_EXT_MAX=2;
+
+const CAP={super:'平台超管', op:'平台營運者'};
+/* 1.3 權限表 */
+const PERM={
+  view:['op','super'], toggle:['op','super'], impersonate:['op','super'], adjust:['op','super'],
+  refundSmall:['op','super'], refundAny:['super'], rename:['op','super'], announce:['op','super'],
+  ticket:['op','super'], incident:['super'], plans:['super'], flagOverride:['super'],
+  templates:['super'], members:['super']
+};
+const can=k=>PERM[k].includes(ROLE);
+function need(k,what){ if(can(k))return true; toast('權限不足：「'+what+'」限平台超管（見規格 1.3 權限表）','bad'); return false; }
+
+let PLANS=[], TENANTS=[], LOG=[], ANN=[], INC=[], PM=[], NOTIF=[], NOTIF_PREF={}, BACKUP=[];
+
+function seed(){
+  _s=778899;
+  PLANS=[
+    {id:'p1',name:'入門',price:990,cycle:'月',limits:{teachers:3,bookings:200,rooms:2},feats:{api:false,theme:false,domain:false},status:'上架'},
+    {id:'p2',name:'成長',price:2490,cycle:'月',limits:{teachers:10,bookings:1000,rooms:5},feats:{api:true,theme:true,domain:false},status:'上架'},
+    {id:'p3',name:'專業',price:5990,cycle:'月',limits:{teachers:40,bookings:5000,rooms:20},feats:{api:true,theme:true,domain:true},status:'上架'},
+    {id:'p0',name:'早鳥（已停售）',price:690,cycle:'月',limits:{teachers:5,bookings:300,rooms:3},feats:{api:false,theme:true,domain:false},status:'停售'},
+  ];
+  const T=(id,name,sub,tpl,status,plan,ownerN,ownerE,use,extra)=>Object.assign({
+    id,name,sub,domain:'',tpl,status,plan,cycle:'月',snapPrice:PLANS.find(p=>p.id===plan).price,
+    reg:addD(now(),-Math.floor(rnd()*500)-40), renew:addD(now(),Math.floor(rnd()*28)+2),
+    owner:{name:ownerN,email:ownerE}, members:[{n:ownerN,e:ownerE,r:'擁有者'},{n:'王主任',e:'admin@'+sub+'.example',r:'管理員'},{n:'李客服',e:'cs@'+sub+'.example',r:'客服'}],
+    usage:use, trialExt:0, flags:{}, hist:[], audit:[]
+  },extra||{});
+  TENANTS=[
+    T('t1','小樹才藝班','smalltree','才藝','active','p2','張小樹','owner@smalltree.example',{teachers:8,bookings:930,rooms:4}),
+    T('t2','恆星舞蹈學院','starbeat','才藝','active','p3','李恆','owner@starbeat.example',{teachers:31,bookings:4100,rooms:14},{domain:'class.starbeat.com.tw'}),
+    T('t3','日日瑜伽','daily-yoga','運動健身','trial','p1','陳日','owner@dailyyoga.example',{teachers:2,bookings:70,rooms:1},{trialEnds:addD(now(),3)}),
+    T('t4','MUSE 音樂教室','muse','音樂','active','p2','吳謬','owner@muse.example',{teachers:9,bookings:640,rooms:5}),
+    T('t5','say語言中心','say-lang','語言','dunning','p2','趙說','owner@saylang.example',{teachers:6,bookings:410,rooms:3},{graceEnds:addD(now(),4)}),
+    T('t6','美好妝研','meihao','美妝美容','active','p1','林美','owner@meihao.example',{teachers:3,bookings:188,rooms:2}),
+    T('t7','鐵心體能','ironheart','運動健身','suspended','p2','鐵心','owner@ironheart.example',{teachers:5,bookings:0,rooms:3}),
+    T('t8','小葉畫室','leafart','才藝','trial','p1','葉小','owner@leafart.example',{teachers:1,bookings:22,rooms:1},{trialEnds:addD(now(),12)}),
+    T('t9','Coda 鋼琴','coda','音樂','active','p0','柯達','owner@coda.example',{teachers:4,bookings:260,rooms:3}),
+    T('t10','風向攀岩','windward','運動健身','disputed','p3','風向','owner@windward.example',{teachers:12,bookings:1900,rooms:6}),
+    T('t11','舊日書塾','oldday','語言','retired','p1','舊日','owner@oldday.example',{teachers:0,bookings:0,rooms:0},{retireAt:addD(now(),-40)}),
+    T('t12','海邊陶藝','seaside','才藝','retired','p1','海邊','owner@seaside.example',{teachers:0,bookings:0,rooms:0},{retireAt:addD(now(),-86)}),
+  ];
+  TENANTS.forEach(t=>{
+    t.hist=[{at:addD(now(),-30),by:'系統',what:'訂閱續費成功',why:''}];
+    t.audit=[{at:addD(now(),-30),by:'系統',what:'訂閱續費成功'}];
+  });
+  // 功能開關覆寫示例
+  TENANTS[0].flags={api:{on:true,why:'beta 試用新版 API',until:addD(now(),40)}};
+  LOG=[
+    {at:addD(now(),-2),actor:'陳平台',scope:'platform',what:'平台帳號登入成功'},
+    {at:addD(now(),-2),actor:'陳平台',scope:'tenant',tid:'t5',what:'寄出催繳信'},
+    {at:addD(now(),-6),actor:'陳平台',scope:'platform',what:'發布公告「2/20 維護通知」'},
+  ];
+  ANN=[{id:'a1',title:'2/20 02:00–04:00 系統維護',to:'全體租戶',lv:'important',from:addD(now(),-10),to2:addD(now(),-8),cnt:12,read:9,down:true}];
+  INC=[{id:'i1',t:'寄信延遲',scope:'通知信寄送',from:addD(now(),-13),status:'已解決',by:'陳平台',upd:['已定位為上游供應商佇列壅塞','已恢復，補寄積壓信件']}];
+  PM=[{n:'陳平台',e:'admin@platform.example',r:'super',last:addD(now(),0),tfa:true},
+      {n:'黃營運',e:'ops@platform.example',r:'op',last:addD(now(),-1),tfa:true},
+      {n:'新同事',e:'new@platform.example',r:'op',last:null,tfa:false,invited:true}];
+  NOTIF=[
+    {at:addD(now(),-1),k:'iso',t:'偵測到跨租戶存取嘗試（來源：t5 的 API 金鑰）'},
+    {at:addD(now(),-1),k:'trial',t:'日日瑜伽 試用將於 3 天後到期'},
+    {at:addD(now(),-2),k:'dun',t:'say語言中心 扣款失敗，寬限期剩 4 天'},
+    {at:addD(now(),-3),k:'usage',t:'恆星舞蹈學院 老師數已達方案上限 78%'},
+    {at:addD(now(),-4),k:'dispute',t:'風向攀岩 收到爭議款通知'},
+    {at:addD(now(),-5),k:'ticket',t:'2 張工單已逾回覆時間'},
+  ];
+  NOTIF_PREF={iso:true,trial:true,dun:true,usage:true,dispute:true,ticket:true};
+  BACKUP=Array.from({length:10},(_,i)=>({code:(100000+Math.floor(rnd()*899999))+'', used:i<2}));
+  TICKETS=[
+    {id:'#1042',tid:'t5',sub:'金流設定卡住',st:'待處理',open:addD(now(),-3),sla:24,last:addD(now(),-3),src:'租戶後台提交'},
+    {id:'#1041',tid:'t1',sub:'證書內文改不了',st:'處理中',open:addD(now(),-2),sla:48,last:addD(now(),-1),src:'Email 轉入'},
+    {id:'#1039',tid:'t2',sub:'自訂網域 SSL 未生效',st:'待租戶回覆',open:addD(now(),-5),sla:8,last:addD(now(),-4),src:'平台代開',by:'黃營運'},
+    {id:'#1035',tid:'t4',sub:'匯出報表欄位錯誤',st:'結案',open:addD(now(),-9),sla:48,last:addD(now(),-7),src:'租戶後台提交'},
+    {id:'#1033',tid:'t5',sub:'金流串接連續失敗 5 次',st:'處理中',open:addD(now(),-6),sla:8,last:addD(now(),-6),src:'系統自動'},
+  ];
+}
+let TICKETS=[];
+
+/* ═══════════ 衍生 ═══════════ */
+const plan=id=>PLANS.find(p=>p.id===id);
+const tenant=id=>TENANTS.find(t=>t.id===id);
+const ST={trial:'試用中',active:'使用中',dunning:'催繳中',suspended:'已停用',
+          disputed:'爭議中',retired:'已退租'};
+const STC={trial:'blue',active:'ok',dunning:'wait',suspended:'bad',disputed:'pur',retired:'grey'};
+const effStatus=t=>t.status;
+function usagePct(t){
+  const L=plan(t.plan).limits, r=[];
+  for(const k of ['teachers','bookings','rooms'])
+    r.push({k,label:{teachers:'老師數',bookings:'月預約量',rooms:'場地數'}[k],use:t.usage[k],lim:L[k],pct:Math.round(t.usage[k]/L[k]*100)});
+  return r;
+}
+const overThreshold=()=>TENANTS.filter(t=>['active','trial','dunning'].includes(effStatus(t)))
+  .flatMap(t=>usagePct(t).filter(u=>u.pct>=THRESHOLD).map(u=>({t,u}))).sort((a,b)=>b.u.pct-a.u.pct);
+const trialSoon=()=>TENANTS.filter(t=>effStatus(t)==='trial'&&t.trialEnds&&days(now(),t.trialEnds)<=7);
+const dunList=()=>TENANTS.filter(t=>['dunning','suspended'].includes(effStatus(t)));
+const dspList=()=>TENANTS.filter(t=>effStatus(t)==='disputed');
+const offList=()=>TENANTS.filter(t=>['retired','suspended'].includes(effStatus(t)));
+const lateTickets=()=>TICKETS.filter(t=>t.st!=='結案'&&(now()-t.last)/H>t.sla);
+
+function log(scope,what,tid){
+  LOG.unshift({at:now(),actor:ROLE==='super'?'陳平台':'黃營運',scope,tid,what});
+  if(scope==='tenant'&&tid){const t=tenant(tid); t.audit.unshift({at:now(),by:(ROLE==='super'?'陳平台':'黃營運')+'（平台）',what});}
+}
+function hist(tid,what,why){
+  const t=tenant(tid);
+  t.hist.unshift({at:now(),by:ROLE==='super'?'陳平台':'黃營運',what,why:why||''});
+  log('tenant',what+(why?'（原因：'+why+'）':''),tid);
+}
+
+/* ═══════════ 認證 ═══════════ */
+const ACC={email:'admin@platform.example',pw:'plat1234',code:'123456'};
+let fail=0, lockUntil=0, pendingPage=null, logged=false, trusted=false, bound=true, resetTok=null;
+
+function showAuth(v){['vLogin','v2fa','vBind','vForgot'].forEach(x=>$('#'+x).style.display=x===v?'block':'none');
+  $('#auth').style.display='flex';$('#app').style.display='none';}
+function doLogin(){
+  if(Date.now()<lockUntil){setMsg('loginErr','帳號已鎖定，請於 '+Math.ceil((lockUntil-Date.now())/MIN)+' 分鐘後再試。');return;}
+  const em=$('#liEmail').value.trim(), pw=$('#liPw').value;
+  if(!em||!pw){setMsg('loginErr','請填寫 Email 與密碼');return;}
+  if(em.toLowerCase()!==ACC.email||pw!==ACC.pw){
+    fail++;
+    if(fail>=5){lockUntil=Date.now()+15*MIN;fail=0;setMsg('loginErr','連續失敗 5 次，帳號鎖定 15 分鐘。鎖定期間即使密碼正確也不放行。');}
+    else setMsg('loginErr','查無此帳號，或該帳號無法在此登入。（已失敗 '+fail+'/5 次）');
+    return;
+  }
+  fail=0;setMsg('loginErr','');
+  if(!bound){showBind();return;}
+  if(trusted){enter();toast('這台裝置在信任期內，這次略過 2FA');return;}
+  showAuth('v2fa');setMsg('tfErr','');$('#tfCode').value='';
+}
+let tfFail=0;
+function doTfa(){
+  if($('#tfCode').value.trim()!==ACC.code){
+    tfFail++;
+    if(tfFail>=5){lockUntil=Date.now()+15*MIN;tfFail=0;showAuth('vLogin');setMsg('loginErr','驗證碼連續錯誤 5 次，帳號鎖定 15 分鐘。');return;}
+    setMsg('tfErr','驗證碼不正確（'+tfFail+'/5）');return;
+  }
+  tfFail=0; trusted=$('#tfTrust').checked; enter();
+}
+function useBackup(){
+  const avail=BACKUP.filter(b=>!b.used);
+  openModal('改用備援碼','<p style="margin-top:0">輸入其中一組尚未使用的備援碼。用過即失效。</p>'+
+    '<div class="fld"><input id="buCode" placeholder="6 位數字"></div>'+
+    '<div class="note">目前尚有 '+avail.length+' 組可用。示範可用碼：<b>'+(avail[0]?avail[0].code:'（已用完）')+'</b>；'+
+    '已用過的：'+BACKUP.filter(b=>b.used).map(b=>b.code).join('、')+'</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="tryBackup()">驗證</button>');
+}
+function tryBackup(){
+  const v=$('#buCode').value.trim(), b=BACKUP.find(x=>x.code===v);
+  if(!b){toast('查無此備援碼','bad');return;}
+  if(b.used){toast('這組備援碼已經用過，無法再使用','bad');return;}
+  b.used=true;closeModal();enter();
+  toast('已使用一組備援碼，該組立即失效。剩餘 '+BACKUP.filter(x=>!x.used).length+' 組');
+}
+function lostDevice(){
+  openModal('驗證器遺失',
+    '<div class="msg err show">不能自助重設——自助重設等於為攻擊者開後門。</div>'+
+    '<ul style="padding-left:1.1rem;font-size:.9rem"><li>須由<b>另一位平台超管</b>協助解除綁定，並寫入紀錄（誰解除、為誰解除、原因）</li>'+
+    '<li>若當下僅剩一位平台超管，走平台既定的<b>離線身分驗證程序</b>，不由系統自動放行</li>'+
+    '<li>解除期間該帳號進不了平台後台，也發不起代操</li></ul>');
+}
+function showBind(){
+  showAuth('vBind');
+  $('#bindCodes').innerHTML=BACKUP.map(b=>'<span>'+b.code+'</span>').join('');
+}
+function doBind(){
+  if($('#bindCode').value.trim()!==ACC.code){setMsg('bindErr','驗證碼不正確');return;}
+  bound=true;enter();toast('2FA 綁定完成');
+}
+function enter(){
+  logged=true;$('#auth').style.display='none';$('#app').style.display='block';
+  log('platform','平台帳號登入成功');
+  const p=pendingPage||'tenants';pendingPage=null;go(p);
+  if(p!=='tenants')toast('已回到你剛才要去的頁面');
+}
+function doForgot(){
+  const em=$('#fgEmail').value.trim();
+  if(!em){setMsg('fgMsg','請填寫 Email','err');return;}
+  setMsg('fgMsg','若此信箱屬於平台成員，重設信已寄出。','info');
+  $('#fgMsg').innerHTML+='<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #cfdff5">重設後所有裝置的登入狀態失效，<b>下次登入仍需通過 2FA</b>。</div>';
+}
+function logout(){logged=false;trusted=false;showAuth('vLogin');setMsg('loginErr','已登出。','info');$('#liPw').value='';}
+function simTimeout(){
+  pendingPage=CUR;logged=false;trusted=false;showAuth('vLogin');
+  setMsg('loginErr','閒置逾時（平台端 2 小時未操作），請重新登入。登入後會回到你原本的頁面。','info');$('#liPw').value='';
+}
+function tryDisable2fa(){
+  openModal('無法關閉','<div class="msg err show">平台帳號一律強制 2FA。</div>'+
+    '<div class="note spec"><b>規格</b>：平台帳號是唯一能跨租戶的身分，一組帳密外洩等於所有租戶的資料同時外洩。因此 <b>無例外、不可由本人關閉，平台超管也不能為誰豁免</b>。</div>');
+}
+function regenCodes(){
+  BACKUP=Array.from({length:10},()=>({code:(100000+Math.floor(Math.random()*899999))+'',used:false}));
+  log('platform','重新產生 2FA 備援碼（舊碼全部失效）');
+  renderMe();toast('已重新產生 10 組備援碼，舊的全部失效','ok');
+}
+
+/* ═══════════ 導覽 ═══════════ */
+let CUR='tenants';
+function go(p){
+  const a=$$('#nav a').find(x=>x.dataset.p===p);
+  if(a&&a.dataset.need&&!PERM[{plans:'plans',templates:'templates'}[p]].includes(ROLE)){
+    toast('權限不足：這一頁限平台超管（見規格 1.3 權限表）','bad');return;
+  }
+  CUR=p;
+  $$('#nav a').forEach(x=>x.classList.toggle('on',x.dataset.p===p));
+  $$('.page').forEach(s=>s.classList.toggle('on',s.id==='p-'+p));
+  ({tenants:renderTenants,usage:renderUsage,lifecycle:renderLifecycle,billing:renderBilling,
+    plans:renderPlans,metrics:renderMetrics,tickets:renderTickets,announce:renderAnnounce,
+    ops:renderOps,templates:renderTemplates,audit:renderAudit,me:renderMe}[p]||(()=>{}))();
+  renderBadges();window.scrollTo(0,0);
+}
+$$('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.p));
+function setRole(r){
+  ROLE=r;$('#tbRole').textContent=CAP[r];
+  $$('#nav a').forEach(a=>{ if(a.dataset.need) a.classList.toggle('locked', !PERM[{plans:'plans',templates:'templates'}[a.dataset.p]].includes(r)); });
+  toast('已切換身分為 '+CAP[r]);
+  if((CUR==='plans'||CUR==='templates')&&r==='op')go('tenants'); else go(CUR);
+}
+function renderBadges(){
+  const set=(id,n)=>{const e=$('#'+id);e.textContent=n||'';e.style.display=n?'':'none';};
+  set('bgUsage',overThreshold().length); set('bgDel',offList().length);
+  set('bgDun',dunList().length); set('bgTk',lateTickets().length);
+}
+
+/* ═══════════ A 租戶總覽 ═══════════ */
+function fillFilters(){
+  const s=$('#tqS'); if(s.options.length)return;
+  s.innerHTML='<option value="">全部狀態</option>'+Object.entries(ST).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('');
+  $('#tqT').innerHTML='<option value="">全部範本</option>'+[...new Set(TENANTS.map(t=>t.tpl))].map(x=>'<option>'+x+'</option>').join('');
+}
+function filtered(){
+  fillFilters();
+  const q=($('#tqQ').value||'').trim().toLowerCase(), st=$('#tqS').value, tp=$('#tqT').value;
+  return TENANTS.filter(t=>{
+    if(st&&effStatus(t)!==st)return false;
+    if(tp&&t.tpl!==tp)return false;
+    if(q&&!([t.name,t.sub,t.domain,t.owner.email,t.owner.name].join(' ').toLowerCase().includes(q)))return false;
+    return true;
+  });
+}
+let PICKED=new Set();
+function togglePick(id,ev){ if(ev)ev.stopPropagation();
+  PICKED.has(id)?PICKED.delete(id):PICKED.add(id); renderTenants(); }
+function pickAll(on){ PICKED=new Set(on?filtered().map(t=>t.id):[]); renderTenants(); }
+function renderTenants(){
+  const rows=filtered();
+  // 勾選只作用在目前篩選結果
+  const visible=new Set(rows.map(t=>t.id));
+  [...PICKED].forEach(id=>{ if(!visible.has(id)) PICKED.delete(id); });
+  const allOn=rows.length>0&&rows.every(t=>PICKED.has(t.id));
+  $('#tqCount').innerHTML=rows.length+' / '+TENANTS.length+' 家'+
+    (PICKED.size?'　·　<b style="color:var(--primary)">已勾選 '+PICKED.size+' 筆</b>':'');
+  $('#tTbl').innerHTML='<tr><th style="width:34px"><input type="checkbox" '+(allOn?'checked':'')+
+      ' title="全選／全不選（只作用在目前篩選結果）" onclick="pickAll(this.checked)"></th>'+
+    '<th>租戶</th><th>網域</th><th>範本</th><th>狀態</th><th>方案</th><th>月費</th><th>擁有者</th><th>下次續約</th></tr>'+
+    (rows.length?rows.map(t=>{const es=effStatus(t);
+      return '<tr class="clk" onclick="openTenant(\''+t.id+'\')">'+
+      '<td onclick="togglePick(\''+t.id+'\',event)"><input type="checkbox" '+(PICKED.has(t.id)?'checked':'')+
+        ' onclick="togglePick(\''+t.id+'\',event)"></td>'+
+      '<td><b>'+t.name+'</b></td>'+
+      '<td style="font-size:.82rem">'+(t.domain||t.sub+'.平台.com')+'</td><td>'+t.tpl+'</td>'+
+      '<td><span class="pill '+STC[es]+'">'+ST[es]+'</span></td><td>'+plan(t.plan).name+'</td>'+
+      '<td>'+money(t.snapPrice)+'</td><td style="font-size:.82rem">'+t.owner.name+'<br><span style="color:var(--muted)">'+t.owner.email+'</span></td>'+
+      '<td>'+(['retired','suspended'].includes(es)?'—':fd(t.renew))+'</td></tr>';}).join('')
+     :'<tr><td colspan="9" style="color:var(--muted)">沒有符合條件的租戶</td></tr>');
+}
+const EXP_COLS=[['name','名稱'],['sub','子網域'],['domain','自訂網域'],['tpl','範本'],['status','狀態'],
+  ['plan','方案'],['fee','月費'],['cycle','計費週期'],['owner','擁有者姓名'],['email','擁有者 Email'],
+  ['members','成員數'],['reg','註冊日'],['renew','下次續約日']];
+let EXP_PICK=null;   // 記住上次的欄位選擇
+function exportTenants(){
+  if(!EXP_PICK) EXP_PICK=new Set(EXP_COLS.map(c=>c[0]));
+  const cols=EXP_COLS.map(c=>'<label class="opt">'+
+    '<input type="checkbox" data-col="'+c[0]+'" '+(EXP_PICK.has(c[0])?'checked':'')+' onchange="expTick()">'+c[1]+'</label>').join('');
+  const sts=Object.entries(ST).map(([k,v])=>'<label class="opt" style="display:inline-flex;margin-right:14px">'+
+    '<input type="checkbox" data-st="'+k+'" onchange="expTick()">'+v+'</label>').join('');
+  openModal('匯出租戶清單',
+    '<div class="fld"><label>① 匯出範圍</label>'+
+      '<label class="opt"><input type="radio" name="expScope" value="filter" checked onchange="expTick()">目前篩選結果</label>'+
+      '<label class="opt"><input type="radio" name="expScope" value="picked" '+(PICKED.size?'':'disabled')+' onchange="expTick()">只匯出已勾選的列'+(PICKED.size?'（'+PICKED.size+' 筆）':'（尚未勾選任何列）')+'</label>'+
+      '<label class="opt"><input type="radio" name="expScope" value="status" onchange="expTick()">在這裡重新指定狀態</label>'+
+      '<div id="expSts" style="display:none;padding:7px 0 0 24px">'+sts+'</div></div>'+
+    '<div class="fld"><label>② 要匯出哪些欄位　<a class="lnk" onclick="expAll(1)">全選</a>　<a class="lnk" onclick="expAll(0)">全不選</a></label>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 14px;border:1px solid var(--line);border-radius:10px;padding:9px 12px">'+cols+'</div></div>'+
+    '<div class="msg info show" id="expInfo"></div>'+
+    '<div class="note spec"><b>規格</b>：課程營運資料（訂單、學員、課程、預約、課程營收）<b>根本不出現在這份欄位清單裡</b>——不是勾了被擋，避免讓人以為只是權限不足。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" id="expGo" onclick="doExport()">匯出</button>');
+  expTick();
+}
+function expScope(){ const r=document.querySelector('input[name=expScope]:checked'); return r?r.value:'filter'; }
+function expRows(){
+  const s=expScope();
+  if(s==='picked') return TENANTS.filter(t=>PICKED.has(t.id));
+  if(s==='status'){
+    const on=[...document.querySelectorAll('#expSts input:checked')].map(x=>x.dataset.st);
+    return on.length?TENANTS.filter(t=>on.includes(effStatus(t))):[];
+  }
+  return filtered();
+}
+function expTick(){
+  const picked=[...document.querySelectorAll('#mBody input[data-col]:checked')].map(x=>x.dataset.col);
+  EXP_PICK=new Set(picked);
+  document.getElementById('expSts').style.display=expScope()==='status'?'block':'none';
+  const n=expRows().length;
+  const info=document.getElementById('expInfo'), go=document.getElementById('expGo');
+  if(!picked.length){ info.className='msg err show'; info.textContent='至少要留一個欄位。'; go.disabled=true; return; }
+  if(!n){ info.className='msg err show'; info.textContent='目前條件下沒有任何租戶可匯出。'; go.disabled=true; return; }
+  info.className='msg info show'; info.textContent='即將匯出 '+n+' 筆、'+picked.length+' 個欄位。';
+  go.disabled=false;
+}
+function expAll(on){ document.querySelectorAll('#mBody input[data-col]').forEach(x=>x.checked=!!on); expTick(); }
+function doExport(){
+  const rows=expRows(), cols=EXP_COLS.filter(c=>EXP_PICK.has(c[0]));
+  const scopeTxt={filter:'目前篩選結果',picked:'已勾選的列',status:'對話框指定狀態'}[expScope()];
+  log('platform','匯出租戶清單（'+rows.length+' 筆／'+cols.length+' 欄；範圍：'+scopeTxt+'；欄位：'+cols.map(c=>c[1]).join('、')+'）');
+  openModal('匯出完成',
+    '<p style="margin-top:0">已匯出 <b>'+rows.length+'</b> 筆、<b>'+cols.length+'</b> 個欄位（範圍：'+scopeTxt+'）。</p>'+
+    '<div class="fld"><label>檔名</label><code>tenants_'+fd(now()).replace(/\//g,'')+'_'+rows.length+'筆.csv</code>'+
+      '<div class="hint">CSV，UTF-8 含 BOM——避免中文在 Excel 開啟時亂碼</div></div>'+
+    '<div class="tw"><table><tr>'+cols.map(c=>'<th>'+c[1]+'</th>').join('')+'</tr>'+
+      rows.slice(0,4).map(t=>'<tr>'+cols.map(c=>'<td style="font-size:.8rem">'+({
+        name:t.name,sub:t.sub,domain:t.domain||'—',tpl:t.tpl,status:ST[effStatus(t)],
+        plan:plan(t.plan).name,fee:money(t.snapPrice),cycle:t.cycle+'繳',
+        owner:t.owner.name,email:t.owner.email,members:t.members.length,
+        reg:fd(t.reg),renew:fd(t.renew)}[c[0]])+'</td>').join('')+'</tr>').join('')+
+      (rows.length>4?'<tr><td colspan="'+cols.length+'" style="color:var(--muted)">…其餘 '+(rows.length-4)+' 筆</td></tr>':'')+
+    '</table></div>'+
+    '<div class="note spec"><b>規格</b>：不含任何課程營運資料。此動作已寫入<b>平台紀錄</b>（含筆數、欄位與當時的篩選條件），屬平台層事件。</div>');
+}
+
+/* ═══════════ B 租戶詳情頁 ═══════════ */
+let CURT=null, DTAB='overview';
+function openTenant(id){CURT=id;DTAB='overview';go('detail');renderDetail();}
+function go2detail(){CUR='detail';$$('#nav a').forEach(x=>x.classList.remove('on'));$$('.page').forEach(s=>s.classList.toggle('on',s.id==='p-detail'));}
+function renderDetail(){
+  go2detail();
+  const t=tenant(CURT), es=effStatus(t), P=plan(t.plan);
+  const tab=(k,l)=>'<button class="'+(DTAB===k?'on':'')+'" onclick="DTAB=\''+k+'\';renderDetail()">'+l+'</button>';
+  let body='';
+  if(DTAB==='overview'){
+    body='<div class="card"><h2>概況</h2><div class="tw"><table>'+
+      '<tr><td style="width:150px;color:var(--muted)">名稱</td><td><b>'+t.name+'</b></td></tr>'+
+      '<tr><td style="color:var(--muted)">子網域</td><td>'+t.sub+'.平台.com</td></tr>'+
+      '<tr><td style="color:var(--muted)">自訂網域</td><td>'+(t.domain||'<span class="pill grey">未綁定</span>')+'</td></tr>'+
+      '<tr><td style="color:var(--muted)">範本</td><td>'+t.tpl+'</td></tr>'+
+      '<tr><td style="color:var(--muted)">狀態</td><td><span class="pill '+STC[es]+'">'+ST[es]+'</span>'+
+        (['retired','suspended'].includes(es)?'　<span style="color:var(--muted);font-size:.82rem">資料完整保留，隨時可復用</span>':'')+'</td></tr>'+
+      '<tr><td style="color:var(--muted)">方案</td><td>'+P.name+'　'+money(t.snapPrice)+' / '+t.cycle+
+        (t.snapPrice!==P.price?'　<span class="pill wait">方案現價 '+money(P.price)+'，此訂閱沿用成立時的價格快照</span>':'')+'</td></tr>'+
+      '<tr><td style="color:var(--muted)">註冊日</td><td>'+fd(t.reg)+'</td></tr>'+
+      '<tr><td style="color:var(--muted)">下次續約</td><td>'+fd(t.renew)+'</td></tr>'+
+      '<tr><td style="color:var(--muted)">擁有者</td><td>'+t.owner.name+'（'+t.owner.email+'）</td></tr>'+
+      '<tr><td style="color:var(--muted)">成員數</td><td>'+t.members.length+' 人</td></tr>'+
+      '</table></div>'+
+      '<div class="note spec">⚠️ 詳情頁<b>不顯示租戶的課程營運明細</b>（訂單、學員、課程營收）；要看必須走客服代操並留紀錄。</div></div>'+
+      '<div class="card"><h2>異動歷程</h2><div class="tw"><table><tr><th>時間</th><th>操作者</th><th>動作</th><th>原因</th></tr>'+
+      t.hist.map(x=>'<tr><td>'+fdt(x.at)+'</td><td>'+x.by+'</td><td>'+x.what+'</td><td style="color:var(--muted)">'+(x.why||'—')+'</td></tr>').join('')+'</table></div></div>';
+  }
+  else if(DTAB==='billing'){
+    body='<div class="card"><h2>訂閱與帳單</h2><div class="tw"><table>'+
+      '<tr><td style="width:150px;color:var(--muted)">方案</td><td>'+P.name+'（'+t.cycle+'繳）</td></tr>'+
+      '<tr><td style="color:var(--muted)">目前月費</td><td><b>'+money(t.snapPrice)+'</b>　<span style="color:var(--muted);font-size:.8rem">成立時的價格快照</span></td></tr>'+
+      '<tr><td style="color:var(--muted)">試用延長次數</td><td>'+t.trialExt+' / '+TRIAL_EXT_MAX+'</td></tr>'+
+      '</table></div>'+
+      '<h4 class="sh">人工調整（每項都必須填原因）</h4>'+
+      '<button class="btn small" onclick="adj(\'trial\')">延長試用</button> '+
+      '<button class="btn small" onclick="adj(\'discount\')">給折扣</button> '+
+      '<button class="btn small" onclick="adj(\'waive\')">免收一期</button> '+
+      '<button class="btn small" onclick="adj(\'plan\')">手動改方案</button> '+
+      '<button class="btn small plain" onclick="adj(\'invoice\')">補開發票／重寄帳單</button>'+
+      '<h4 class="sh">退款與爭議款</h4>'+
+      '<button class="btn small ghost" onclick="doRefund()">發起退款</button>'+
+      '<div class="note spec"><b>規格</b>：退款<b>不自動改變訂閱狀態</b>；超過 '+money(REFUND_LIMIT)+' 須平台超管核可。這裡退的是租戶付給平台的訂閱費，與租戶退給學員的課程費完全分開。</div></div>';
+  }
+  else if(DTAB==='usage'){
+    body='<div class="card"><h2>用量 vs 方案上限</h2><div class="tw"><table><tr><th>項目</th><th>目前用量</th><th>上限</th><th>百分比</th></tr>'+
+      usagePct(t).map(u=>'<tr><td>'+u.label+'</td><td>'+u.use+'</td><td>'+u.lim+'</td><td style="min-width:150px">'+u.pct+'%'+
+        '<div class="barwrap"><div class="bar '+(u.pct>=100?'over':u.pct>=THRESHOLD?'hi':'')+'" style="width:'+Math.min(100,u.pct)+'%"></div></div></td></tr>').join('')+
+      '</table></div><div class="note">只為管理限制，<b>不看營收</b>。</div></div>';
+  }
+  else if(DTAB==='members'){
+    body='<div class="card"><h2>成員</h2><div class="tw"><table><tr><th>姓名</th><th>Email</th><th>角色</th></tr>'+
+      t.members.map(m=>'<tr><td>'+m.n+'</td><td>'+m.e+'</td><td>'+m.r+'</td></tr>').join('')+'</table></div>'+
+      '<button class="btn small" style="margin-top:11px" onclick="transferOwner()">轉移擁有者</button>'+
+      '<div class="note spec"><b>規格</b>：只列成員與角色，<b>不含密碼與登入憑證相關資料</b>。</div></div>';
+  }
+  else if(DTAB==='flags'){
+    const rows=Object.entries(P.feats).map(([k,v])=>{
+      const ov=t.flags[k], eff=ov?ov.on:v;
+      const lbl={api:'開放 API',theme:'自訂主題',domain:'自訂網域'}[k];
+      return '<tr><td>'+lbl+'</td><td>'+(v?'<span class="pill ok">方案含</span>':'<span class="pill grey">方案不含</span>')+'</td>'+
+        '<td>'+(ov?'<span class="pill pur">覆寫為 '+(ov.on?'開':'關')+'</span><br><span style="font-size:.76rem;color:var(--muted)">'+ov.why+'<br>到期 '+fd(ov.until)+'</span>':'—')+'</td>'+
+        '<td>'+(eff?'<span class="pill ok">開啟</span>':'<span class="pill grey">關閉</span>')+'</td>'+
+        '<td><button class="btn tiny plain" onclick="overrideFlag(\''+k+'\')">覆寫</button>'+
+        (ov?' <button class="btn tiny plain" onclick="clearFlag(\''+k+'\')">移除覆寫</button>':'')+'</td></tr>';
+    }).join('');
+    body='<div class="card"><h2>功能開關 <span class="hint">'+(can('flagOverride')?'可覆寫':'營運者可看、不可改')+'</span></h2>'+
+      '<div class="tw"><table><tr><th>功能</th><th>方案預設</th><th>覆寫</th><th>實際</th><th></th></tr>'+rows+'</table></div>'+
+      '<div class="note spec"><b>規格</b>：預設跟著方案走；覆寫<b>不改動方案定義本身</b>，只影響這一家。必填原因與到期日，到期<b>自動回到方案預設</b>。</div></div>';
+  }
+  else if(DTAB==='tickets'){
+    const tk=TICKETS.filter(x=>x.tid===t.id);
+    body='<div class="card"><h2>工單</h2><div class="tw"><table><tr><th>編號</th><th>主旨</th><th>狀態</th><th>開立</th></tr>'+
+      (tk.length?tk.map(x=>'<tr><td>'+x.id+'</td><td>'+x.sub+'</td><td>'+x.st+'</td><td>'+fd(x.open)+'</td></tr>').join('')
+       :'<tr><td colspan="4" style="color:var(--muted)">沒有工單</td></tr>')+'</table></div></div>';
+  }
+  else{
+    body='<div class="card"><h2>稽核紀錄 <span class="hint">這一份租戶自己也查得到</span></h2>'+
+      '<div class="tw"><table><tr><th>時間</th><th>操作者</th><th>動作</th></tr>'+
+      t.audit.map(x=>'<tr><td>'+fdt(x.at)+'</td><td>'+x.by+'</td><td>'+x.what+'</td></tr>').join('')+'</table></div>'+
+      '<div class="note spec"><b>規格</b>：有租戶歸屬的平台動作（代操、開停、人工調整…）<b>同時</b>寫入這裡，租戶自己查得到；'+
+      '平台層事件（平台帳號登入、方案管理、公告）不掛在任何租戶下，租戶查不到也不該查到。</div></div>';
+  }
+
+  $('#p-detail').innerHTML=
+    '<a class="lnk" onclick="go(\'tenants\')">← 回租戶總覽</a>'+
+    '<h1 class="pg" style="margin-top:8px">'+t.name+' <span class="pill '+STC[es]+'">'+ST[es]+'</span></h1>'+
+    '<p class="pgsub">'+t.sub+'.平台.com'+(t.domain?'　·　'+t.domain:'')+'　·　'+t.tpl+'　·　'+P.name+'</p>'+
+    '<div class="card"><h2>動作</h2>'+
+      (IMP&&IMP.tid===t.id
+        ? '<button class="btn small" style="background:#5a3d8a" onclick="viewLearners()">代操中：看學員與訂單</button> '
+        : '<button class="btn small" onclick="startImp()">進入代操</button> ')+
+      (['retired','suspended'].includes(es)?'<button class="btn small ok" onclick="reactivate()">一鍵復用</button> ':'')+
+      (['active','trial','dunning','disputed'].includes(es)?'<button class="btn small plain" onclick="suspend()">停用</button> ':'')+
+      (['active','trial','dunning'].includes(es)?'<button class="btn small plain" onclick="retire()">退租</button> ':'')+
+      '<button class="btn small plain" onclick="renameT()">更名</button> '+
+      '<button class="btn small plain" onclick="changeSub()">換子網域</button> '+
+      '<button class="btn small plain" onclick="changeDomain()">換／解綁自訂網域</button>'+
+    '</div>'+
+    '<div class="tabs">'+tab('overview','概況')+tab('billing','訂閱與帳單')+tab('usage','用量')+
+      tab('members','成員')+tab('flags','功能開關')+tab('tickets','工單')+tab('audit','稽核紀錄')+'</div>'+body;
+}
+
+/* 動作 */
+function suspend(){const t=tenant(CURT);t.status='suspended';hist(t.id,'停用租戶','');toast('已停用——只擋使用，不刪資料');renderDetail();renderBadges();}
+function retire(){const t=tenant(CURT);t.status='retired';t.retireAt=now();hist(t.id,'退租——轉為停用，資料完整保留、不設期限','');toast('已退租；資料完整保留，隨時可復用');renderDetail();renderBadges();}
+function reactivate(){const t=tenant(CURT);t.status='active';hist(t.id,'一鍵復用','');toast('已復用，資料完好，不需重新開通','ok');renderDetail();renderBadges();}
+function renameT(){
+  const t=tenant(CURT);
+  openModal('更名','<div class="fld"><label>新的租戶名稱</label><input id="nv" value="'+t.name+'"></div>'+
+    '<div class="note">這裡改的是平台端的租戶識別名稱；前台招牌名由租戶自己改。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doRename()">儲存</button>');
+}
+function doRename(){const t=tenant(CURT),o=t.name,v=$('#nv').value.trim();
+  if(!v){toast('名稱不可空白','bad');return;}
+  t.name=v;hist(t.id,'更名：'+o+' → '+v,'');closeModal();renderDetail();toast('已更名並寫入紀錄（含新舊值）');}
+function changeSub(){
+  const t=tenant(CURT);
+  openModal('換子網域','<div class="fld"><label>新的子網域</label><input id="sv" value="'+t.sub+'"></div>'+
+    '<div class="msg warn show">舊子網域 <b>'+t.sub+'.平台.com</b> 會保留轉址 '+SUBDOMAIN_HOLD+' 天，期滿才釋出給他人使用。<br>已寄出的信件與預約連結會指向舊網址。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doSub()">確認更換</button>');
+}
+function doSub(){const t=tenant(CURT),o=t.sub,v=$('#sv').value.trim().toLowerCase();
+  if(!v){toast('不可空白','bad');return;}
+  if(TENANTS.some(x=>x.sub===v&&x.id!==t.id)){toast('這個子網域已被使用','bad');return;}
+  t.sub=v;hist(t.id,'換子網域：'+o+' → '+v+'（舊網域保留轉址 '+SUBDOMAIN_HOLD+' 天）','');
+  closeModal();renderDetail();toast('已更換；舊子網域保留轉址 '+SUBDOMAIN_HOLD+' 天');}
+function changeDomain(){
+  const t=tenant(CURT);
+  openModal('自訂網域','<div class="fld"><label>自訂網域（留空＝解綁）</label><input id="dv" value="'+(t.domain||'')+'"></div>'+
+    '<div class="note">綁定要走「自訂網域與白牌」的驗證流程；解綁後回落到子網域。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doDomain()">儲存</button>');
+}
+function doDomain(){const t=tenant(CURT),o=t.domain||'（無）',v=$('#dv').value.trim();
+  t.domain=v;hist(t.id,'自訂網域：'+o+' → '+(v||'（解綁，回落子網域）'),'');
+  closeModal();renderDetail();toast(v?'已送出綁定，待驗證通過':'已解綁，回落到子網域');}
+function transferOwner(){
+  const t=tenant(CURT);
+  openModal('轉移擁有者',
+    '<div class="fld"><label>新擁有者的 Email</label><input id="ov" placeholder="必須是本租戶的既有成員"></div>'+
+    '<div class="note">目前成員：'+t.members.map(m=>m.e).join('、')+'</div>'+
+    '<div class="note spec"><b>規格</b>：新擁有者<b>必須是既有成員</b>；不是的話要先走邀請流程。轉移後不可讓租戶沒有擁有者。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doTransfer()">轉移</button>');
+}
+function doTransfer(){
+  const t=tenant(CURT), v=$('#ov').value.trim().toLowerCase();
+  const m=t.members.find(x=>x.e.toLowerCase()===v);
+  if(!m){toast('擋下：這個 Email 不是本租戶的成員，請先邀請他加入','bad');return;}
+  closeModal();
+  openModal('帳務聯絡人要一併更換嗎？',
+    '<p style="margin-top:0">擁有者將由 <b>'+t.owner.name+'</b> 轉移給 <b>'+m.n+'</b>。</p>'+
+    '<div class="note spec"><b>規格</b>：帳單與發票的聯絡人<b>不預設同步</b>，必須明確詢問。</div>',
+    '<button class="btn plain" onclick="finishTransfer(false)">維持原帳務聯絡人</button>'+
+    '<button class="btn" onclick="finishTransfer(true)">一併更換</button>');
+  window._newOwner=m;
+}
+function finishTransfer(alsoBilling){
+  const t=tenant(CURT), m=window._newOwner, o=t.owner.name;
+  t.members.find(x=>x.e===t.owner.email).r='管理員';
+  m.r='擁有者'; t.owner={name:m.n,email:m.e};
+  hist(t.id,'轉移擁有者：'+o+' → '+m.n+(alsoBilling?'（帳務聯絡人一併更換）':'（帳務聯絡人維持不變）'),'');
+  closeModal();renderDetail();toast('已轉移擁有者','ok');
+}
+
+/* 人工調整 */
+function adj(kind){
+  const t=tenant(CURT);
+  const M={trial:{t:'延長試用',f:'<div class="fld"><label>延長天數</label><input id="av" type="number" value="7"></div>'},
+           discount:{t:'給折扣',f:'<div class="fld"><label>折扣</label><select id="av"><option value="10%">10%</option><option value="20%">20%</option><option value="NT$500">固定 NT$500</option></select></div><div class="fld"><label>期限</label><select id="av2"><option>3 期</option><option>6 期</option><option>到年底</option></select></div>'},
+           waive:{t:'免收一期',f:'<div class="note">下一期金額為零；<b>不影響</b>訂閱狀態與續約日。</div>'},
+           plan:{t:'手動改方案',f:'<div class="fld"><label>新方案</label><select id="av">'+PLANS.filter(p=>p.status==='上架').map(p=>'<option value="'+p.id+'">'+p.name+'（'+money(p.price)+'）</option>').join('')+'</select></div><div class="fld"><label>生效</label><select id="av2"><option>立即（按比例補差額）</option><option>下期</option></select></div>'},
+           invoice:{t:'補開發票／重寄帳單',f:'<div class="note">作廢與重開一律留紀錄，不覆蓋原始紀錄。</div>'}}[kind];
+  openModal(M.t, M.f+'<div class="fld"><label>原因 <span class="req">*</span></label><input id="why" placeholder="每一項人工調整都必須填原因"></div>'+
+    '<div class="note spec"><b>規格</b>：一律寫入平台紀錄（含操作者與前後值），並顯示在此租戶的<b>異動歷程</b>。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doAdj(\''+kind+'\')">送出</button>');
+}
+function doAdj(kind){
+  const t=tenant(CURT), why=$('#why').value.trim();
+  if(!why){toast('必須填寫原因','bad');return;}
+  if(kind==='trial'){
+    if(t.trialExt>=TRIAL_EXT_MAX){toast('擋下：同一家租戶的累計延長次數上限為 '+TRIAL_EXT_MAX+' 次','bad');return;}
+    const n=+$('#av').value||7; t.trialExt++; t.trialEnds=addD(t.trialEnds||now(),n);
+    hist(t.id,'延長試用 '+n+' 天（第 '+t.trialExt+'/'+TRIAL_EXT_MAX+' 次）',why);
+  }
+  else if(kind==='discount'){hist(t.id,'給折扣 '+$('#av').value+'，期限 '+$('#av2').value+'（明列在帳單上）',why);}
+  else if(kind==='waive'){hist(t.id,'免收一期（訂閱狀態與續約日不變）',why);}
+  else if(kind==='plan'){
+    const np=plan($('#av').value), when=$('#av2').value;
+    const over=usagePct(t).filter(u=>u.use>np.limits[u.k]);
+    if(over.length&&np.price<plan(t.plan).price){
+      toast('擋下：降級後會超過新方案上限（'+over.map(o=>o.label).join('、')+'），請先把用量降下來','bad');return;
+    }
+    t.plan=np.id;t.snapPrice=np.price;
+    hist(t.id,'手動改方案 → '+np.name+'（'+when+'）',why);
+  }
+  else hist(t.id,'補開發票／重寄帳單',why);
+  closeModal();renderDetail();toast('已完成，並寫入異動歷程','ok');
+}
+function doRefund(){
+  openModal('發起退款','<div class="fld"><label>金額</label><input id="rfAmt" type="number" value="2490"></div>'+
+    '<div class="fld"><label>類型</label><select id="rfType"><option>整期退款</option><option>部分退款（依比例）</option></select></div>'+
+    '<div class="fld"><label>原因 <span class="req">*</span></label><input id="rfWhy"></div>'+
+    '<div class="note spec"><b>規格</b>：退款<b>不自動改變訂閱狀態</b>；超過 '+money(REFUND_LIMIT)+' 須<b>平台超管</b>核可。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="okRefund()">送出退款</button>');
+}
+function okRefund(){
+  const amt=+$('#rfAmt').value||0, why=$('#rfWhy').value.trim();
+  if(!why){toast('必須填寫原因','bad');return;}
+  if(amt>REFUND_LIMIT&&!can('refundAny')){
+    toast('擋下：'+money(amt)+' 超過 '+money(REFUND_LIMIT)+' 門檻，須平台超管核可','bad');return;
+  }
+  const t=tenant(CURT);
+  hist(t.id,'訂閱退款 '+money(amt)+'（'+$('#rfType').value+'）——訂閱狀態未變更',why);
+  closeModal();renderDetail();
+  toast('已退款 '+money(amt)+'；訂閱狀態沒有自動改變，是否停用要另外決定','ok');
+}
+function overrideFlag(k){
+  if(!need('flagOverride','功能開關覆寫'))return;
+  const lbl={api:'開放 API',theme:'自訂主題',domain:'自訂網域'}[k];
+  openModal('覆寫功能開關：'+lbl,
+    '<div class="fld"><label>設為</label><select id="fv"><option value="1">開啟</option><option value="0">關閉</option></select></div>'+
+    '<div class="fld"><label>原因 <span class="req">*</span></label><input id="fw" placeholder="例：beta 試用 / 客訴補償 / 濫用暫停"></div>'+
+    '<div class="fld"><label>到期日 <span class="req">*</span></label><input id="fu" type="date" value="'+fd(addD(now(),60)).replace(/\//g,'-')+'"></div>'+
+    '<div class="note spec"><b>規格</b>：覆寫<b>不改動方案定義本身</b>，只影響這一家；到期<b>自動回到方案預設</b>，不需人工收回。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doOverride(\''+k+'\')">套用</button>');
+}
+function doOverride(k){
+  const why=$('#fw').value.trim(), until=$('#fu').value;
+  if(!why){toast('必須填寫原因','bad');return;}
+  if(!until){toast('必須設定到期日','bad');return;}
+  const t=tenant(CURT);
+  t.flags[k]={on:$('#fv').value==='1',why,until:new Date(until+'T00:00')};
+  hist(t.id,'功能開關覆寫：'+k+' → '+($('#fv').value==='1'?'開':'關')+'（至 '+until+'）',why);
+  closeModal();renderDetail();toast('已覆寫，到期自動回到方案預設','ok');
+}
+function clearFlag(k){const t=tenant(CURT);delete t.flags[k];hist(t.id,'移除功能開關覆寫：'+k,'');renderDetail();}
+
+/* ═══════════ H 代操 ═══════════ */
+let IMP=null, impTimer=null;
+function startImp(ticketId){
+  if(IMP){toast('擋下：同一時間只能代操一家租戶（目前在 '+tenant(IMP.tid).name+'）','bad');return;}
+  const t=tenant(CURT||(ticketId&&TICKETS.find(x=>x.id===ticketId).tid));
+  openModal('發起代操需要再次驗證',
+    '<div class="msg info show">即使今天已經登入過，<b>發起代操前一律要再通過一次 2FA</b>——不論裝置是否已信任。</div>'+
+    '<div class="fld"><label>驗證碼</label><input id="impCode" inputmode="numeric" maxlength="6" placeholder="123456"></div>'+
+    '<div class="fld"><label>本次代操的原因／關聯工單</label><input id="impWhy" value="'+(ticketId||'')+'" placeholder="選填，工單編號會寫進紀錄"></div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="okImp(\''+t.id+'\')">驗證並進入</button>');
+}
+function okImp(tid){
+  if($('#impCode').value.trim()!==ACC.code){toast('驗證碼不正確，未進入代操','bad');return;}
+  IMP={tid,start:now(),last:Date.now(),ticket:$('#impWhy').value.trim(),unmask:null};
+  closeModal();$('#imp').classList.add('on');
+  $('#impName').textContent=tenant(tid).name;
+  $('#impTicket').innerHTML=IMP.ticket?'關聯：<b>'+IMP.ticket+'</b>':'';
+  log('tenant','代操進入'+(IMP.ticket?'（關聯 '+IMP.ticket+'）':''),tid);
+  tickImp(); impTimer=setInterval(tickImp,1000);
+  CURT=tid;renderDetail();
+  toast('已進入代操——學員聯絡資料預設遮蔽','ok');
+}
+function tickImp(){
+  if(!IMP)return;
+  const left=IMP_TIMEOUT-Math.floor((Date.now()-IMP.last)/1000);
+  if(left<=0){exitImp('逾時');return;}
+  $('#impCd').textContent='閒置逾時倒數 '+Math.floor(left/60)+':'+pad(left%60);
+  $('#impUnmask').innerHTML=IMP.unmask?'<span class="pill wait">遮蔽已解除（單次）</span>':'';
+}
+function exitImp(reason){
+  if(!IMP)return;
+  clearInterval(impTimer);
+  log('tenant','代操退出（原因：'+reason+'）',IMP.tid);
+  const n=tenant(IMP.tid).name; IMP=null;
+  $('#imp').classList.remove('on');
+  toast('已退出 '+n+' 的代操，退出原因：'+reason+'。要再進去必須重新發起一次代操',reason==='逾時'?'bad':'');
+  if(CUR==='detail')renderDetail();
+  if(CUR==='audit')renderAudit();
+}
+function impAct(){ if(IMP)IMP.last=Date.now(); }
+document.addEventListener('click',impAct);
+
+function viewLearners(){
+  if(!IMP){toast('請先進入代操','bad');return;}
+  const mask=v=>IMP.unmask?v:'<span class="masked">••••••</span>';
+  const rows=[['陳曉恩','ORD-20260812-0031','0912-345-118','parent1@example.com'],
+              ['林品睿','ORD-20260812-0032','0918-777-442','parent2@example.com'],
+              ['黃亦寧','ORD-20260813-0044','0955-201-306','parent3@example.com']];
+  openModal('代操中：學員與訂單',
+    '<div class="tw"><table><tr><th>姓名</th><th>訂單編號</th><th>電話</th><th>家長 Email</th></tr>'+
+    rows.map(r=>'<tr><td>'+r[0]+'</td><td style="font-family:monospace;font-size:.82rem">'+r[1]+'</td><td>'+mask(r[2])+'</td><td>'+mask(r[3])+'</td></tr>').join('')+
+    '</table></div>'+
+    '<div class="note spec"><b>規格</b>：<b>姓名與訂單編號可見</b>，讓客服足以定位問題；聯絡資料與付款憑證<b>預設遮蔽</b>。平台是個資的處理方、租戶是主控方，代操的授權範圍是「協助設定」而非無限存取。</div>'+
+    '<h4 class="sh">試試被禁止的動作</h4>'+
+    '<button class="btn tiny plain" onclick="banned(\'匯出學員個資\')">匯出學員名單</button> '+
+    '<button class="btn tiny plain" onclick="banned(\'更改金流收款帳號\')">更改金流收款帳號</button> '+
+    '<button class="btn tiny plain" onclick="banned(\'刪除資料\')">刪除資料</button>',
+    (IMP.unmask?'<span style="font-size:.82rem;color:var(--warn);margin-right:auto">遮蔽已解除（單次有效，關閉後恢復）</span>':'<button class="btn ghost" onclick="askUnmask()">解除遮蔽</button>')+
+    '<button class="btn plain" onclick="restoreMask()">關閉</button>');
+}
+function banned(what){
+  openModal('一律禁止：'+what,
+    '<div class="msg err show">代操期間禁止這個動作，<b>即使平台超管也不開放</b>，需請租戶自己操作。</div>'+
+    '<div class="note spec"><b>規格</b>：代操期間一律禁止——代租戶<b>匯出</b>學員個資、代租戶更改<b>金流收款帳號</b>、代租戶<b>刪除</b>資料。<br>'+
+    '（平台層對「已退租」租戶的整體刪除是另一件事，走保留期與超管二次確認。）</div>',
+    '<button class="btn plain" onclick="viewLearners()">返回</button>');
+}
+function askUnmask(){
+  openModal('解除遮蔽','<div class="fld"><label>原因 <span class="req">*</span></label><input id="umWhy" placeholder="例：核對家長回報的錯誤 Email"></div>'+
+    '<div class="note spec"><b>規格</b>：<b>單次有效</b>，看完即恢復遮蔽；每次解除<b>單獨寫一筆紀錄</b>，與一般代操紀錄分開，供事後稽核。</div>',
+    '<button class="btn plain" onclick="viewLearners()">取消</button><button class="btn" onclick="doUnmask()">解除</button>');
+}
+function doUnmask(){
+  const why=$('#umWhy').value.trim();
+  if(!why){toast('必須填寫原因','bad');return;}
+  IMP.unmask=true;
+  log('tenant','【解除個資遮蔽】單次有效——原因：'+why,IMP.tid);
+  viewLearners();toast('已解除遮蔽（單次有效），並單獨留下一筆紀錄');
+}
+function restoreMask(){ if(IMP)IMP.unmask=null; closeModal(); tickImp(); }
+
+/* ═══════════ 其他頁面 ═══════════ */
+function renderUsage(){
+  const rows=overThreshold();
+  $('#uTbl').innerHTML='<tr><th>租戶</th><th>方案</th><th>項目</th><th>用量 / 上限</th><th>百分比</th><th></th></tr>'+
+    (rows.length?rows.map(({t,u})=>'<tr><td><b>'+t.name+'</b></td><td>'+plan(t.plan).name+'</td><td>'+u.label+'</td>'+
+      '<td>'+u.use+' / '+u.lim+'</td><td style="min-width:140px">'+u.pct+'%<div class="barwrap"><div class="bar '+(u.pct>=100?'over':'hi')+'" style="width:'+Math.min(100,u.pct)+'%"></div></div></td>'+
+      '<td><button class="btn tiny" onclick="openTenant(\''+t.id+'\');DTAB=\'billing\';renderDetail()">談升級</button></td></tr>').join('')
+     :'<tr><td colspan="6" style="color:var(--muted)">目前沒有租戶達到 '+THRESHOLD+'% 門檻</td></tr>');
+}
+function renderLifecycle(){
+  const r=offList();
+  $('#rTbl').innerHTML='<tr><th>租戶</th><th>原因</th><th>停用起</th><th>資料</th><th></th></tr>'+
+    (r.length?r.map(t=>'<tr><td><b>'+t.name+'</b></td>'+
+      '<td>'+(t.status==='retired'?'<span class="pill grey">主動退租</span>':'<span class="pill bad">欠費停用</span>')+'</td>'+
+      '<td>'+(t.retireAt?fd(t.retireAt):'—')+'</td>'+
+      '<td><span class="pill ok">完整保留</span> 不設期限</td>'+
+      '<td><button class="btn tiny ok" onclick="CURT=\''+t.id+'\';reactivate()">一鍵復用</button> '+
+      '<button class="btn tiny plain" onclick="openTenant(\''+t.id+'\')">詳情</button></td></tr>').join('')
+     :'<tr><td colspan="5" style="color:var(--muted)">目前沒有停用中的租戶</td></tr>');
+}
+function renderBilling(){
+  const tr=trialSoon(), du=dunList(), ds=dspList();
+  $('#trialTbl').innerHTML='<tr><th>租戶</th><th>到期</th><th></th></tr>'+
+    (tr.length?tr.map(t=>'<tr><td>'+t.name+'</td><td>'+days(now(),t.trialEnds)+' 天後</td>'+
+      '<td><button class="btn tiny plain" onclick="openTenant(\''+t.id+'\');DTAB=\'billing\';renderDetail()">延長試用</button></td></tr>').join('')
+     :'<tr><td colspan="3" style="color:var(--muted)">沒有 7 天內到期的試用</td></tr>');
+  $('#dunTbl').innerHTML='<tr><th>租戶</th><th>狀態</th><th>可執行的動作</th></tr>'+
+    (du.length?du.map(t=>{const es=effStatus(t);
+      return '<tr><td>'+t.name+(t.graceEnds?'<br><span style="font-size:.75rem;color:var(--muted)">寬限剩 '+days(now(),t.graceEnds)+' 天</span>':'')+'</td>'+
+      '<td><span class="pill '+STC[es]+'">'+ST[es]+'</span></td><td style="white-space:nowrap">'+
+      '<button class="btn tiny plain" onclick="dun(\''+t.id+'\',\'retry\')">重試扣款</button> '+
+      '<button class="btn tiny plain" onclick="dun(\''+t.id+'\',\'mail\')">重寄催繳</button> '+
+      '<button class="btn tiny plain" onclick="dun(\''+t.id+'\',\'grace\')">延長寬限</button> '+
+      '<button class="btn tiny plain" onclick="dun(\''+t.id+'\',\'paid\')">標記已收款</button> '+
+      '<button class="btn tiny danger" onclick="dun(\''+t.id+'\',\'susp\')">立即停用</button></td></tr>';}).join('')
+     :'<tr><td colspan="3" style="color:var(--muted)">沒有催繳中的租戶</td></tr>');
+  $('#dspTbl').innerHTML='<tr><th>租戶</th><th>自動續扣</th><th>訂閱狀態</th><th></th></tr>'+
+    (ds.length?ds.map(t=>'<tr><td>'+t.name+'</td><td><span class="pill wait">已暫停</span></td>'+
+      '<td><span class="pill pur">爭議中</span>（<b>未被停用</b>）</td>'+
+      '<td><button class="btn tiny ok" onclick="dispute(\''+t.id+'\',1)">爭議撤銷 → 回原狀態</button> '+
+      '<button class="btn tiny danger" onclick="dispute(\''+t.id+'\',0)">爭議成立 → 停用</button></td></tr>').join('')
+     :'<tr><td colspan="4" style="color:var(--muted)">沒有爭議中的訂閱</td></tr>');
+}
+function dun(id,k){
+  const t=tenant(id);
+  if(k==='grace'){
+    openModal('延長寬限期','<div class="fld"><label>延長天數</label><input id="gv" type="number" value="7"></div>'+
+      '<div class="fld"><label>原因 <span class="req">*</span></label><input id="gw"></div>'+
+      '<div class="note spec"><b>規格</b>：延長期間狀態<b>維持「催繳中」</b>，不轉停用。</div>',
+      '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doGrace(\''+id+'\')">送出</button>');
+    return;
+  }
+  const M={retry:'手動重試扣款',mail:'重寄催繳信',paid:'手動標記已收款',susp:'立即停用'};
+  if(k==='paid'){t.status='active';toast('已標記收款，狀態轉回「使用中」','ok');}
+  if(k==='susp'){t.status='suspended';toast('已立即停用——只擋使用、不刪資料');}
+  if(k==='retry')toast('已觸發一次扣款重試（原型：結果為失敗）');
+  if(k==='mail')toast('已重寄催繳信（套平台品牌）');
+  hist(id,M[k],'');renderBilling();renderBadges();
+}
+function doGrace(id){
+  const why=$('#gw').value.trim();
+  if(!why){toast('必須填寫原因','bad');return;}
+  const t=tenant(id), n=+$('#gv').value||7;
+  t.graceEnds=addD(t.graceEnds||now(),n);
+  hist(id,'延長寬限期 '+n+' 天（狀態維持催繳中）',why);
+  closeModal();renderBilling();toast('已延長；狀態維持「催繳中」，不轉停用','ok');
+}
+function dispute(id,ok){
+  const t=tenant(id);
+  t.status=ok?'active':'suspended';
+  hist(id,'爭議款結果：'+(ok?'撤銷，回復原狀態並恢復自動續扣':'成立，轉為已停用'),'');
+  renderBilling();renderBadges();toast(ok?'爭議撤銷，已回復':'爭議成立，已停用');
+}
+
+function renderPlans(){
+  const q=($('#plQ')?$('#plQ').value:'').trim(), st=$('#plS')?$('#plS').value:'上架';
+  const rows=PLANS.filter(p=>(!st||p.status===st)&&(!q||p.name.includes(q)));
+  $('#planTbl').innerHTML='<tr><th>方案</th><th>價格</th><th>用量上限</th><th>功能</th><th>狀態</th><th>使用中租戶</th><th>操作</th></tr>'+
+    (rows.length?rows.map(p=>{
+      const n=TENANTS.filter(t=>t.plan===p.id).length, off=p.status==='停售';
+      const st2=off?' style="color:var(--muted);background:repeating-linear-gradient(135deg,transparent,transparent 9px,rgba(0,0,0,.018) 9px,rgba(0,0,0,.018) 18px)"':'';
+      return '<tr'+st2+'><td><b>'+p.name+'</b>'+(off?' <span class="pill grey">停售</span>':'')+'</td><td>'+money(p.price)+' / '+p.cycle+'</td>'+
+      '<td style="font-size:.82rem">老師 '+p.limits.teachers+'　預約 '+p.limits.bookings+'　場地 '+p.limits.rooms+'</td>'+
+      '<td style="font-size:.82rem">'+(Object.entries(p.feats).filter(([,v])=>v).map(([k])=>({api:'API',theme:'自訂主題',domain:'自訂網域'})[k]).join('、')||'—')+'</td>'+
+      '<td><span class="pill '+(off?'grey':'ok')+'">'+p.status+'</span></td><td>'+n+' 家</td>'+
+      '<td style="white-space:nowrap;font-size:1.05rem">'+
+        '<span class="ico" title="編輯" aria-label="編輯方案" onclick="editPlan(\''+p.id+'\')">✏️</span>'+
+        (off?'<span class="ico" title="重新上架" aria-label="重新上架" onclick="unretirePlan(\''+p.id+'\')">↩️</span>'
+            :'<span class="ico" title="停售" aria-label="停售方案" onclick="retirePlan(\''+p.id+'\')">🚫</span>')+
+        '<span class="ico off" title="方案不能刪除，只能停售" aria-label="不能刪除" onclick="noDelete()">🗑️</span>'+
+      '</td></tr>';
+    }).join('')
+    :'<tr><td colspan="7" style="color:var(--muted)">沒有符合條件的方案</td></tr>');
+}
+function noDelete(){
+  openModal('方案不能刪除，只能停售',
+    '<div class="msg err show">畫面上沒有刪除方案的功能，只有「停售」。</div>'+
+    '<p style="margin-top:0"><b>為什麼不能刪</b></p>'+
+    '<ul style="padding-left:1.1rem;font-size:.9rem;margin-top:4px">'+
+      '<li>正在用這個方案的租戶，每次<b>計費、續約、判斷用量上限、判斷功能開關</b>都要回頭讀方案定義</li>'+
+      '<li>方案一旦被刪，這些訂閱就沒有依據可讀——帳單算不出來、上限判斷不了</li>'+
+    '</ul>'+
+    '<p><b>停售之後會怎樣</b></p>'+
+    '<ul style="padding-left:1.1rem;font-size:.9rem;margin-top:4px">'+
+      '<li>既有租戶<b>完全不受影響</b>，照原方案繼續計費與續約</li>'+
+      '<li>開通新租戶與改方案的可選清單<b>不再出現它</b></li>'+
+      '<li>清單上還看得到，標「停售」並以不同顏色區隔</li>'+
+      '<li>可以反悔——隨時重新上架</li>'+
+    '</ul>');
+}
+function editPlan(id){
+  if(!need('plans','方案管理'))return;
+  const p=id?plan(id):{name:'',price:0,cycle:'月',limits:{teachers:5,bookings:300,rooms:3},feats:{api:false,theme:false,domain:false},status:'上架'};
+  openModal(id?'編輯方案：'+p.name:'新增方案',
+    '<div class="grid2"><div class="fld"><label>名稱</label><input id="pn" value="'+p.name+'"></div>'+
+    '<div class="fld"><label>價格</label><input id="pp" type="number" value="'+p.price+'"></div></div>'+
+    '<div class="grid3"><div class="fld"><label>老師數上限</label><input id="l1" type="number" value="'+p.limits.teachers+'"></div>'+
+    '<div class="fld"><label>月預約量上限</label><input id="l2" type="number" value="'+p.limits.bookings+'"></div>'+
+    '<div class="fld"><label>場地數上限</label><input id="l3" type="number" value="'+p.limits.rooms+'"></div></div>'+
+    '<div class="note spec"><b>規格</b>：<b>改價不回溯</b>——只影響之後的新訂閱與續約，既有訂閱沿用成立時的價格快照。'+
+    '調低用量上限時會先列出已超過的租戶，需逐一處理，不可直接套用。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="savePlan(\''+(id||'')+'\')">儲存</button>');
+}
+function savePlan(id){
+  const nm=$('#pn').value.trim(), pr=+$('#pp').value||0;
+  const lim={teachers:+$('#l1').value,bookings:+$('#l2').value,rooms:+$('#l3').value};
+  if(!nm){toast('名稱必填','bad');return;}
+  if(id){
+    const p=plan(id);
+    const bad=TENANTS.filter(t=>t.plan===id&&['active','trial','dunning'].includes(effStatus(t)))
+      .flatMap(t=>['teachers','bookings','rooms'].filter(k=>t.usage[k]>lim[k]).map(k=>({t,k})));
+    if(bad.length){
+      openModal('擋下：有租戶已超過新上限',
+        '<div class="msg err show">調低用量上限前，必須先處理下列租戶。</div>'+
+        '<div class="tw"><table><tr><th>租戶</th><th>項目</th><th>目前用量</th><th>新上限</th></tr>'+
+        bad.map(b=>'<tr><td>'+b.t.name+'</td><td>'+{teachers:'老師數',bookings:'月預約量',rooms:'場地數'}[b.k]+
+          '</td><td>'+b.t.usage[b.k]+'</td><td>'+lim[b.k]+'</td></tr>').join('')+'</table></div>'+
+        '<div class="note spec"><b>規格</b>：需逐一處理或給寬限，不可直接套用。</div>',
+        '<button class="btn plain" onclick="closeModal()">知道了</button>');
+      return;
+    }
+    const oldP=p.price; p.name=nm;p.price=pr;p.limits=lim;
+    log('platform','編輯方案「'+nm+'」：價格 '+money(oldP)+' → '+money(pr)+'（既有訂閱不回溯）');
+    closeModal();renderPlans();
+    toast(oldP!==pr?'已改價；既有訂閱沿用成立時的價格快照，只有新訂閱與續約吃新價':'已儲存','ok');
+  }else{
+    PLANS.push({id:'p'+(PLANS.length+1),name:nm,price:pr,cycle:'月',limits:lim,feats:{api:false,theme:false,domain:false},status:'上架'});
+    log('platform','新增方案「'+nm+'」');closeModal();renderPlans();toast('已新增方案','ok');
+  }
+}
+function retirePlan(id){if(!need('plans','方案管理'))return;plan(id).status='停售';
+  log('platform','停售方案「'+plan(id).name+'」');renderPlans();toast('已停售——既有訂閱照舊，開通與改方案的可選清單不再出現');}
+function unretirePlan(id){if(!need('plans','方案管理'))return;plan(id).status='上架';renderPlans();toast('已重新上架');}
+
+let mRange='m0';
+$$('#mTabs button').forEach(b=>b.onclick=()=>{$$('#mTabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');mRange=b.dataset.v;renderMetrics();});
+function renderMetrics(){
+  const live=TENANTS.filter(t=>['active','dunning','disputed'].includes(effStatus(t)));
+  const mrr=live.reduce((a,t)=>a+t.snapPrice,0);
+  const mult={m0:1,m1:.94,q:2.87,y:10.6}[mRange];
+  const prevMult={m0:.94,m1:.9,q:2.6,y:9.1}[mRange];
+  const cur=Math.round(mrr*mult), prev=Math.round(mrr*prevMult);
+  const dl=(a,b)=>{const d=Math.round((a-b)/b*1000)/10;return '<div class="dl '+(d>=0?'up':'dn')+'">'+(d>=0?'▲':'▼')+' '+Math.abs(d)+'%　vs 前一期</div>';};
+  const trial=TENANTS.filter(t=>effStatus(t)==='trial').length;
+  const churn=Math.round(TENANTS.filter(t=>effStatus(t)==='retired').length/TENANTS.length*1000)/10;
+  $('#mKpi').innerHTML=
+    '<div class="kpi"><div class="lb">訂閱收入（'+{m0:'本月',m1:'上月',q:'本季',y:'今年'}[mRange]+'）</div><div class="vl">'+money(cur)+'</div>'+dl(cur,prev)+'</div>'+
+    '<div class="kpi"><div class="lb">MRR</div><div class="vl">'+money(mrr)+'</div>'+dl(mrr,Math.round(mrr*.94))+'</div>'+
+    '<div class="kpi"><div class="lb">活躍租戶 / 試用中</div><div class="vl">'+live.length+' <small>/ '+trial+'</small></div>'+dl(live.length,live.length-1)+'</div>'+
+    '<div class="kpi"><div class="lb">流失率</div><div class="vl">'+churn+' <small>%</small></div>'+dl(churn,churn+.8)+'</div>';
+  const vals=[];const base=mrr*.55;
+  for(let i=11;i>=0;i--){vals.push({v:Math.round(base*(1+(11-i)*0.055)+Math.sin(i)*400),
+    d:new Date(now().getFullYear(),now().getMonth()-i,1)});}
+  const max=Math.max(...vals.map(x=>x.v));
+  $('#mBars').innerHTML=vals.map((x,i)=>'<div class="col'+(i===11?' cur':'')+'" style="height:'+Math.round(x.v/max*100)+'%" title="'+money(x.v)+'">'+
+    '<em>'+Math.round(x.v/1000)+'k</em><span>'+(x.d.getMonth()+1)+'月</span></div>').join('');
+}
+function exportMetrics(){
+  log('platform','匯出經營數字（'+{m0:'本月',m1:'上月',q:'本季',y:'今年'}[mRange]+'，含逐月明細）');
+  openModal('匯出完成','<p style="margin-top:0">已匯出目前期間的彙總與逐月明細。</p>'+
+    '<div class="note spec"><b>規格</b>：匯出檔案<b>同樣不含租戶的課程營收</b>；此動作寫入平台紀錄。</div>');
+}
+
+const SRCC={'租戶後台提交':'blue','Email 轉入':'grey','平台代開':'pur','系統自動':'wait'};
+function renderTickets(){
+  const q=($('#tkQ')?$('#tkQ').value:'').trim().toLowerCase();
+  const st=$('#tkS2')?$('#tkS2').value:'', src=$('#tkSrc')?$('#tkSrc').value:'', qk=$('#tkQuick')?$('#tkQuick').value:'all';
+  let rows=TICKETS.filter(t=>{
+    if(st&&t.st!==st)return false;
+    if(src&&t.src!==src)return false;
+    if(q&&!(t.id+' '+t.sub).toLowerCase().includes(q))return false;
+    return true;
+  });
+  if(qk==='open')rows=rows.filter(t=>t.st!=='結案');
+  if(qk==='late')rows=rows.filter(t=>lateTickets().includes(t));
+  $('#tkTbl').innerHTML='<tr><th>編號</th><th>來源</th><th>租戶</th><th>主旨</th><th>狀態</th><th>回覆時限</th><th>操作</th></tr>'+
+    (rows.length?rows.map(t=>{const late=t.st!=='結案'&&(now()-t.last)/H>t.sla;
+      return '<tr><td style="font-family:ui-monospace,monospace">'+t.id+'</td>'+
+      '<td><span class="pill '+SRCC[t.src]+'">'+t.src+'</span>'+(t.by?'<br><span style="font-size:.72rem;color:var(--muted)">代開者：'+t.by+'</span>':'')+'</td>'+
+      '<td>'+tenant(t.tid).name+'</td><td>'+t.sub+'</td>'+
+      '<td>'+t.st+'</td><td>'+t.sla+' 小時'+(late?' <span class="pill bad">逾時</span>':'')+'</td>'+
+      '<td style="white-space:nowrap"><button class="btn tiny plain" onclick="replyTk(\''+t.id+'\')">回覆</button> '+
+      '<button class="btn tiny plain" onclick="CURT=\''+t.tid+'\';startImp(\''+t.id+'\')">進代操</button></td></tr>';}).join('')
+     :'<tr><td colspan="7" style="color:var(--muted)">沒有符合的工單</td></tr>');
+}
+function replyTk(id){
+  const t=TICKETS.find(x=>x.id===id);
+  openModal('回覆工單 '+id,'<div class="fld"><label>回覆內容</label><textarea id="tkR" style="min-height:70px"></textarea></div>'+
+    '<div class="fld"><label>內部備註（租戶看不到）</label><input id="tkN"></div>'+
+    '<div class="fld"><label>狀態</label><select id="tkS"><option>處理中</option><option>待租戶回覆</option><option>結案</option></select></div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doReply(\''+id+'\')">送出</button>');
+}
+function doReply(id){
+  const t=TICKETS.find(x=>x.id===id);t.st=$('#tkS').value;t.last=now();
+  log('tenant','工單 '+id+' 回覆並轉為「'+t.st+'」',t.tid);
+  closeModal();renderTickets();renderBadges();toast('已回覆');
+}
+
+function audienceCount(){
+  const to=$('#anTo').value, sub=$('#anSub').value;
+  if(to==='all')return TENANTS.length;
+  if(to==='plan')return TENANTS.filter(t=>t.plan===sub).length;
+  if(to==='status')return TENANTS.filter(t=>effStatus(t)===sub).length;
+  return 1;
+}
+function previewAudience(){
+  const to=$('#anTo').value, w=$('#anSubWrap');
+  if(to==='plan'){w.style.display='';$('#anSub').innerHTML=PLANS.map(p=>'<option value="'+p.id+'">'+p.name+'</option>').join('');}
+  else if(to==='status'){w.style.display='';$('#anSub').innerHTML=Object.entries(ST).map(([k,v])=>'<option value="'+k+'">'+v+'</option>').join('');}
+  else if(to==='pick'){w.style.display='';$('#anSub').innerHTML=TENANTS.map(t=>'<option value="'+t.id+'">'+t.name+'</option>').join('');}
+  else w.style.display='none';
+  $('#anPreview').innerHTML='預計送達 <b>'+audienceCount()+'</b> 家租戶。'+
+    '<br><span style="font-size:.8rem">公告只走站內，<b>不寄信</b>；緊急等級強制顯示直到已讀。</span>';
+}
+function publishAnnounce(){
+  const title=$('#anTitle').value.trim();
+  if(!title){toast('請填標題','bad');return;}
+  const lv=$('#anLv').value, cnt=audienceCount();
+  const toLabel={all:'全體租戶',plan:'依方案',status:'依訂閱狀態',pick:'指定租戶'}[$('#anTo').value];
+  ANN.unshift({id:'a'+(ANN.length+1),title,to:toLabel,lv,from:now(),to2:$('#anTo2').value?new Date($('#anTo2').value+'T00:00'):addD(now(),14),cnt,read:0});
+  log('platform','發布公告「'+title+'」（'+toLabel+'，'+cnt+' 家，等級：'+{normal:'一般',important:'重要',urgent:'緊急'}[lv]+'）');
+  $('#anTitle').value='';$('#anBody').value='';
+  renderAnnounce();toast('已發布給 '+cnt+' 家租戶'+(lv==='urgent'?'（緊急：不可關閉，強制顯示直到已讀）':''),'ok');
+}
+function clearAnnFilter(){['anQ','anF','anD1','anD2'].forEach(i=>$('#'+i).value='');renderAnnounce();}
+function renderAnnounce(){
+  previewAudience();
+  if(!$('#anFrom').value){$('#anFrom').value=fd(now()).replace(/\//g,'-');$('#anTo2').value=fd(addD(now(),14)).replace(/\//g,'-');}
+  const q=($('#anQ')?$('#anQ').value:'').trim(), lv=$('#anF')?$('#anF').value:'';
+  const d1=$('#anD1')&&$('#anD1').value?new Date($('#anD1').value+'T00:00'):null;
+  const d2=$('#anD2')&&$('#anD2').value?new Date($('#anD2').value+'T23:59'):null;
+  const rows=ANN.filter(a=>{
+    if(q&&!a.title.includes(q))return false;
+    if(lv&&a.lv!==lv)return false;
+    if(d1&&a.to2<d1)return false;      // 顯示期間與查詢區間需重疊
+    if(d2&&a.from>d2)return false;
+    return true;
+  });
+  $('#anTbl').innerHTML='<tr><th>標題</th><th>對象</th><th>等級</th><th>期間</th><th>已讀率</th><th>操作</th></tr>'+
+    (rows.length?rows.map(a=>{const down=now()>a.to2;
+      return '<tr><td>'+a.title+(down?' <span class="pill grey">已下架</span>':'')+'</td><td>'+a.to+'（'+a.cnt+' 家）</td>'+
+      '<td>'+{normal:'<span class="pill grey">一般</span>',important:'<span class="pill wait">重要</span>',
+              urgent:'<span class="pill bad">緊急・不可關閉</span>'}[a.lv]+'</td>'+
+      '<td style="font-size:.82rem">'+fd(a.from)+' – '+fd(a.to2)+'</td>'+
+      '<td>'+Math.round((a.read===0?0:(a.read||Math.floor(a.cnt*0.6)))/a.cnt*100)+'%</td>'+
+      '<td style="white-space:nowrap;font-size:1.05rem">'+
+        '<span class="ico" title="編輯" aria-label="編輯公告" onclick="editAnn(\''+a.id+'\')">✏️</span>'+
+        '<span class="ico" title="刪除" aria-label="刪除公告" onclick="delAnn(\''+a.id+'\')">🗑️</span>'+
+        (down?'':'<span class="ico" title="提前下架" aria-label="提前下架" onclick="takeDown(\''+a.id+'\')">⬇️</span>')+
+      '</td></tr>';}).join('')
+     :'<tr><td colspan="6" style="color:var(--muted)">沒有符合條件的公告</td></tr>');
+}
+function editAnn(id){
+  const a=ANN.find(x=>x.id===id);
+  openModal('編輯公告',
+    '<div class="fld"><label>標題</label><input id="eaT" value="'+a.title+'"></div>'+
+    '<div class="fld"><label>內文</label><textarea id="eaB" style="min-height:70px">'+(a.body||'（原型：內文示意）')+'</textarea></div>'+
+    '<div class="fld"><label>等級</label><select id="eaL">'+
+      [['normal','一般'],['important','重要'],['urgent','緊急（不可關閉）']].map(x=>'<option value="'+x[0]+'"'+(a.lv===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>'+
+    '<div class="grid2"><div class="fld"><label>開始</label><input id="eaF" type="date" value="'+fd(a.from).replace(/\//g,'-')+'"></div>'+
+    '<div class="fld"><label>結束</label><input id="eaE" type="date" value="'+fd(a.to2).replace(/\//g,'-')+'"></div></div>'+
+    '<div class="note spec"><b>規格</b>：改標題、等級、期間<b>不重置已讀</b>；<b>改內文視為新內容，已讀歸零並重新推播</b>。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="saveAnn(\''+id+'\')">儲存</button>');
+}
+function saveAnn(id){
+  const a=ANN.find(x=>x.id===id);
+  const nb=$('#eaB').value, changed=(a.body||'（原型：內文示意）')!==nb;
+  a.title=$('#eaT').value.trim(); a.lv=$('#eaL').value; a.body=nb;
+  if($('#eaF').value)a.from=new Date($('#eaF').value+'T00:00');
+  if($('#eaE').value)a.to2=new Date($('#eaE').value+'T00:00');
+  if(changed)a.read=0;
+  log('platform','編輯公告「'+a.title+'」'+(changed?'（內文變更 → 已讀歸零並重新推播）':'（未動內文，已讀保留）'));
+  closeModal();renderAnnounce();
+  toast(changed?'已儲存；內文有變更，已讀歸零並重新推播':'已儲存；未動內文，已讀狀態保留','ok');
+}
+function delAnn(id){
+  const a=ANN.find(x=>x.id===id);
+  openModal('刪除公告',
+    '<div class="msg err show">刪除後租戶端<b>立即消失</b>，已讀率也一併移除。</div>'+
+    '<p style="margin-top:0">確定要刪除「<b>'+a.title+'</b>」嗎？</p>'+
+    '<div class="note spec"><b>規格</b>：刪除與「提前下架」不同——<b>下架</b>保留紀錄與已讀率、只是不再顯示；<b>刪除</b>則整則移除。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn danger" onclick="doDelAnn(\''+id+'\')">刪除</button>');
+}
+function doDelAnn(id){
+  const a=ANN.find(x=>x.id===id);
+  ANN=ANN.filter(x=>x.id!==id);
+  log('platform','刪除公告「'+a.title+'」');
+  closeModal();renderAnnounce();toast('已刪除，租戶端立即消失','ok');
+}
+function takeDown(id){const a=ANN.find(x=>x.id===id);a.to2=addD(now(),-1);
+  log('platform','提前下架公告「'+a.title+'」');renderAnnounce();toast('已下架，動作留紀錄');}
+
+function renderOps(){
+  $('#statusComp').innerHTML=['前台','後台','寄信','金流'].map((c,i)=>
+    '<div class="kpi"><div class="lb">'+c+'</div><div class="vl" style="font-size:1rem;color:'+(i===2?'var(--warn)':'var(--ok)')+'">'+(i===2?'部分異常':'正常')+'</div></div>').join('');
+  $('#incTbl').innerHTML='<tr><th>標題</th><th>影響範圍</th><th>開始</th><th>狀態</th><th>更新</th></tr>'+
+    INC.map(x=>'<tr><td>'+x.t+'</td><td>'+x.scope+'</td><td>'+fd(x.from)+'</td>'+
+      '<td>'+(x.status==='已解決'?'<span class="pill ok">已解決</span>':'<span class="pill wait">處理中</span>')+'</td>'+
+      '<td style="font-size:.8rem;color:var(--muted)">'+x.upd.join('<br>')+'</td></tr>').join('');
+  const ov=TENANTS.flatMap(t=>Object.entries(t.flags).map(([k,v])=>({t,k,v})));
+  $('#ovTbl').innerHTML='<tr><th>租戶</th><th>功能</th><th>覆寫為</th><th>原因</th><th>到期</th><th>狀態</th></tr>'+
+    (ov.length?ov.map(o=>{const exp=now()>o.v.until;
+      return '<tr><td>'+o.t.name+'</td><td>'+{api:'開放 API',theme:'自訂主題',domain:'自訂網域'}[o.k]+'</td>'+
+      '<td>'+(o.v.on?'開啟':'關閉')+'</td><td style="font-size:.82rem">'+o.v.why+'</td><td>'+fd(o.v.until)+'</td>'+
+      '<td>'+(exp?'<span class="pill grey">已到期，自動回到方案預設</span>':'<span class="pill pur">生效中</span>')+'</td></tr>';}).join('')
+     :'<tr><td colspan="6" style="color:var(--muted)">目前沒有覆寫</td></tr>');
+  const NK={iso:'隔離違規告警',trial:'試用到期',dun:'扣款失敗／寬限',usage:'用量達門檻',dispute:'爭議款',ticket:'工單'};
+  $('#ntTbl').innerHTML='<tr><th>時間</th><th>事件</th></tr>'+
+    NOTIF.filter(n=>NOTIF_PREF[n.k]).map(n=>'<tr><td style="white-space:nowrap">'+fd(n.at)+'</td><td>'+
+      (n.k==='iso'?'<span class="pill bad">安全</span> ':'')+n.t+'</td></tr>').join('');
+  $('#ntPref').innerHTML='<tr><th>事件</th><th>接收</th></tr>'+
+    Object.entries(NK).map(([k,v])=>'<tr><td>'+v+(k==='iso'?' <span class="pill bad">不可關閉</span>':'')+'</td>'+
+      '<td><label class="sw"><input type="checkbox" '+(NOTIF_PREF[k]?'checked':'')+(k==='iso'?' disabled':'')+
+      ' onchange="NOTIF_PREF[\''+k+'\']=this.checked;renderOps()"><i></i></label></td></tr>').join('');
+}
+function newIncident(){
+  if(!need('incident','狀態頁與事故發布'))return;
+  openModal('發布事故','<div class="fld"><label>標題</label><input id="icT"></div>'+
+    '<div class="fld"><label>影響範圍</label><select id="icS"><option>前台</option><option>後台</option><option>通知信寄送</option><option>金流</option></select></div>'+
+    '<div class="fld"><label>目前處置</label><input id="icU"></div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doIncident()">發布</button>');
+}
+function doIncident(){
+  const t=$('#icT').value.trim();if(!t){toast('請填標題','bad');return;}
+  INC.unshift({id:'i'+(INC.length+1),t,scope:$('#icS').value,from:now(),status:'處理中',upd:[$('#icU').value||'已開始調查']});
+  log('platform','發布事故「'+t+'」');closeModal();renderOps();toast('已發布至狀態頁（對租戶公開，不需登入）','ok');
+}
+function newMaint(){
+  if(!need('incident','狀態頁與事故發布'))return;
+  toast('預定維護會提前公告時間與影響範圍（承「可用性與備援」的維護時間政策）');
+}
+function renderTemplates(){
+  $('#tplTbl').innerHTML='<tr><th>範本</th><th>版本</th><th>採用租戶</th><th></th></tr>'+
+    ['才藝','運動健身','美妝美容','音樂','語言'].map(x=>{
+      const n=TENANTS.filter(t=>t.tpl===x).length;
+      return '<tr><td>'+x+'</td><td>v'+(x==='才藝'?'3':'1')+'</td><td>'+n+' 家</td>'+
+      '<td><button class="btn tiny plain" onclick="toast(\'改預設不會回頭改動已開通的租戶——是複製一份的概念\')">編輯預設</button></td></tr>';}).join('');
+}
+let auView='all';
+$$('#auTabs button').forEach(b=>b.onclick=()=>{$$('#auTabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');auView=b.dataset.v;renderAudit();});
+function renderAudit(){
+  const rows=LOG.filter(l=>auView==='all'||l.scope===auView);
+  $('#auTbl').innerHTML='<tr><th>時間</th><th>層級</th><th>租戶</th><th>操作者</th><th>動作</th></tr>'+
+    rows.map(l=>'<tr><td style="white-space:nowrap">'+fdt(l.at)+'</td>'+
+      '<td>'+(l.scope==='platform'?'<span class="pill blue">平台層</span>':'<span class="pill pur">有租戶歸屬</span>')+'</td>'+
+      '<td>'+(l.tid&&tenant(l.tid)?tenant(l.tid).name:'—')+'</td><td>'+l.actor+'</td><td>'+l.what+'</td></tr>').join('');
+}
+function renderMe(){
+  $('#myCodes').innerHTML=BACKUP.map(b=>'<span class="'+(b.used?'used':'')+'">'+b.code+'</span>').join('');
+  const left=BACKUP.filter(b=>!b.used).length;
+  $('#codeLeft').innerHTML='尚有 <b>'+left+'</b> 組可用'+(left<3?'　<span class="pill wait">低於 3 組，建議重新產生</span>':'');
+  $('#pmTbl').innerHTML='<tr><th>姓名</th><th>Email</th><th>角色</th><th>2FA</th><th>最後登入</th></tr>'+
+    PM.map(m=>'<tr><td>'+m.n+'</td><td style="font-size:.82rem">'+m.e+'</td><td>'+CAP[m.r]+'</td>'+
+      '<td>'+(m.tfa?'<span class="pill ok">已綁定</span>':'<span class="pill wait">未綁定</span>')+'</td>'+
+      '<td>'+(m.last?fd(m.last):'<span class="pill grey">邀請中</span>')+'</td></tr>').join('');
+}
+function invitePm(){
+  if(!need('members','平台成員管理'))return;
+  openModal('邀請平台成員','<div class="fld"><label>Email</label><input id="pmE"></div>'+
+    '<div class="fld"><label>角色</label><select id="pmR"><option value="op">平台營運者</option><option value="super">平台超管</option></select></div>'+
+    '<div class="note spec"><b>規格</b>：寄出平台自己的邀請信（<b>不套任何租戶品牌</b>）；接受後<b>立刻</b>要求綁定 2FA，未綁定前進不了後台。'+
+    '平台成員<b>不會出現在任何一家租戶的成員列表</b>裡。</div>',
+    '<button class="btn plain" onclick="closeModal()">取消</button><button class="btn" onclick="doInvitePm()">寄出邀請</button>');
+}
+function doInvitePm(){
+  const e=$('#pmE').value.trim();if(!e){toast('請填 Email','bad');return;}
+  if(PM.some(m=>m.e===e)){toast('擋下：這個 Email 已經是平台成員或已有待接受的邀請','bad');return;}
+  PM.push({n:'（待接受）',e,r:$('#pmR').value,last:null,tfa:false,invited:true});
+  log('platform','邀請平台成員 '+e+'（'+CAP[$('#pmR').value]+'）');
+  closeModal();renderMe();toast('已寄出邀請；接受後會立刻要求綁定 2FA','ok');
+}
+
+/* ═══════════ 測試面板 ═══════════ */
+function setClock(d){CLOCK=d*D;toast(d?'時間已快轉 '+d+' 天（現在：'+fd(now())+'）':'已回到真實時間');go(CUR);renderBadges();}
+function resetAll(){
+  CLOCK=0;$('#tpClock').value='0';THRESHOLD=80;$('#thSel')&&($('#thSel').value='80');
+  IMP_TIMEOUT=1800;$('#tpImp').value='1800';REFUND_LIMIT=3000;$('#tpRf').value='3000';
+  ROLE='super';$('#tpRole').value='super';
+  if(IMP){clearInterval(impTimer);IMP=null;$('#imp').classList.remove('on');}
+  seed();setRole('super');go('tenants');toast('原型資料已重置');
+}
+
+/* ═══════════ 啟動 ═══════════ */
+seed();
+$('#tbRole').textContent=CAP[ROLE];
+showAuth('vLogin');
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+$('#liEmail').addEventListener('keydown',e=>{if(e.key==='Enter')$('#liPw').focus();});
+$('#liPw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$('#tfCode').addEventListener('keydown',e=>{if(e.key==='Enter')doTfa();});
+</script>
+</body>
+</html>

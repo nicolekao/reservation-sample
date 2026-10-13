@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>租戶老師後台 · 可測試原型</title>
+<style>
+  :root{
+    --primary:#e8734a; --primary-ink:#fff; --accent:#2ba58c;
+    --bg:#f7f5f2; --card:#fff; --line:#e8e1d9; --line2:#f2ede7;
+    --ink:#33302c; --muted:#8a8177; --deep:#3c4043;
+    --ok:#0a7d3a; --okbg:#e3f6ea; --warn:#b26a00; --warnbg:#fff4e2;
+    --bad:#b3261e; --badbg:#fdecea; --off:#c9c4bd;
+    --radius:12px; --shadow:0 1px 2px rgba(80,60,30,.05),0 2px 10px rgba(80,60,30,.06);
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.65 "Noto Sans TC","PingFang TC",Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .btn{display:inline-block;border:none;cursor:pointer;text-decoration:none;text-align:center;
+    background:var(--primary);color:var(--primary-ink);font-weight:700;padding:9px 18px;border-radius:10px;}
+  .btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed;}
+  .btn.ghost{background:transparent;color:var(--primary);border:1.5px solid var(--primary);}
+  .btn.plain{background:var(--line2);color:var(--deep);}
+  .btn.small{padding:5px 12px;font-size:.85rem;border-radius:8px;}
+  .btn.tiny{padding:3px 9px;font-size:.76rem;border-radius:7px;}
+  .btn.danger{background:var(--bad);}
+  a.lnk{color:var(--primary);cursor:pointer;text-decoration:underline;}
+
+  /* ===== 登入／認證 ===== */
+  .authwrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:linear-gradient(160deg,#fbf7f3 0%,#f3ece4 100%);}
+  .authcard{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 30px rgba(90,60,30,.10);
+    width:100%;max-width:430px;padding:30px 30px 26px;}
+  .authcard .lg{width:46px;height:46px;border-radius:13px;background:var(--primary);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:14px;}
+  .authcard h1{font-size:1.22rem;margin:0 0 4px;}
+  .authcard p.sub{color:var(--muted);font-size:.85rem;margin:0 0 20px;}
+  .fld{margin-bottom:14px;}
+  .fld label{display:block;font-size:.8rem;font-weight:700;margin-bottom:5px;}
+  .fld label .req{color:var(--bad);}
+  .fld input,.fld select,.fld textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);
+    border-radius:10px;background:#fff;}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--primary);}
+  .fld .hint{font-size:.75rem;color:var(--muted);margin-top:4px;}
+  .msg{border-radius:10px;padding:10px 12px;font-size:.84rem;margin-bottom:14px;display:none;}
+  .msg.show{display:block;}
+  .msg.err{background:var(--badbg);color:var(--bad);border:1px solid #f3c9c4;}
+  .msg.info{background:#eaf3fb;color:#1c5b8f;border:1px solid #cfe2f2;}
+  .msg.ok{background:var(--okbg);color:var(--ok);border:1px solid #c3e8d1;}
+  .authfoot{margin-top:16px;font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .demo{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);font-size:.76rem;color:var(--muted);}
+  .demo code{background:var(--line2);border-radius:5px;padding:1px 6px;color:var(--deep);}
+
+  /* ===== 主框架 ===== */
+  #app{display:none;}
+  .topbar{position:sticky;top:0;z-index:30;background:var(--card);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;padding:10px 20px;}
+  .topbar .brand{display:flex;align-items:center;gap:9px;font-weight:800;}
+  .topbar .brand .lg{width:32px;height:32px;border-radius:9px;background:var(--primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:.95rem;}
+  .topbar .brand small{display:block;font-size:.7rem;color:var(--muted);font-weight:400;margin-top:-3px;}
+  .topbar .sp{margin-left:auto;}
+  .topbar .tz{font-size:.75rem;color:var(--muted);white-space:nowrap;}
+  .topbar .me{display:flex;align-items:center;gap:8px;font-size:.85rem;cursor:pointer;}
+  .topbar .me .av{width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;}
+  .phase{background:var(--warnbg);border-bottom:1px solid #f0e0c4;padding:8px 20px;font-size:.8rem;color:#7a5410;}
+  .phase b{color:#5d3f0a;}
+
+  .shell{display:flex;align-items:flex-start;}
+  .side{flex:0 0 218px;background:var(--card);border-right:1px solid var(--line);min-height:calc(100vh - 96px);padding:14px 12px;}
+  .side .grp{font-size:.68rem;color:var(--muted);letter-spacing:1px;padding:10px 10px 4px;}
+  .side a{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:9px;text-decoration:none;
+    color:var(--ink);font-size:.92rem;border-left:3px solid transparent;cursor:pointer;}
+  .side a:hover{background:var(--bg);}
+  .side a.on{background:var(--bg);color:var(--primary);font-weight:700;border-left-color:var(--primary);}
+  .side a .ic{width:20px;text-align:center;}
+  .side a .n{margin-left:auto;font-size:.68rem;background:var(--primary);color:#fff;border-radius:99px;padding:1px 7px;font-weight:700;}
+  .main{flex:1;min-width:0;padding:20px 24px 90px;}
+  @media(max-width:880px){.shell{display:block}.side{min-height:0;border-right:none;border-bottom:1px solid var(--line);
+    display:flex;gap:4px;overflow-x:auto;padding:10px}.side .grp{display:none}.side a{white-space:nowrap;border-left:none;border-bottom:3px solid transparent}
+    .side a.on{border-bottom-color:var(--primary)}.main{padding:16px 14px 90px}}
+
+  h1.pg{font-size:1.28rem;margin:0 0 4px;}
+  p.pgsub{color:var(--muted);font-size:.85rem;margin:0 0 18px;}
+  .page{display:none;} .page.on{display:block;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:15px 17px;margin-bottom:15px;}
+  .card h2{font-size:1rem;margin:0 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .card h2 .hint{margin-left:auto;font-size:.73rem;color:var(--muted);font-weight:400;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:15px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  @media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+  table{border-collapse:collapse;width:100%;font-size:.9rem;}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line2);vertical-align:middle;}
+  th{color:var(--muted);font-size:.77rem;font-weight:700;}
+  tr:last-child td{border-bottom:none;}
+  .tw{overflow-x:auto;}
+  .pill{font-size:.71rem;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap;display:inline-block;}
+  .pill.ok{color:var(--ok);background:var(--okbg);}
+  .pill.wait{color:var(--warn);background:var(--warnbg);}
+  .pill.bad{color:var(--bad);background:var(--badbg);}
+  .pill.grey{color:var(--muted);background:var(--line2);}
+  .pill.live{color:#fff;background:var(--primary);}
+  .note{font-size:.79rem;color:var(--muted);background:var(--bg);border:1px dashed var(--line);
+    border-radius:10px;padding:9px 12px;margin-top:11px;}
+  .note b{color:var(--ink);}
+  .note.spec{border-color:#cfe2f2;background:#f4f9fd;color:#3b6c95;}
+  .note.spec b{color:#1c5b8f;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px 15px;}
+  .kpi .lb{font-size:.75rem;color:var(--muted);}
+  .kpi .vl{font-size:1.5rem;font-weight:800;line-height:1.3;}
+  .kpi .vl small{font-size:.8rem;font-weight:600;color:var(--muted);}
+  .tabs{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap;}
+  .tabs button{background:var(--line2);border:none;border-radius:9px;padding:6px 14px;font-size:.86rem;cursor:pointer;color:var(--deep);}
+  .tabs button.on{background:var(--primary);color:#fff;font-weight:700;}
+  .todo{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--card);}
+  .todo .cnt{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;
+    background:var(--warnbg);color:var(--warn);flex:0 0 auto;}
+  .todo .cnt.zero{background:var(--line2);color:var(--muted);}
+  .todo .tx{flex:1;min-width:0;font-size:.88rem;}
+  .todo .tx small{display:block;color:var(--muted);font-size:.75rem;}
+
+  /* 週課表 */
+  .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;}
+  @media(max-width:820px){.wk{grid-template-columns:1fr 1fr;}}
+  .day{border:1px solid var(--line);border-radius:10px;padding:8px;min-height:110px;background:var(--card);}
+  .day.off{background:var(--line2);color:var(--muted);}
+  .day.today{border-color:var(--primary);box-shadow:0 0 0 2px color-mix(in srgb,var(--primary) 22%,transparent);}
+  .day .d{font-size:.73rem;color:var(--muted);margin-bottom:6px;}
+  .day .d b{color:var(--ink);font-size:.9rem;}
+  .sess{background:color-mix(in srgb,var(--primary) 11%,transparent);border-left:3px solid var(--primary);
+    border-radius:6px;padding:5px 7px;margin-bottom:5px;font-size:.73rem;line-height:1.4;cursor:pointer;}
+  .sess:hover{background:color-mix(in srgb,var(--primary) 20%,transparent);}
+  .sess b{display:block;font-size:.77rem;}
+  .sess .rm{color:var(--muted);}
+  .sess.done{background:var(--line2);border-left-color:var(--off);}
+  .sess.cx{background:var(--badbg);border-left-color:var(--bad);text-decoration:line-through;opacity:.75;}
+  /* 月檢視 */
+  .mo{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .mo .hd{font-size:.72rem;color:var(--muted);text-align:center;padding:4px 0;}
+  .mcell{border:1px solid var(--line2);border-radius:8px;min-height:74px;padding:4px 5px;font-size:.7rem;background:var(--card);}
+  .mcell.pad{background:transparent;border-color:transparent;}
+  .mcell.today{border-color:var(--primary);}
+  .mcell .dn{color:var(--muted);font-size:.7rem;}
+  .mdot{display:block;background:color-mix(in srgb,var(--primary) 14%,transparent);border-radius:4px;padding:1px 4px;margin-top:2px;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mdot.done{background:var(--line2);color:var(--muted);}
+
+  /* 可授課時段格子牆 */
+  .availwrap{overflow-x:auto;}
+  .avail{display:grid;grid-template-columns:60px repeat(7,minmax(64px,1fr));gap:3px;font-size:.7rem;min-width:640px;}
+  .avail .h{color:var(--muted);text-align:center;padding-bottom:4px;font-weight:700;}
+  .avail .rowlbl{color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:6px;}
+  .cell{height:26px;border-radius:5px;background:var(--line2);cursor:pointer;border:1px solid transparent;}
+  .cell.on{background:color-mix(in srgb,var(--accent) 34%,#fff);border-color:var(--accent);}
+  .cell.closed{background:repeating-linear-gradient(45deg,#eceae7,#eceae7 4px,#e2dfda 4px,#e2dfda 8px);cursor:not-allowed;}
+  .cell.brk{background:repeating-linear-gradient(45deg,#fdeccf,#fdeccf 4px,#f7dfb4 4px,#f7dfb4 8px);cursor:not-allowed;}
+  .cell.booked{background:color-mix(in srgb,var(--primary) 45%,#fff);border-color:var(--primary);cursor:not-allowed;}
+  .lgd{display:flex;gap:14px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);margin-top:10px;}
+  .lgd i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:5px;}
+
+  /* Modal */
+  .mask{position:fixed;inset:0;background:rgba(40,30,20,.45);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:24px 14px;overflow-y:auto;}
+  .mask.on{display:flex;}
+  .modal{background:var(--card);border-radius:14px;width:100%;max-width:640px;box-shadow:0 12px 50px rgba(60,40,20,.3);}
+  .modal .mh{padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+  .modal .mh h3{margin:0;font-size:1.02rem;flex:1;}
+  .modal .mb{padding:16px 18px;}
+  .modal .mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
+  .x{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);line-height:1;}
+
+  /* Toast */
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:90;
+    background:var(--deep);color:#fff;padding:11px 18px;border-radius:11px;font-size:.86rem;max-width:min(560px,92vw);
+    opacity:0;pointer-events:none;transition:.22s;box-shadow:0 8px 26px rgba(0,0,0,.25);}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.bad{background:var(--bad);}
+
+  /* 測試面板 */
+  #tp{position:fixed;right:16px;bottom:16px;z-index:80;width:284px;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;box-shadow:0 10px 34px rgba(60,40,20,.2);font-size:.82rem;overflow:hidden;}
+  #tp .tph{background:var(--deep);color:#fff;padding:9px 13px;display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;font-size:.84rem;}
+  #tp .tpb{padding:11px 13px;display:none;max-height:60vh;overflow-y:auto;}
+  #tp.open .tpb{display:block;}
+  #tp .row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line2);}
+  #tp .row:last-child{border-bottom:none;}
+  #tp .row span{flex:1;line-height:1.35;}
+  #tp select{padding:4px 6px;border:1px solid var(--line);border-radius:7px;font-size:.78rem;max-width:130px;}
+  .sw{position:relative;width:38px;height:21px;flex:0 0 auto;}
+  .sw input{opacity:0;width:0;height:0;position:absolute;}
+  .sw i{position:absolute;inset:0;background:var(--off);border-radius:99px;transition:.18s;cursor:pointer;}
+  .sw i::after{content:"";position:absolute;width:15px;height:15px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.18s;}
+  .sw input:checked + i{background:var(--accent);}
+  .sw input:checked + i::after{transform:translateX(17px);}
+
+  .fbrow{border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:9px;}
+  .fbrow .nm{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:8px;}
+  .fbrow textarea{width:100%;min-height:54px;padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;margin-top:7px;resize:vertical;}
+  .fbrow select{padding:6px 9px;border:1.5px solid var(--line);border-radius:9px;margin-top:7px;}
+  .ro{background:var(--line2);color:var(--muted);}
+  .barwrap{background:var(--line2);border-radius:99px;height:9px;overflow:hidden;margin-top:6px;}
+  .bar{height:100%;background:var(--accent);}
+  .bar.used{background:var(--primary);}
+  ol.steps{padding-left:1.2rem;font-size:.88rem;}
+  ol.steps li{margin:9px 0;}
+  ol.steps code{background:var(--line2);border-radius:5px;padding:1px 6px;font-size:.85em;}
+  .exp{color:var(--ok);font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ 認證區 ═══════════════ -->
+<div id="auth" class="authwrap">
+
+  <!-- 登入 -->
+  <div class="authcard" id="vLogin">
+    <div class="lg">小樹</div>
+    <h1>小樹才藝班 · 老師後台</h1>
+    <p class="sub">請以受邀時的 Email 登入，我們會寄送 6 位數驗證碼。<b>免密碼</b>。租戶由目前網域判定，不需選擇。</p>
+    <div class="msg err" id="loginErr"></div>
+    <div class="fld"><label>Email</label><input id="liEmail" type="email" placeholder="you@example.com" autocomplete="username"></div>
+    <button class="btn" style="width:100%" onclick="sendCode()">寄送驗證碼</button>
+    <div class="authfoot">
+      <a class="lnk" onclick="showAuth('vInvite')">我收到邀請信</a>
+    </div>
+    <div class="demo">
+      測試帳號 <code>lin@smalltree.example</code>。<br>
+      任何信箱都會進到下一步並回同一句話（規格：不透露帳號是否存在）。驗證碼在下一頁顯示。
+    </div>
+  </div>
+
+  <!-- 輸入驗證碼 -->
+  <div class="authcard" id="vCode" style="display:none">
+    <div class="lg">小樹</div>
+    <h1>輸入驗證碼</h1>
+    <p class="sub" id="cdSub">若此信箱為本租戶的成員，驗證碼已寄出。</p>
+    <div class="msg err" id="cdErr"></div>
+    <div class="fld"><label>6 位數驗證碼 <span class="req">*</span></label>
+      <input id="cdInput" inputmode="numeric" maxlength="6" placeholder="------" style="letter-spacing:.4em;text-align:center;font-size:1.15rem" autocomplete="one-time-code"></div>
+    <button class="btn" style="width:100%" onclick="verifyCode()">登入</button>
+    <div class="authfoot">
+      <a class="lnk" onclick="showAuth('vLogin')">← 換一個信箱</a>
+      <a class="lnk" id="cdResend" onclick="resendCode()">重新寄送</a>
+    </div>
+    <div class="demo" id="cdDemo"></div>
+  </div>
+
+  <!-- 接受邀請 -->
+  <div class="authcard" id="vInvite" style="display:none">
+    <div class="lg">小樹</div>
+    <h1>接受邀請</h1>
+    <p class="sub"><b>小樹才藝班</b> 邀請你以「老師」身分加入。<br>邀請信箱：<b id="ivEmail">lin@smalltree.example</b></p>
+    <div class="msg err" id="ivErr"></div>
+    <div class="fld"><label>姓名 <span class="req">*</span></label><input id="ivName" placeholder="王小明"><div class="hint">此時填的姓名會寫進成員列表</div></div>
+    <button class="btn" style="width:100%" onclick="doInvite()">加入並登入</button>
+    <div class="authfoot"><a class="lnk" onclick="showAuth('vLogin')">← 回登入</a></div>
+    <div class="demo">邀請連結有效 7 天、接受後立即失效。<b>不需設定密碼</b>，完成後即以驗證碼方式登入。角色含「老師」時會同時綁定老師檔案。</div>
+  </div>
+
+</div>
+
+<!-- ═══════════════ 後台 ═══════════════ -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand"><div class="lg">小樹</div><div>小樹才藝班<small id="tbRole">老師後台</small></div></div>
+    <div class="sp"></div>
+    <div class="tz" id="tbClock"></div>
+    <div class="me" onclick="go('account')"><div class="av" id="tbAv">林</div><span id="tbName">林老師</span></div>
+  </div>
+  <div class="phase">🚩 <b>第二階段</b>：本站於第二階段實作。第一階段老師的課表、可授課時段與休假由<b>管理後台代管</b>，資料模型第一階段就要按規格建好。</div>
+
+  <div class="shell">
+    <nav class="side" id="nav">
+      <div class="grp" data-i18n="g_daily">日常</div>
+      <a data-p="today" class="on"><span class="ic">🏠</span><span data-i18n="n_today">首頁（今日）</span><span class="n" id="badgeTodo"></span></a>
+      <a data-p="schedule"><span class="ic">📅</span><span data-i18n="n_schedule">我的課表</span></a>
+      <a data-p="feedback"><span class="ic">📝</span><span data-i18n="n_feedback">課後回饋</span><span class="n" id="badgeFb"></span></a>
+      <a data-p="students"><span class="ic">👧</span><span data-i18n="n_students">學員歷程</span></a>
+      <div class="grp" data-i18n="g_sched">排班</div>
+      <a data-p="avail"><span class="ic">🕘</span><span data-i18n="n_avail">可授課時段</span></a>
+      <a data-p="leave"><span class="ic">🌴</span><span data-i18n="n_leave">休假申請</span><span class="n" id="badgeLv"></span></a>
+      <div class="grp" data-i18n="g_me">我的</div>
+      <a data-p="me"><span class="ic">🎓</span><span data-i18n="n_me">資格・個資・統計</span></a>
+      <a data-p="account"><span class="ic">⚙️</span><span data-i18n="n_account">我的帳號</span></a>
+      <div class="grp">原型</div>
+      <a data-p="script"><span class="ic">🧪</span>測試腳本</a>
+    </nav>
+
+    <main class="main">
+      <!-- ───── 首頁 ───── -->
+      <section class="page on" id="p-today">
+        <h1 class="pg" data-i18n="h_today">首頁（今日）</h1>
+        <p class="pgsub" id="todaySub"></p>
+        <div id="todayNext"></div>
+        <div class="grid2">
+          <div class="card">
+            <h2>今天的課 <span class="hint">依時間排序</span></h2>
+            <div id="todayList"></div>
+          </div>
+          <div>
+            <div class="card">
+              <h2>待辦</h2>
+              <div id="todayTodo"></div>
+              <div class="note spec"><b>規格</b>：待辦三類——未登記報到（含剩餘可登記時間）、未填課後回饋（未逾期）、休假待審與結果。</div>
+            </div>
+            <div class="card">
+              <h2>本週概況</h2>
+              <div class="grid3" id="todayWeek"></div>
+            </div>
+            <div class="card">
+              <h2>快捷入口</h2>
+              <button class="btn small" onclick="go('schedule')">登記報到</button>
+              <button class="btn small ghost" onclick="go('feedback')">填課後回饋</button>
+              <button class="btn small ghost" onclick="go('leave')">申請休假</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───── 課表 ───── -->
+      <section class="page" id="p-schedule">
+        <h1 class="pg" data-i18n="h_schedule">我的課表</h1>
+        <p class="pgsub">只顯示被指派給你的場次，看不到其他老師的課。時間一律為租戶時區（Asia/Taipei）。</p>
+        <div class="tabs" id="schTabs">
+          <button class="on" data-v="week">週檢視</button>
+          <button data-v="month">月檢視</button>
+          <button data-v="list">列表</button>
+        </div>
+        <div class="card">
+          <h2 id="schTitle">本週</h2>
+          <div style="margin-bottom:12px">
+            <button class="btn tiny plain" onclick="schMove(-1)">← 上一個</button>
+            <button class="btn tiny plain" onclick="schMove(0)">回到今天</button>
+            <button class="btn tiny plain" onclick="schMove(1)">下一個 →</button>
+          </div>
+          <div id="schBody"></div>
+        </div>
+        <div class="note spec"><b>規格</b>：每堂顯示課名、租戶時區時間、場地、已報名／名額、狀態。點任一堂可展開報到名單並登記報到。名單<b>不含金額、付款狀態與訂單資訊</b>。</div>
+      </section>
+
+      <!-- ───── 可授課時段 ───── -->
+      <section class="page" id="p-avail">
+        <h1 class="pg" data-i18n="h_avail">可授課時段</h1>
+        <p class="pgsub">排程三層模型的第 2 層：營業時間 → <b>老師可用性</b> → 課程排課。三層都通過的時段學員才看得到。</p>
+        <div class="tabs" id="avTabs">
+          <button class="on" data-v="grid">時段格子牆</button>
+          <button data-v="list">表單列表</button>
+        </div>
+        <div class="card" id="avGridCard">
+          <h2>每週可授課時段 <span class="hint">點格子切換；灰斜線＝非營業時間、橘斜線＝店家休息時間、實心＝已被預約</span></h2>
+          <div class="availwrap"><div class="avail" id="avGrid"></div></div>
+          <div class="lgd">
+            <span><i style="background:color-mix(in srgb,var(--accent) 34%,#fff);border:1px solid var(--accent)"></i>可授課</span>
+            <span><i style="background:var(--line2)"></i>未開放</span>
+            <span><i style="background:repeating-linear-gradient(45deg,#eceae7,#eceae7 4px,#e2dfda 4px,#e2dfda 8px)"></i>超出營業時間</span>
+            <span><i style="background:repeating-linear-gradient(45deg,#fdeccf,#fdeccf 4px,#f7dfb4 4px,#f7dfb4 8px)"></i>店家休息時間</span>
+            <span><i style="background:color-mix(in srgb,var(--primary) 45%,#fff);border:1px solid var(--primary)"></i>已被預約</span>
+          </div>
+        </div>
+        <div class="card" id="avListCard" style="display:none">
+          <h2>週期可授課時段</h2>
+          <div class="tw"><table id="avListTbl"></table></div>
+          <div class="note">同一份時段資料的另一種編輯介面——兩邊改動互相同步。</div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <h2>緩衝時間</h2>
+            <div class="fld" style="max-width:220px;margin:0">
+              <label>兩堂之間的緩衝（分鐘）</label>
+              <select id="bufSel" onchange="setBuf(this.value)"><option>0</option><option>10</option><option selected>15</option><option>30</option></select>
+            </div>
+          </div>
+          <div class="card">
+            <h2>營業時間（唯讀）</h2>
+            <div style="font-size:.88rem">週一～週六 09:00–21:00　·　午休 12:00–13:00　·　週日公休</div>
+            <div class="note">由管理後台設定。可授課時段必須落在營業時間內、且不在休息時段。</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ───── 休假 ───── -->
+      <section class="page" id="p-leave">
+        <h1 class="pg" data-i18n="h_leave">休假申請</h1>
+        <p class="pgsub">休假區間不可被預約，核准後自可授課時段扣除。</p>
+        <div id="lvQuota"></div>
+        <div class="card">
+          <h2>申請休假 <span class="hint">送出後進入「待審核」</span></h2>
+          <div class="grid2">
+            <div class="fld"><label>開始日期 <span class="req">*</span></label><input id="lvFrom" type="date"></div>
+            <div class="fld"><label>結束日期 <span class="req">*</span></label><input id="lvTo" type="date"></div>
+          </div>
+          <div class="fld"><label>範圍</label>
+            <select id="lvMode" onchange="document.getElementById('lvTimes').style.display=this.value==='part'?'grid':'none'">
+              <option value="all">全天</option><option value="part">指定時段</option>
+            </select>
+          </div>
+          <div class="grid2" id="lvTimes" style="display:none">
+            <div class="fld"><label>起</label><input id="lvT1" type="time" value="09:00"></div>
+            <div class="fld"><label>迄</label><input id="lvT2" type="time" value="13:00"></div>
+          </div>
+          <div class="fld"><label>事由</label><input id="lvWhy" placeholder="選填"></div>
+          <div id="lvPre"></div>
+          <button class="btn" onclick="submitLeave()">送出申請</button>
+        </div>
+        <div class="card">
+          <h2>我的休假紀錄</h2>
+          <div class="tw"><table id="lvTbl"></table></div>
+          <div class="note spec"><b>規格</b>：核准前必須先改派或取消衝突場次，系統<b>絕不自動動學員的課</b>。審核由擁有者／管理員／排班角色執行——下方的核准／駁回按鈕僅為原型模擬。</div>
+        </div>
+      </section>
+
+      <!-- ───── 課後回饋 ───── -->
+      <section class="page" id="p-feedback">
+        <h1 class="pg" data-i18n="h_feedback">課後回饋</h1>
+        <p class="pgsub">場次轉為「已完成」後開放填寫，補填期限 7 天，逾期轉唯讀。</p>
+        <div class="card">
+          <h2>可填寫的場次</h2>
+          <div class="tw"><table id="fbTbl"></table></div>
+        </div>
+        <div id="fbEditor"></div>
+      </section>
+
+      <!-- ───── 學員歷程 ───── -->
+      <section class="page" id="p-students">
+        <h1 class="pg" data-i18n="h_students">學員歷程與出席統計</h1>
+        <p class="pgsub">只能查到上過你課程的學員。不含金額、付款狀態與訂單資訊。</p>
+        <div class="card">
+          <h2>我的整體出席率</h2>
+          <div class="grid4" id="stKpi"></div>
+          <div class="note spec"><b>計算定義</b>：出席率 ＝ 已報到 ÷（已報到 ＋ 缺席）。<b>未登記報到的場次不計入分母</b>，另外標示筆數避免誤讀；已取消的場次一律不計。</div>
+        </div>
+        <div class="card">
+          <h2>查詢學員</h2>
+          <div class="fld" style="max-width:320px;margin-bottom:10px"><input id="stQ" placeholder="輸入學員姓名，如「陳曉恩」或「趙允薇」" oninput="renderStudents()"></div>
+          <div class="tw"><table id="stTbl"></table></div>
+        </div>
+        <div id="stDetail"></div>
+      </section>
+
+      <!-- ───── 我的資格・個資・統計 ───── -->
+      <section class="page" id="p-me">
+        <h1 class="pg" data-i18n="h_me">我的資格、個人資料與授課統計</h1>
+        <p class="pgsub">資格由管理後台維護（唯讀）；個人資料可自助維護；統計只有自己的數字且不含金額。</p>
+        <div class="card">
+          <h2>① 我的資格 <span class="hint">唯讀</span></h2>
+          <div class="tw"><table id="qualTbl"></table></div>
+          <div class="note">資格被縮減時，既有未來場次若超出新範圍會列警示給排班者處理，<b>不自動取消</b>。</div>
+        </div>
+        <div class="card">
+          <h2>② 個人資料 <span class="hint" id="pfMode"></span></h2>
+          <div class="grid2">
+            <div>
+              <div class="fld"><label>自我介紹</label><textarea id="pfBio" style="min-height:96px"></textarea></div>
+              <div class="fld"><label>專長標籤</label><input id="pfTag"></div>
+              <div class="fld"><label>照片</label><button class="btn small plain" onclick="toast('原型不做實際上傳；規格允許老師自行更換照片')">更換照片</button></div>
+              <button class="btn" onclick="saveProfile()">儲存</button>
+              <span id="pfState" style="margin-left:10px;font-size:.84rem"></span>
+            </div>
+            <div>
+              <div class="card" style="margin:0;background:var(--bg)">
+                <h2 style="font-size:.9rem">不可自行編輯（由管理後台處理）</h2>
+                <table>
+                  <tr><td>姓名</td><td>林小柔</td></tr>
+                  <tr><td>Email（登入帳號）</td><td>lin@smalltree.example</td></tr>
+                  <tr><td>資格</td><td>見上方，唯讀</td></tr>
+                  <tr><td>前台上架狀態</td><td><span class="pill ok">已上架</span></td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>③ 我的授課統計 <span class="hint">不含任何金額</span></h2>
+          <div class="tabs" id="statTabs">
+            <button class="on" data-v="m0">本月</button><button data-v="m1">上月</button><button data-v="all">全期間</button>
+          </div>
+          <div class="grid4" id="statKpi"></div>
+          <div class="tw" style="margin-top:14px"><table id="statTbl"></table></div>
+          <div class="note spec"><b>規格</b>：時數以場次<b>實際排定長度</b>累計，取消不計、改期計在新日期。鐘點與薪資屬管理後台，老師端一律看不到金額。</div>
+        </div>
+      </section>
+
+      <!-- ───── 我的帳號 ───── -->
+      <section class="page" id="p-account">
+        <h1 class="pg" data-i18n="h_account">我的帳號</h1>
+        <p class="pgsub">帳號與登入機制由「權限管理」1.5 定義，兩個後台共用同一套。</p>
+        <div class="grid2">
+          <div class="card">
+            <h2>登入方式</h2>
+            <div class="fld"><label>登入 Email</label><input value="lin@smalltree.example" disabled></div>
+            <div class="note spec"><b>免密碼登入</b>：每次登入以 Email 收取 6 位數驗證碼。驗證碼有效 10 分鐘、單次使用，重新寄送會讓前一組立即失效，寄出後 60 秒內不可重寄。<br>
+            本帳號<b>沒有密碼</b>，因此沒有「修改密碼」與「忘記密碼」。Email 即帳號，變更須由管理後台處理。</div>
+          </div>
+          <div>
+            <div class="card">
+              <h2>介面語言</h2>
+              <div class="fld" style="max-width:220px">
+                <label>語言偏好</label>
+                <select id="langSel" onchange="setLang(this.value)">
+                  <option value="zh">繁體中文（租戶預設）</option>
+                  <option value="en">English</option>
+                  <option value="ja">日本語</option>
+                </select>
+              </div>
+              <div class="note spec"><b>作用範圍</b>：只影響後台介面，以及寄給<b>你本人</b>的系統信（邀請、登入驗證碼、休假審核結果）。<b>不影響</b>前台顯示與寄給學員的通知信。未翻譯的字串會退回租戶預設語言。</div>
+            </div>
+            <div class="card">
+              <h2>登入與 Session</h2>
+              <p style="font-size:.86rem;margin-top:0">閒置逾時 8 小時 · 絕對上限 30 天（平台層設定，租戶不可調）</p>
+              <button class="btn small" onclick="logout(false)">登出</button>
+              <button class="btn small ghost" onclick="logout(true)">登出所有裝置</button>
+              <button class="btn small plain" onclick="simTimeout()">模擬閒置逾時</button>
+              <div class="note">模擬逾時會導回登入頁；重新登入後會<b>回到你原本要去的頁面</b>。</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>權限邊界 <span class="hint">老師角色看不到的東西</span></h2>
+          <div class="tw"><table>
+            <tr><th>項目</th><th>老師</th></tr>
+            <tr><td>訂單金額、付款狀態、退款</td><td><span class="pill bad">不可見</span></td></tr>
+            <tr><td>自己的鐘點／時薪／應付金額</td><td><span class="pill bad">不可見</span>（本期不做，屬管理後台）</td></tr>
+            <tr><td>其他老師的課表與資料</td><td><span class="pill bad">不可見</span></td></tr>
+            <tr><td>租戶設定、成員與權限</td><td><span class="pill bad">不可見</span></td></tr>
+            <tr><td>直接改學員等級</td><td><span class="pill bad">不可</span>，只能填建議等級</td></tr>
+            <tr><td>設定自己的休假額度</td><td><span class="pill bad">不可</span>，由管理後台設定</td></tr>
+            <tr><td>修改自己的資格</td><td><span class="pill bad">不可</span>，由管理後台維護</td></tr>
+          </table></div>
+          <button class="btn small plain" style="margin-top:12px" onclick="tryAdmin()">試著開啟管理後台網址</button>
+        </div>
+      </section>
+
+      <!-- ───── 測試腳本 ───── -->
+      <section class="page" id="p-script">
+        <h1 class="pg">測試腳本</h1>
+        <p class="pgsub">每一條都對應規格的一條規則。右下角的「測試面板」可以切換開關與時間，用來驗證條件分支。</p>
+        <div class="card">
+          <h2>A 帳號與登入</h2>
+          <ol class="steps">
+            <li>登出後，用 <code>nobody@other.com</code> 送出 → <span class="exp">仍然進到驗證碼那一步，訊息為「若此信箱為本租戶的成員，驗證碼已寄出」——不透露該信箱是否存在。</span></li>
+            <li>承上，輸入畫面顯示的驗證碼 → <span class="exp">失敗，訊息與驗證碼打錯時完全相同。</span></li>
+            <li>用 <code>lin@smalltree.example</code> 送出，記下驗證碼，等倒數跑完按「重新寄送」，再輸入<b>舊的那一組</b> → <span class="exp">舊碼已失效，被擋下；輸入新碼才能登入。</span></li>
+            <li>登入成功後登出，再用<b>同一組</b>驗證碼登入 → <span class="exp">驗證碼單次使用，已失效。</span></li>
+            <li>連續輸錯 5 次 → <span class="exp">鎖定 15 分鐘，期間即使輸入正確的碼也不放行。</span></li>
+            <li>寄出驗證碼後 60 秒內按「重新寄送」 → <span class="exp">按鈕停用並顯示剩餘秒數。</span></li>
+            <li>「我收到邀請信」→ 姓名留空送出 → <span class="exp">擋下。</span>填妥後送出 → <span class="exp">不需設定密碼即加入；列出四項效果：狀態轉已加入、姓名寫入成員列表、取得老師角色並綁定檔案、邀請連結立即失效。</span></li>
+            <li>我的帳號 → 模擬閒置逾時 → <span class="exp">導回登入頁；重新登入後回到原本那一頁。</span></li>
+            <li>我的帳號 → 介面語言切 English → <span class="exp">左側選單與頁標題變英文；切「日本語」時只有部分字串被翻譯，其餘退回中文。</span></li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>B 首頁</h2>
+          <ol class="steps">
+            <li>首頁 → <span class="exp">下一堂顯示倒數；正在上課的場次標「進行中」。</span></li>
+            <li>測試面板把時間切到「今天全部上完之後」 → <span class="exp">今天的課全部轉為已完成；還沒點名的會進待辦，而結束超過 24 小時的則轉為逾期、從待辦消失（需管理後台解鎖）。</span></li>
+            <li>測試面板切到「週日」 → <span class="exp">顯示「今天沒有課」並帶出下一堂的日期。</span></li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>C 課表與報到</h2>
+          <ol class="steps">
+            <li>課表點任一堂 → <span class="exp">看得到課名、時間、場地、人數、狀態與學員名單；名單沒有任何金額或訂單資訊。</span></li>
+            <li>點一堂<b>還沒開始超過 30 分鐘</b>的課 → <span class="exp">報到按鈕停用，提示「開課前 30 分鐘才開放登記」。</span>把測試面板時間調到開課前 10 分鐘 → <span class="exp">開放登記。</span></li>
+            <li>登記後再改一次 → <span class="exp">下方「變更紀錄」多一筆，記錄誰、何時、由什麼改成什麼。</span></li>
+            <li>用報到碼核銷：輸入名單上的 4 位數 → <span class="exp">該學員標記為已報到；輸入亂碼 → 查無此報到碼。</span></li>
+            <li>找一堂<b>結束超過 24 小時</b>的課 → <span class="exp">整份名單唯讀，提示需由管理後台解鎖。</span></li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>D 可授課時段</h2>
+          <ol class="steps">
+            <li>點週日任一格 → <span class="exp">擋下：超出店家營業時間。</span></li>
+            <li>點平日 12:00 那一列 → <span class="exp">擋下：此時段為店家休息時間。</span></li>
+            <li>點一個已被預約的格（實心橘） → <span class="exp">擋下：已被學員預約，需先由管理後台改派或取消。</span></li>
+            <li>切到「表單列表」 → <span class="exp">同一份資料的另一種編輯介面，兩邊改動互相同步。</span></li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>E 休假與額度</h2>
+          <ol class="steps">
+            <li>申請一段<b>已經有課</b>的期間 → <span class="exp">送出前就列出衝突場次清單；送出後狀態為待審核。</span></li>
+            <li>在有衝突的情況下按「核准」 → <span class="exp">被擋下，要求先改派或取消那些場次。</span></li>
+            <li>核准一筆沒有衝突的休假 → <span class="exp">額度卡的「已用」增加、「待審佔用」減少；可授課時段那一天被扣除。</span></li>
+            <li>撤回或駁回待審的申請 → <span class="exp">額度不扣抵。</span>取消一筆已核准的休假 → <span class="exp">額度回補。</span></li>
+            <li>測試面板把「休假額度模組」關掉 → <span class="exp">額度卡整組消失，申請流程照走。</span></li>
+            <li>申請超過剩餘額度的天數 → <span class="exp">預設不擋，標記「超額」交審核者決定。</span></li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>F 課後回饋與學員歷程</h2>
+          <ol class="steps">
+            <li>課後回饋 → 開一堂 7 天內完成的課 → <span class="exp">可填；缺席的學員標示「不需填寫」。</span></li>
+            <li>開一堂完成超過 7 天的課 → <span class="exp">唯讀，提示需管理後台解鎖。</span></li>
+            <li>測試面板把「等級模組」關掉 → <span class="exp">回饋表單的「建議等級」欄位整個不見，只剩評語。</span></li>
+            <li>填一個建議等級並儲存 → <span class="exp">明確提示「已送出建議，學員等級尚未變更，需管理後台核可」。</span></li>
+            <li>學員歷程搜尋「趙允薇」 → <span class="exp">查無此學員——她在本租戶存在，但沒上過你的課，所以查不到。</span></li>
+            <li>點任一學員 → <span class="exp">看得到上過幾堂、每堂出席狀態、我過去的回饋；沒有金額。</span></li>
+            <li>測試面板把「顯示學員聯絡資料」打開 → <span class="exp">才出現電話與家長聯絡方式，預設是關的。</span></li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>G 我的資料與統計</h2>
+          <ol class="steps">
+            <li>個人資料改自我介紹並儲存 → <span class="exp">預設存檔即生效。</span>測試面板打開「個資修改需審核」再存一次 → <span class="exp">進入待審狀態，前台仍顯示舊內容。</span></li>
+            <li>授課統計切本月／上月／全期間 → <span class="exp">堂數與時數跟著變；畫面上找不到任何金額欄位。</span></li>
+            <li>我的帳號 → 按「試著開啟管理後台網址」 → <span class="exp">回「找不到」，不是「沒有權限」。</span></li>
+          </ol>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="mask" id="mask" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mh"><h3 id="mTitle"></h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mb" id="mBody"></div>
+    <div class="mf" id="mFoot"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- 測試面板 -->
+<div id="tp">
+  <div class="tph" onclick="document.getElementById('tp').classList.toggle('open')">🧪 測試面板 <span style="margin-left:auto;font-weight:400;font-size:.76rem">點此展開／收合</span></div>
+  <div class="tpb">
+    <div class="row"><span>等級模組<br><small style="color:var(--muted)">關閉時回饋不出現建議等級</small></span>
+      <label class="sw"><input type="checkbox" id="swLevel" checked onchange="setFlag('level',this.checked)"><i></i></label></div>
+    <div class="row"><span>休假額度模組<br><small style="color:var(--muted)">關閉時額度卡整組消失</small></span>
+      <label class="sw"><input type="checkbox" id="swQuota" checked onchange="setFlag('quota',this.checked)"><i></i></label></div>
+    <div class="row"><span>顯示學員聯絡資料<br><small style="color:var(--muted)">規格預設關閉</small></span>
+      <label class="sw"><input type="checkbox" id="swContact" onchange="setFlag('contact',this.checked)"><i></i></label></div>
+    <div class="row"><span>個資修改需審核<br><small style="color:var(--muted)">關＝存檔即生效</small></span>
+      <label class="sw"><input type="checkbox" id="swApprove" onchange="setFlag('approve',this.checked)"><i></i></label></div>
+    <div class="row"><span>現在時間</span>
+      <select id="tpClock" onchange="setClock(this.value)">
+        <option value="0">真實時間</option>
+        <option value="pre10">下一堂開課前 10 分鐘</option>
+        <option value="mid">下一堂上課中</option>
+        <option value="after2">下一堂結束後 2 小時</option>
+        <option value="eod">今天全部上完之後</option>
+        <option value="sun">下個週日（公休）</option>
+      </select></div>
+    <div class="row"><span><button class="btn tiny plain" style="width:100%" onclick="resetAll()">重置所有原型資料</button></span></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   0. 基礎工具
+   ══════════════════════════════════════════════ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const pad = n => String(n).padStart(2,'0');
+const DAYNAME = ['日','一','二','三','四','五','六'];
+let CLOCK_OFFSET = 0;                       // 毫秒
+const now = () => new Date(Date.now() + CLOCK_OFFSET);
+const dkey = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const hm = d => pad(d.getHours())+':'+pad(d.getMinutes());
+const fdate = d => (d.getMonth()+1)+'/'+d.getDate()+'（'+DAYNAME[d.getDay()]+'）';
+const fdatetime = d => fdate(d)+' '+hm(d);
+const startOfDay = d => new Date(d.getFullYear(),d.getMonth(),d.getDate());
+const addDays = (d,n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+const endOf = s => new Date(s.start.getTime()+s.dur*60000);
+const MIN=60000, HOUR=3600000, DAY=86400000;
+
+function toast(msg,bad){
+  const t=$('#toast'); t.textContent=msg; t.className='on'+(bad?' bad':'');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.className='',3200);
+}
+function openModal(title,body,foot){
+  $('#mTitle').innerHTML=title; $('#mBody').innerHTML=body; $('#mFoot').innerHTML=foot||'<button class="btn plain" onclick="closeModal()">關閉</button>';
+  $('#mask').classList.add('on');
+}
+function closeModal(){ $('#mask').classList.remove('on'); }
+
+
+/* ══════════════════════════════════════════════
+   1. 租戶設定與假資料
+   ══════════════════════════════════════════════ */
+const TENANT = { name:'小樹才藝班', tz:'Asia/Taipei',
+  open:{1:[9,21],2:[9,21],3:[9,21],4:[9,21],5:[9,21],6:[9,21]},   // 週日公休
+  breakHours:[12] };                                              // 午休 12:00–13:00
+
+const FLAGS = { level:true, quota:true, contact:false, approve:false };
+
+const COURSES = [
+  {id:'c1',name:'兒童繪畫（初級）',dur:60,room:'A 教室',cap:8,day:1,time:[9,30]},
+  {id:'c2',name:'兒童繪畫（初級）',dur:60,room:'A 教室',cap:8,day:3,time:[9,30]},
+  {id:'c3',name:'兒童繪畫（中級）',dur:60,room:'A 教室',cap:8,day:2,time:[15,0]},
+  {id:'c4',name:'兒童繪畫（中級）',dur:60,room:'A 教室',cap:8,day:4,time:[15,0]},
+  {id:'c5',name:'幼兒律動',dur:45,room:'B 教室',cap:10,day:6,time:[10,30]},
+  {id:'c6',name:'一對一鋼琴',dur:50,room:'C 琴房',cap:1,day:5,time:[18,0]},
+];
+
+const STUDENTS = [
+  {id:'s1',name:'陳曉恩',level:'初級',code:'4821',phone:'0912-***-118',guardian:'陳媽媽 0933-***-201',note:'對堅果過敏'},
+  {id:'s2',name:'林品睿',level:'初級',code:'7503',phone:'0918-***-442',guardian:'林爸爸 0921-***-770',note:''},
+  {id:'s3',name:'黃亦寧',level:'中級',code:'2967',phone:'0955-***-306',guardian:'黃媽媽 0987-***-114',note:'需提早 10 分鐘離場'},
+  {id:'s4',name:'吳承恩',level:'中級',code:'6140',phone:'0966-***-829',guardian:'吳媽媽 0910-***-553',note:''},
+  {id:'s5',name:'蔡宜靜',level:'初級',code:'3378',phone:'0921-***-664',guardian:'蔡爸爸 0975-***-902',note:''},
+  {id:'s6',name:'許家瑜',level:'中級',code:'5092',phone:'0938-***-207',guardian:'許媽媽 0988-***-431',note:'左手受過傷'},
+  {id:'s7',name:'鄭少瑋',level:'初級',code:'8814',phone:'0977-***-350',guardian:'鄭媽媽 0906-***-688',note:''},
+  {id:'s8',name:'劉安琪',level:'高級',code:'1236',phone:'0932-***-975',guardian:'劉爸爸 0917-***-243',note:''},
+  {id:'s9',name:'趙允薇',level:'初級',code:'9401',phone:'0963-***-118',guardian:'趙媽媽 0919-***-507',note:'（此學員在本租戶存在，但沒上過你的課——用來測試查詢邊界）'},
+];
+const SMAP = Object.fromEntries(STUDENTS.map(s=>[s.id,s]));
+
+const ROSTER = {
+  c1:['s1','s2','s5','s7'], c2:['s1','s2','s5','s7'],
+  c3:['s3','s4','s6'],      c4:['s3','s4','s6','s8'],
+  c5:['s1','s2','s5','s7','s3'], c6:['s8'],
+};
+
+const QUAL = [
+  ['可教的課程／科目','兒童繪畫、幼兒律動、鋼琴（個別課）'],
+  ['可帶的等級範圍','初級 ～ 中級'],
+  ['可帶的場地','A 教室、B 教室、C 琴房'],
+  ['生效起訖','2025/09/01 起，無結束日'],
+];
+
+/* 穩定亂數 */
+let _seed = 20260824;
+const rnd = () => (_seed = (_seed*1103515245 + 12345) % 2147483648) / 2147483648;
+
+let SESSIONS = [], LEAVES = [], AVAIL = {}, BUFFER = 15;
+let PROFILE = { bio:'教畫畫十二年，喜歡讓孩子從塗鴉開始建立自信。上課節奏慢，會等每個孩子畫完。', tag:'兒童繪畫｜幼兒律動', pending:null };
+
+function buildData(){
+  _seed = 20260824;
+  SESSIONS = []; let id=0;
+  const base = startOfDay(now());
+  for(let off=-70; off<=21; off++){
+    const d = addDays(base, off);
+    for(const c of COURSES){
+      if(d.getDay() !== c.day) continue;
+      const start = new Date(d); start.setHours(c.time[0], c.time[1], 0, 0);
+      const past = start.getTime() < now().getTime();
+      const s = { id:'S'+(++id), course:c.name, cid:c.id, start, dur:c.dur, room:c.room, cap:c.cap,
+                  roster:[...ROSTER[c.id]], status:'scheduled', roll:{}, fb:{}, log:[] };
+      // 少數場次被取消
+      if(off < -3 && rnd() < .05) s.status='cancelled';
+      if(past && s.status!=='cancelled') s.status='done';
+      if(s.status==='done'){
+        const daysAgo = (now() - endOf(s)) / DAY;
+        // 超過 1 天的場次多半已登記；最近 1 天內的留白給待辦測試
+        const logged = daysAgo > 1 ? rnd() > .12 : false;
+        if(logged) s.roster.forEach(sid => s.roll[sid] = rnd() < .88 ? 'in' : 'absent');
+        // 較久以前的場次多半已填回饋
+        if(daysAgo > 8 && rnd() > .2){
+          s.roster.forEach(sid => { if(s.roll[sid]==='in') s.fb[sid]={text:'今天上課專注，線條比上次穩。',level:'',at:endOf(s)}; });
+        }
+      }
+      SESSIONS.push(s);
+    }
+  }
+  SESSIONS.sort((a,b)=>a.start-b.start);
+
+  // 休假紀錄
+  const t = startOfDay(now());
+  LEAVES = [
+    {id:'L1', from:addDays(t,-40), to:addDays(t,-40), mode:'all', why:'家中有事', status:'approved',  conflicts:[], by:'王主任'},
+    {id:'L2', from:addDays(t,-12), to:addDays(t,-11), mode:'all', why:'出國',     status:'approved',  conflicts:[], by:'王主任'},
+    {id:'L3', from:addDays(t,-60), to:addDays(t,-60), mode:'all', why:'',         status:'rejected',  conflicts:[], reason:'該日已排滿課且無人可代'},
+    {id:'L4', from:addDays(t,-30), to:addDays(t,-30), mode:'all', why:'臨時請假', status:'expired',   conflicts:[]},
+  ];
+  AVAIL = { 1:[9,10,11,13,14,15,16], 2:[14,15,16,17,18,19], 3:[9,10,11,13,14,15,16],
+            4:[14,15,16,17,18,19], 5:[17,18,19,20], 6:[9,10,11] };
+}
+
+/* ══════════════════════════════════════════════
+   2. 衍生查詢
+   ══════════════════════════════════════════════ */
+const isCancelled = s => s.status==='cancelled';
+const isDone      = s => s.status!=='cancelled' && endOf(s) <= now();
+const isLive      = s => s.status!=='cancelled' && s.start <= now() && now() < endOf(s);
+
+/* 報到可登記期間：開課前 30 分鐘 ～ 結束後 24 小時 */
+function rollWindow(s){
+  const open = s.start.getTime() - 30*MIN, close = endOf(s).getTime() + 24*HOUR, t = now().getTime();
+  if(isCancelled(s)) return {state:'cancelled', msg:'場次已取消，不需登記'};
+  if(t < open)  return {state:'early', msg:'尚未開放登記——開課前 30 分鐘才開放'};
+  if(t > close) return {state:'expired', msg:'已逾登記期限（結束後 24 小時），需由管理後台解鎖'};
+  return {state:'open', left:close - t};
+}
+const rollDone = s => s.roster.every(sid => s.roll[sid]);
+/* 未登記報到且仍在期限內 */
+const todoRoll = () => SESSIONS.filter(s => isDone(s) && rollWindow(s).state==='open' && !rollDone(s));
+
+/* 回饋期限：完成後 7 天 */
+function fbWindow(s){
+  if(isCancelled(s)) return {state:'cancelled'};
+  if(!isDone(s)) return {state:'early'};
+  const close = endOf(s).getTime() + 7*DAY;
+  return now().getTime() > close ? {state:'expired'} : {state:'open', left:close-now().getTime()};
+}
+const fbTargets = s => s.roster.filter(sid => s.roll[sid] !== 'absent');
+const fbDone = s => fbTargets(s).length>0 && fbTargets(s).every(sid => s.fb[sid]);
+const todoFb = () => SESSIONS.filter(s => fbWindow(s).state==='open' && !fbDone(s));
+
+const todoLeave = () => LEAVES.filter(l => l.status==='pending' || l._unread);
+
+/* 休假額度 */
+const QUOTA_DAYS = 14, DAY_HOURS = 8;
+function leaveHours(l){
+  const days = Math.round((startOfDay(l.to) - startOfDay(l.from))/DAY) + 1;
+  if(l.mode==='all') return days*DAY_HOURS;
+  const [h1,m1]=l.t1.split(':').map(Number), [h2,m2]=l.t2.split(':').map(Number);
+  return Math.max(0,((h2*60+m2)-(h1*60+m1))/60) * days;
+}
+function quota(){
+  const total = QUOTA_DAYS*DAY_HOURS;
+  const used = LEAVES.filter(l=>l.status==='approved').reduce((a,l)=>a+leaveHours(l),0);
+  const hold = LEAVES.filter(l=>l.status==='pending').reduce((a,l)=>a+leaveHours(l),0);
+  return {total, used, hold, left: total-used-hold};
+}
+/* 休假衝突：區間內有人報名的未來場次 */
+function findConflicts(from,to,mode,t1,t2){
+  const a = startOfDay(from).getTime(), b = startOfDay(to).getTime()+DAY-1;
+  return SESSIONS.filter(s=>{
+    if(isCancelled(s) || s.roster.length===0) return false;
+    const st = s.start.getTime();
+    if(st < a || st > b) return false;
+    if(mode==='part'){
+      const mins = s.start.getHours()*60 + s.start.getMinutes();
+      const [h1,m1]=t1.split(':').map(Number), [h2,m2]=t2.split(':').map(Number);
+      if(mins < h1*60+m1 || mins >= h2*60+m2) return false;
+    }
+    return true;
+  });
+}
+/* 已核准休假覆蓋的日期 */
+function leaveDays(){
+  const set = new Set();
+  LEAVES.filter(l=>l.status==='approved').forEach(l=>{
+    for(let d=startOfDay(l.from); d<=startOfDay(l.to); d=addDays(d,1)) set.add(dkey(d));
+  });
+  return set;
+}
+
+/* ══════════════════════════════════════════════
+   3. 認證
+   ══════════════════════════════════════════════ */
+const ACCOUNT = { email:'lin@smalltree.example', pw:'demo1234', name:'林小柔', display:'林老師' };
+let failCount = 0, lockUntil = 0, resetToken = null, pendingPage = null, loggedIn = false;
+
+function showAuth(v){
+  ['vLogin','vCode','vInvite'].forEach(x => $('#'+x).style.display = x===v?'block':'none');
+  $('#auth').style.display='flex'; $('#app').style.display='none';
+}
+function setMsg(id, text, cls){
+  const el=$('#'+id); el.textContent=text; el.className='msg '+(cls||'err')+(text?' show':'');
+}
+
+let OTP=null;          // {code, exp, used}
+let resendLeft=0, resendTimer=null;
+const genCode=()=>String(Math.floor(100000+Math.random()*900000));
+
+function sendCode(){
+  const now_=Date.now();
+  if(now_<lockUntil){
+    setMsg('loginErr','帳號已鎖定，請於 '+Math.ceil((lockUntil-now_)/MIN)+' 分鐘後再試（連續失敗 5 次鎖定 15 分鐘）。');
+    return;
+  }
+  const em=$('#liEmail').value.trim();
+  if(!em){ setMsg('loginErr','請填寫 Email'); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ setMsg('loginErr','Email 格式不正確'); return; }
+  pendingEmail=em; setMsg('loginErr','');
+  issueCode(); showAuth('vCode'); $('#cdInput').value=''; setMsg('cdErr','');
+  $('#cdSub').textContent='若此信箱為本租戶的成員，驗證碼已寄至 '+em+'。';
+  setTimeout(()=>$('#cdInput').focus(),30);
+}
+function issueCode(){
+  OTP={ code:genCode(), exp:Date.now()+10*MIN, used:false };
+  $('#cdDemo').innerHTML='📧 <b>模擬信件</b>（套租戶品牌）<br>目前驗證碼：<code>'+OTP.code+'</code>'+
+    ' <span style="color:var(--muted)">· 有效 10 分鐘 · 單次使用 · 重寄會讓這組立即失效</span>';
+  startResend();
+}
+function startResend(){
+  clearInterval(resendTimer); resendLeft=60; paintResend();
+  resendTimer=setInterval(()=>{ resendLeft--; if(resendLeft<=0) clearInterval(resendTimer); paintResend(); },1000);
+}
+function paintResend(){
+  const a=$('#cdResend'); if(!a) return;
+  if(resendLeft>0){ a.textContent='重新寄送（'+resendLeft+' 秒）'; a.style.pointerEvents='none'; a.style.opacity='.5'; }
+  else { a.textContent='重新寄送'; a.style.pointerEvents=''; a.style.opacity=''; }
+}
+function resendCode(){
+  if(resendLeft>0) return;
+  issueCode(); $('#cdInput').value=''; setMsg('cdErr','');
+  toast('已重新寄送。前一組驗證碼立即失效');
+}
+function verifyCode(){
+  const now_=Date.now();
+  if(now_<lockUntil){
+    setMsg('cdErr','帳號已鎖定，請於 '+Math.ceil((lockUntil-now_)/MIN)+' 分鐘後再試。');
+    return;
+  }
+  const v=$('#cdInput').value.trim();
+  if(!v){ setMsg('cdErr','請輸入驗證碼'); return; }
+  const ok = OTP && !OTP.used && now_<=OTP.exp && v===OTP.code &&
+             pendingEmail.toLowerCase()===ACCOUNT.email;
+  if(!ok){
+    failCount++;
+    if(failCount>=5){
+      lockUntil=now_+15*MIN; failCount=0;
+      setMsg('cdErr','連續失敗 5 次，帳號鎖定 15 分鐘。鎖定期間即使驗證碼正確也不放行。');
+    } else {
+      setMsg('cdErr','驗證碼不正確或已過期。（已失敗 '+failCount+'/5 次）');
+    }
+    return;
+  }
+  OTP.used=true; clearInterval(resendTimer);
+  failCount=0; setMsg('cdErr','');
+  enterApp();
+}
+let pendingEmail='';
+function enterApp(){
+  loggedIn = true;
+  $('#auth').style.display='none'; $('#app').style.display='block';
+  const p = pendingPage || 'today'; pendingPage = null;
+  go(p);
+  if(p!=='today') toast('已回到你剛才要去的頁面');
+}
+function doInvite(){
+  const name = $('#ivName').value.trim();
+  if(!name){ setMsg('ivErr','請填寫姓名——這個姓名會寫進成員列表'); return; }
+  ACCOUNT.name = name;
+  setMsg('ivErr','');
+  openModal('✅ 已加入 小樹才藝班',
+    '<p style="margin-top:0">接受邀請完成，系統做了四件事：</p>'+
+    '<ol style="padding-left:1.2rem;font-size:.9rem"><li>成員狀態由「邀請中」轉為<b>已加入</b></li>'+
+    '<li>姓名「'+name+'」寫入成員列表</li>'+
+    '<li><b>不需設定密碼</b>——之後一律以 Email 驗證碼登入</li>'+
+    '<li>取得<b>老師</b>角色，並與老師檔案完成綁定</li>'+
+    '<li>邀請連結<b>立即失效</b>，重複點開會被擋下</li></ol>',
+    '<button class="btn" onclick="closeModal();enterApp()">進入老師後台</button>');
+}
+function logout(all){
+  loggedIn=false; OTP=null; clearInterval(resendTimer); showAuth('vLogin');
+  setMsg('loginErr', all?'已登出所有裝置。':'已登出。','info');
+}
+function simTimeout(){
+  pendingPage = CUR; loggedIn=false; showAuth('vLogin');
+  OTP=null; clearInterval(resendTimer);
+  setMsg('loginErr','閒置逾時（8 小時未操作），請重新登入。登入後會回到你原本的頁面。','info');
+}
+function tryAdmin(){
+  openModal('404 · 找不到頁面',
+    '<p style="margin-top:0">找不到這個頁面。</p>'+
+    '<div class="note spec" style="margin-top:0"><b>規格</b>：越權存取一律回「<b>找不到</b>」而不是「沒有權限」——後者等於承認資源存在，會被拿來探測。同時後端會記下這次越權嘗試。</div>');
+}
+
+/* ══════════════════════════════════════════════
+   4. i18n（示範個人語言偏好；日文刻意只翻一部分）
+   ══════════════════════════════════════════════ */
+const I18N = {
+  en:{ g_daily:'DAILY', g_sched:'SCHEDULING', g_me:'ME',
+       n_today:'Today', n_schedule:'My Schedule', n_feedback:'Class Feedback', n_students:'Students',
+       n_avail:'Availability', n_leave:'Time Off', n_me:'Profile & Stats', n_account:'My Account',
+       h_today:'Today', h_schedule:'My Schedule', h_feedback:'Class Feedback',
+       h_students:'Student History & Attendance', h_avail:'Teaching Availability', h_leave:'Time Off Requests',
+       h_me:'Qualifications, Profile & Teaching Stats', h_account:'My Account', role:'Instructor Console' },
+  ja:{ n_today:'ホーム', n_schedule:'マイスケジュール', n_leave:'休暇申請', h_today:'ホーム', role:'講師管理画面' }
+};
+let LANG='zh';
+function setLang(v){
+  LANG=v;
+  const dict = I18N[v] || {};
+  $$('[data-i18n]').forEach(el=>{
+    const k = el.dataset.i18n;
+    if(!el.dataset.zh) el.dataset.zh = el.textContent;
+    el.textContent = dict[k] || el.dataset.zh;      // 未翻譯 → 退回租戶預設語言
+  });
+  $('#tbRole').textContent = dict.role || '老師後台';
+  if(v==='ja') toast('日本語は一部のみ翻訳されています——未翻譯的字串已退回租戶預設語言（繁體中文）');
+  else if(v==='en') toast('Interface language switched. Front-end site and student emails are unaffected.');
+}
+
+/* ══════════════════════════════════════════════
+   5. 導覽
+   ══════════════════════════════════════════════ */
+let CUR='today';
+function go(p){
+  CUR=p;
+  $$('#nav a').forEach(a=>a.classList.toggle('on', a.dataset.p===p));
+  $$('.page').forEach(s=>s.classList.toggle('on', s.id==='p-'+p));
+  ({today:renderToday, schedule:renderSchedule, avail:renderAvail, leave:renderLeave,
+    feedback:renderFeedback, students:renderStudents, me:renderMe, account:()=>{}, script:()=>{}}[p]||(()=>{}))();
+  renderBadges();
+  window.scrollTo(0,0);
+}
+$$('#nav a').forEach(a=>a.onclick=()=>go(a.dataset.p));
+
+function renderBadges(){
+  const set=(id,n)=>{ const el=$('#'+id); el.textContent=n||''; el.style.display=n?'':'none'; };
+  set('badgeTodo', todoRoll().length + todoFb().length + todoLeave().length);
+  set('badgeFb', todoFb().length);
+  set('badgeLv', LEAVES.filter(l=>l.status==='pending').length);
+}
+
+/* ══════════════════════════════════════════════
+   6. 首頁
+   ══════════════════════════════════════════════ */
+function renderToday(){
+  const t = now(), today = startOfDay(t);
+  $('#todaySub').innerHTML = '今天是 '+t.getFullYear()+' 年 '+fdate(t)+'　·　時區 '+TENANT.tz+'（一律以租戶時區判定「今天」）';
+
+  const list = SESSIONS.filter(s=>dkey(s.start)===dkey(today)).sort((a,b)=>a.start-b.start);
+
+  // 下一堂／進行中
+  const live = SESSIONS.find(isLive);
+  const next = SESSIONS.find(s=>!isCancelled(s) && s.start>t);
+  let nx='';
+  if(live){
+    nx = '<div class="card" style="border-color:var(--primary)"><h2><span class="pill live">進行中</span> '+live.course+
+      '</h2><div style="font-size:.92rem">'+hm(live.start)+'–'+hm(endOf(live))+'　·　'+live.room+'　·　'+live.roster.length+'/'+live.cap+' 人</div>'+
+      '<div style="margin-top:11px"><button class="btn small" onclick="openSession(\''+live.id+'\')">登記報到</button></div></div>';
+  }else if(next){
+    const diff = next.start - t;
+    const h = Math.floor(diff/HOUR), m = Math.round(diff%HOUR/MIN);
+    const cd = diff < DAY ? (h>0? h+' 小時 '+m+' 分後' : m+' 分後') : Math.round(diff/DAY)+' 天後';
+    nx = '<div class="card"><h2>下一堂 <span class="hint">'+cd+'</span></h2>'+
+      '<div style="font-size:.92rem"><b>'+next.course+'</b>　·　'+fdatetime(next.start)+'–'+hm(endOf(next))+'　·　'+next.room+'　·　'+next.roster.length+'/'+next.cap+' 人</div>'+
+      '<div style="margin-top:11px"><button class="btn small ghost" onclick="openSession(\''+next.id+'\')">看場次</button></div></div>';
+  }
+  $('#todayNext').innerHTML = nx;
+
+  // 今天的課
+  if(!list.length){
+    const nd = next ? '<div class="note">下一堂是 <b>'+fdatetime(next.start)+'</b>　'+next.course+'</div>' : '';
+    $('#todayList').innerHTML = '<div style="padding:20px 0;text-align:center;color:var(--muted)">今天沒有課</div>'+nd;
+  }else{
+    $('#todayList').innerHTML = '<div class="tw"><table><tr><th>時間</th><th>課程</th><th>場地</th><th>人數</th><th>狀態</th></tr>'+
+      list.map(s=>{
+        const w = rollWindow(s);
+        let st = isCancelled(s) ? '<span class="pill bad">已取消</span>'
+               : isLive(s)     ? '<span class="pill live">進行中</span>'
+               : isDone(s)     ? (rollDone(s) ? '<span class="pill ok">已點名</span>' : '<span class="pill wait">未登記報到</span>')
+                               : '<span class="pill grey">即將到來</span>';
+        return '<tr style="cursor:pointer" onclick="openSession(\''+s.id+'\')"><td>'+hm(s.start)+'–'+hm(endOf(s))+
+          '</td><td>'+s.course+'</td><td>'+s.room+'</td><td>'+s.roster.length+'/'+s.cap+'</td><td>'+st+'</td></tr>';
+      }).join('')+'</table></div>';
+  }
+
+  // 待辦
+  const tr = todoRoll(), tf = todoFb(), tl = LEAVES.filter(l=>l.status==='pending');
+  const row = (n,title,sub,fn)=> '<div class="todo" style="cursor:pointer" onclick="'+fn+'"><div class="cnt'+(n?'':' zero')+'">'+n+
+    '</div><div class="tx">'+title+'<small>'+sub+'</small></div><div>›</div></div>';
+  const leftTxt = tr.length ? '最近一筆剩 '+Math.floor(rollWindow(tr[tr.length-1]).left/HOUR)+' 小時可登記' : '沒有待登記的場次';
+  $('#todayTodo').innerHTML =
+    row(tr.length,'未登記報到', leftTxt, "go('schedule')") +
+    row(tf.length,'未填課後回饋','補填期限 7 天，逾期需管理後台解鎖',"go('feedback')") +
+    row(tl.length,'休假待審','送出後由擁有者／管理員／排班角色審核',"go('leave')");
+
+  // 本週概況
+  const wkStart = addDays(today, -((today.getDay()+6)%7));
+  const wk = SESSIONS.filter(s=>s.start>=wkStart && s.start<addDays(wkStart,7) && !isCancelled(s));
+  const done = wk.filter(isDone).length;
+  $('#todayWeek').innerHTML =
+    '<div class="kpi"><div class="lb">本週堂數</div><div class="vl">'+wk.length+' <small>堂</small></div></div>'+
+    '<div class="kpi"><div class="lb">已完成</div><div class="vl">'+done+' <small>堂</small></div></div>'+
+    '<div class="kpi"><div class="lb">未完成</div><div class="vl">'+(wk.length-done)+' <small>堂</small></div></div>';
+}
+
+/* ══════════════════════════════════════════════
+   7. 課表 + 報到
+   ══════════════════════════════════════════════ */
+let schView='week', schOff=0;
+$$('#schTabs button').forEach(b=>b.onclick=()=>{
+  $$('#schTabs button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  schView=b.dataset.v; schOff=0; renderSchedule();
+});
+function schMove(d){ schOff = d===0 ? 0 : schOff+d; renderSchedule(); }
+
+function renderSchedule(){
+  const today = startOfDay(now());
+  if(schView==='week'){
+    const wkStart = addDays(addDays(today, -((today.getDay()+6)%7)), schOff*7);
+    $('#schTitle').textContent = (wkStart.getMonth()+1)+'/'+wkStart.getDate()+' – '+
+      (addDays(wkStart,6).getMonth()+1)+'/'+addDays(wkStart,6).getDate()+(schOff===0?'（本週）':'');
+    let h='<div class="wk">';
+    for(let i=0;i<7;i++){
+      const d = addDays(wkStart,i), off = d.getDay()===0;
+      const ss = SESSIONS.filter(s=>dkey(s.start)===dkey(d)).sort((a,b)=>a.start-b.start);
+      h += '<div class="day'+(off?' off':'')+(dkey(d)===dkey(today)?' today':'')+'">'+
+        '<div class="d">週'+DAYNAME[d.getDay()]+' <b>'+(d.getMonth()+1)+'/'+d.getDate()+'</b></div>'+
+        (off && !ss.length ? '<div style="font-size:.72rem">公休</div>' : '')+
+        ss.map(s=>'<div class="sess'+(isCancelled(s)?' cx':isDone(s)?' done':'')+'" onclick="openSession(\''+s.id+'\')">'+
+          '<b>'+hm(s.start)+'</b>'+s.course+'<span class="rm">'+s.room+' · '+s.roster.length+'/'+s.cap+'</span></div>').join('')+
+        '</div>';
+    }
+    $('#schBody').innerHTML = h+'</div>';
+  }
+  else if(schView==='month'){
+    const m = new Date(today.getFullYear(), today.getMonth()+schOff, 1);
+    $('#schTitle').textContent = m.getFullYear()+' 年 '+(m.getMonth()+1)+' 月'+(schOff===0?'（本月）':'');
+    const first = (m.getDay()+6)%7, last = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate();
+    let h='<div class="mo">'+['一','二','三','四','五','六','日'].map(x=>'<div class="hd">'+x+'</div>').join('');
+    for(let i=0;i<first;i++) h+='<div class="mcell pad"></div>';
+    for(let dd=1; dd<=last; dd++){
+      const d = new Date(m.getFullYear(), m.getMonth(), dd);
+      const ss = SESSIONS.filter(s=>dkey(s.start)===dkey(d)).sort((a,b)=>a.start-b.start);
+      h += '<div class="mcell'+(dkey(d)===dkey(today)?' today':'')+'"><div class="dn">'+dd+'</div>'+
+        ss.map(s=>'<span class="mdot'+(isDone(s)?' done':'')+'" onclick="openSession(\''+s.id+'\')">'+hm(s.start)+' '+s.course.slice(0,4)+'</span>').join('')+'</div>';
+    }
+    $('#schBody').innerHTML = h+'</div>';
+  }
+  else{
+    const from = addDays(today, schOff*14 - 7), to = addDays(from, 21);
+    $('#schTitle').textContent = fdate(from)+' – '+fdate(to);
+    const ss = SESSIONS.filter(s=>s.start>=from && s.start<to);
+    $('#schBody').innerHTML = '<div class="tw"><table><tr><th>日期</th><th>時間</th><th>課程</th><th>場地</th><th>人數</th><th>狀態</th><th></th></tr>'+
+      ss.map(s=>{
+        const st = isCancelled(s)?'<span class="pill bad">已取消</span>'
+                 : isLive(s)?'<span class="pill live">進行中</span>'
+                 : isDone(s)?(rollDone(s)?'<span class="pill ok">已點名</span>':'<span class="pill wait">未登記</span>')
+                 :'<span class="pill grey">即將到來</span>';
+        return '<tr><td>'+fdate(s.start)+'</td><td>'+hm(s.start)+'–'+hm(endOf(s))+'</td><td>'+s.course+'</td><td>'+s.room+
+          '</td><td>'+s.roster.length+'/'+s.cap+'</td><td>'+st+'</td><td><button class="btn tiny plain" onclick="openSession(\''+s.id+'\')">開啟</button></td></tr>';
+      }).join('')+'</table></div>';
+  }
+}
+
+let CURSESS=null;
+function openSession(id){
+  CURSESS = SESSIONS.find(s=>s.id===id);
+  renderSessionModal();
+  $('#mask').classList.add('on');
+}
+function renderSessionModal(){
+  const s = CURSESS, w = rollWindow(s);
+  const st = isCancelled(s)?'<span class="pill bad">已取消</span>'
+           : isLive(s)?'<span class="pill live">進行中</span>'
+           : isDone(s)?'<span class="pill grey">已完成</span>':'<span class="pill grey">即將到來</span>';
+  let head = '<table style="margin-bottom:14px">'+
+    '<tr><td style="width:96px;color:var(--muted)">課程</td><td><b>'+s.course+'</b></td></tr>'+
+    '<tr><td style="color:var(--muted)">日期時間</td><td>'+fdatetime(s.start)+'–'+hm(endOf(s))+'　<span style="color:var(--muted);font-size:.8rem">'+TENANT.tz+'</span></td></tr>'+
+    '<tr><td style="color:var(--muted)">場地</td><td>'+s.room+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">人數</td><td>'+s.roster.length+' / '+s.cap+(s.roster.length>=s.cap?'　<span class="pill wait">額滿</span>':'')+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">狀態</td><td>'+st+'</td></tr></table>';
+
+  let banner='';
+  if(w.state==='early')   banner='<div class="msg info show">'+w.msg+'</div>';
+  if(w.state==='expired') banner='<div class="msg err show">⛔ '+w.msg+'</div>';
+  if(w.state==='cancelled') banner='<div class="msg err show">'+w.msg+'</div>';
+  if(w.state==='open')    banner='<div class="msg ok show">可登記報到，剩餘 '+Math.floor(w.left/HOUR)+' 小時 '+Math.floor(w.left%HOUR/MIN)+' 分。</div>';
+
+  const editable = w.state==='open';
+  const rows = s.roster.map(sid=>{
+    const stu = SMAP[sid], v = s.roll[sid]||'';
+    const btn = (val,label,cls)=> '<button class="btn tiny '+(v===val?cls:'plain')+'" '+(editable?'':'disabled')+
+      ' onclick="setRoll(\''+sid+'\',\''+val+'\')">'+label+'</button>';
+    return '<tr><td>'+stu.name+'</td><td style="font-family:monospace">'+stu.code+'</td><td>'+
+      (v==='in'?'<span class="pill ok">已報到</span>':v==='absent'?'<span class="pill bad">缺席</span>':'<span class="pill grey">未登記</span>')+
+      '</td><td style="white-space:nowrap">'+btn('in','報到','')+' '+btn('absent','缺席','danger')+'</td></tr>';
+  }).join('');
+
+  const code = editable ? '<div style="display:flex;gap:8px;margin-top:12px"><input id="rcCode" placeholder="輸入 4 位報到碼核銷" style="flex:1;padding:8px 11px;border:1.5px solid var(--line);border-radius:9px">'+
+    '<button class="btn small" onclick="redeem()">核銷</button></div>' : '';
+
+  const log = s.log.length ? '<div class="note"><b>變更紀錄</b><br>'+s.log.map(l=>l).join('<br>')+'</div>' : '';
+
+  $('#mTitle').innerHTML = '場次詳情';
+  $('#mBody').innerHTML = head + banner +
+    '<h3 style="font-size:.95rem;margin:0 0 6px">報到名單</h3>'+
+    '<div class="tw"><table><tr><th>學員</th><th>報到碼</th><th>狀態</th><th></th></tr>'+rows+'</table></div>'+ code +
+    '<div class="note spec"><b>規格</b>：名單只有姓名、報到碼與報到狀態，<b>不含金額、付款狀態與訂單資訊</b>——那些屬管理後台。缺席後的補課與退費判定也由管理後台依政策處理。</div>'+ log;
+  $('#mFoot').innerHTML = '<button class="btn plain" onclick="closeModal()">關閉</button>';
+}
+function setRoll(sid, val){
+  const s = CURSESS, old = s.roll[sid]||'未登記';
+  const map = {in:'已報到', absent:'缺席'};
+  if(s.roll[sid]===val){ delete s.roll[sid]; s.log.push('['+fdatetime(now())+'] 林小柔 將 '+SMAP[sid].name+' 由「'+map[val]+'」改為「未登記」'); }
+  else { s.roll[sid]=val; s.log.push('['+fdatetime(now())+'] 林小柔 將 '+SMAP[sid].name+' 由「'+(map[old]||old)+'」改為「'+map[val]+'」'); }
+  renderSessionModal(); renderBadges(); if(CUR==='today') renderToday();
+}
+function redeem(){
+  const v = $('#rcCode').value.trim();
+  const sid = CURSESS.roster.find(x=>SMAP[x].code===v);
+  if(!sid){ toast('查無此報到碼（此場次名單內沒有這個代碼）', 1); return; }
+  CURSESS.roll[sid]='in';
+  CURSESS.log.push('['+fdatetime(now())+'] 林小柔 以報到碼核銷 '+SMAP[sid].name+' → 已報到');
+  toast(SMAP[sid].name+' 已報到'); renderSessionModal(); renderBadges();
+}
+
+/* ══════════════════════════════════════════════
+   8. 可授課時段
+   ══════════════════════════════════════════════ */
+let avView='grid';
+$$('#avTabs button').forEach(b=>b.onclick=()=>{
+  $$('#avTabs button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  avView=b.dataset.v;
+  $('#avGridCard').style.display = avView==='grid'?'':'none';
+  $('#avListCard').style.display = avView==='list'?'':'none';
+  renderAvail();
+});
+function setBuf(v){ BUFFER=+v; toast('緩衝時間已設為 '+v+' 分鐘'); }
+
+function bookedHours(){
+  const set = new Set();
+  SESSIONS.filter(s=>!isCancelled(s) && s.start>now() && s.roster.length>0).forEach(s=>{
+    const d = s.start.getDay();
+    for(let h=s.start.getHours(); h<endOf(s).getHours()+ (endOf(s).getMinutes()?1:0); h++) set.add(d+'_'+h);
+  });
+  return set;
+}
+function renderAvail(){
+  const booked = bookedHours();
+  let h = '<div class="h"></div>' + [1,2,3,4,5,6,0].map(d=>'<div class="h">週'+DAYNAME[d]+'</div>').join('');
+  for(let hr=8; hr<=21; hr++){
+    h += '<div class="rowlbl">'+pad(hr)+':00</div>';
+    for(const d of [1,2,3,4,5,6,0]){
+      const open = TENANT.open[d];
+      let cls='cell', title='';
+      if(!open || hr<open[0] || hr>=open[1]){ cls+=' closed'; title='超出店家營業時間'; }
+      else if(TENANT.breakHours.includes(hr)){ cls+=' brk'; title='店家休息時間'; }
+      else if(booked.has(d+'_'+hr)){ cls+=' booked'; title='已被學員預約'; }
+      else if((AVAIL[d]||[]).includes(hr)){ cls+=' on'; title='可授課'; }
+      h += '<div class="'+cls+'" title="'+title+'" onclick="toggleCell('+d+','+hr+')"></div>';
+    }
+  }
+  $('#avGrid').innerHTML = h;
+
+  // 列表模式
+  let rows = '<tr><th>星期</th><th>可授課時段</th><th></th></tr>';
+  for(const d of [1,2,3,4,5,6,0]){
+    const hrs = (AVAIL[d]||[]).slice().sort((a,b)=>a-b);
+    const ranges=[]; let st=null, pv=null;
+    hrs.forEach(x=>{ if(st===null){st=x;pv=x;} else if(x===pv+1){pv=x;} else {ranges.push([st,pv+1]); st=x; pv=x;} });
+    if(st!==null) ranges.push([st,pv+1]);
+    const open = TENANT.open[d];
+    rows += '<tr><td>週'+DAYNAME[d]+'</td><td>'+
+      (!open ? '<span style="color:var(--muted)">公休</span>' :
+       ranges.length ? ranges.map(r=>pad(r[0])+':00–'+pad(r[1])+':00').join('　·　') : '<span style="color:var(--muted)">未開放</span>')+
+      '</td><td>'+(open?'<button class="btn tiny plain" onclick="clearDay('+d+')">清空這天</button>':'')+'</td></tr>';
+  }
+  $('#avListTbl').innerHTML = rows;
+}
+function toggleCell(d,hr){
+  const open = TENANT.open[d];
+  if(!open || hr<open[0] || hr>=open[1]){ toast('⛔ 超出店家營業時間——可授課時段必須落在營業時間內', 1); return; }
+  if(TENANT.breakHours.includes(hr)){ toast('⛔ 此時段為店家休息時間（午休 12:00–13:00）', 1); return; }
+  if(bookedHours().has(d+'_'+hr)){ toast('⛔ 已被學員預約，需先由管理後台改派或取消該場次', 1); return; }
+  AVAIL[d] = AVAIL[d]||[];
+  const i = AVAIL[d].indexOf(hr);
+  if(i>=0) AVAIL[d].splice(i,1); else AVAIL[d].push(hr);
+  renderAvail();
+}
+function clearDay(d){ AVAIL[d]=[]; renderAvail(); toast('週'+DAYNAME[d]+' 的可授課時段已清空——兩種編輯介面共用同一份資料'); }
+
+/* ══════════════════════════════════════════════
+   9. 休假
+   ══════════════════════════════════════════════ */
+function renderLeave(){
+  // 額度卡
+  if(!FLAGS.quota){
+    $('#lvQuota').innerHTML = '<div class="note">休假額度模組已關閉——不顯示任何額度欄位，休假申請流程照常運作。</div>';
+  }else{
+    const q = quota();
+    const pct = x => Math.min(100, x/q.total*100);
+    $('#lvQuota').innerHTML = '<div class="card"><h2>年度休假額度 <span class="hint">年度起始月：1 月　·　全天以一日 8 小時換算</span></h2>'+
+      '<div class="grid4">'+
+      '<div class="kpi"><div class="lb">年度額度</div><div class="vl">'+(q.total/DAY_HOURS)+' <small>天（'+q.total+' 小時）</small></div></div>'+
+      '<div class="kpi"><div class="lb">已用（核准）</div><div class="vl">'+(q.used/DAY_HOURS).toFixed(1)+' <small>天</small></div>'+
+        '<div class="barwrap"><div class="bar used" style="width:'+pct(q.used)+'%"></div></div></div>'+
+      '<div class="kpi"><div class="lb">待審佔用</div><div class="vl">'+(q.hold/DAY_HOURS).toFixed(1)+' <small>天</small></div>'+
+        '<div class="barwrap"><div class="bar" style="width:'+pct(q.hold)+'%"></div></div></div>'+
+      '<div class="kpi"><div class="lb">剩餘</div><div class="vl" style="color:'+(q.left<0?'var(--bad)':'var(--ok)')+'">'+(q.left/DAY_HOURS).toFixed(1)+' <small>天</small></div></div>'+
+      '</div><div class="note spec"><b>規格</b>：<b>核准時才扣抵</b>；待審期間算「待審佔用」不計入已用；撤回或駁回不扣；核准後取消休假額度回補。</div></div>';
+  }
+
+  // 紀錄表
+  const label = {pending:'<span class="pill wait">待審核</span>', approved:'<span class="pill ok">已核准</span>',
+                 rejected:'<span class="pill bad">已駁回</span>', expired:'<span class="pill grey">已過期</span>'};
+  let rows = '<tr><th>期間</th><th>範圍</th><th>時數</th><th>事由</th><th>狀態</th><th>可做的事</th></tr>';
+  const sorted = [...LEAVES].sort((a,b)=>b.from-a.from);
+  rows += sorted.map(l=>{
+    const period = dkey(l.from)===dkey(l.to) ? fdate(l.from) : fdate(l.from)+' – '+fdate(l.to);
+    const scope = l.mode==='all' ? '全天' : l.t1+'–'+l.t2;
+    let act='';
+    if(l.status==='pending'){
+      act = '<button class="btn tiny plain" onclick="withdrawLeave(\''+l.id+'\')">撤回</button> '+
+            '<button class="btn tiny" onclick="approveLeave(\''+l.id+'\')">核准</button> '+
+            '<button class="btn tiny danger" onclick="rejectLeave(\''+l.id+'\')">駁回</button>';
+    }else if(l.status==='approved' && l.to>=startOfDay(now())){
+      act = '<button class="btn tiny plain" onclick="cancelLeave(\''+l.id+'\')">申請取消休假</button>';
+    }else if(l.status==='rejected'){
+      act = '<span style="font-size:.78rem;color:var(--bad)">'+(l.reason||'—')+'</span>';
+    }else act = '<span style="color:var(--muted);font-size:.8rem">僅供查閱</span>';
+    const over = l._over ? ' <span class="pill wait">超額</span>' : '';
+    const cf = l.conflicts && l.conflicts.length ? '<br><span style="font-size:.76rem;color:var(--bad)">⚠ '+l.conflicts.length+' 堂衝突未處理</span>' : '';
+    return '<tr><td>'+period+cf+'</td><td>'+scope+'</td><td>'+(FLAGS.quota?leaveHours(l)+' 小時':'—')+over+'</td><td>'+(l.why||'—')+
+      '</td><td>'+label[l.status]+'</td><td style="white-space:nowrap">'+act+'</td></tr>';
+  }).join('');
+  $('#lvTbl').innerHTML = rows;
+
+  // 預設日期
+  if(!$('#lvFrom').value){
+    const d = addDays(startOfDay(now()), 7);
+    $('#lvFrom').value = dkey(d); $('#lvTo').value = dkey(d);
+  }
+  previewLeave();
+}
+['lvFrom','lvTo','lvMode','lvT1','lvT2'].forEach(id=>{
+  document.addEventListener('input', e=>{ if(e.target.id===id) previewLeave(); });
+});
+function previewLeave(){
+  const f=$('#lvFrom').value, t=$('#lvTo').value;
+  if(!f||!t){ $('#lvPre').innerHTML=''; return; }
+  const from=new Date(f+'T00:00'), to=new Date(t+'T00:00');
+  if(to<from){ $('#lvPre').innerHTML='<div class="msg err show">結束日期不可早於開始日期</div>'; return; }
+  const mode=$('#lvMode').value, t1=$('#lvT1').value, t2=$('#lvT2').value;
+  const cf = findConflicts(from,to,mode,t1,t2);
+  const hrs = leaveHours({from,to,mode,t1,t2});
+  let h='';
+  if(FLAGS.quota){
+    const q=quota(), over = hrs > q.left;
+    h += '<div class="msg '+(over?'err':'info')+' show">本次 '+hrs+' 小時（'+(hrs/DAY_HOURS).toFixed(1)+' 天）　·　目前剩餘 '+(q.left/DAY_HOURS).toFixed(1)+' 天'+
+      (over?'<br><b>超過剩餘額度</b>——預設不擋，送出後會標記「超額」交審核者決定。':'')+'</div>';
+  }
+  if(cf.length){
+    h += '<div class="msg err show"><b>⚠ 這段期間已有 '+cf.length+' 堂有人報名的課</b><ul style="margin:7px 0 0;padding-left:1.1rem">'+
+      cf.map(s=>'<li>'+fdatetime(s.start)+'　'+s.course+'（'+s.roster.length+' 人）</li>').join('')+
+      '</ul><div style="margin-top:7px">核准前必須先改派或取消這些場次，系統不會自動更動學員的課。</div></div>';
+  }
+  $('#lvPre').innerHTML=h;
+}
+function submitLeave(){
+  const f=$('#lvFrom').value, t=$('#lvTo').value;
+  if(!f||!t){ toast('請填寫休假期間（必填）',1); return; }
+  const from=new Date(f+'T00:00'), to=new Date(t+'T00:00');
+  if(to<from){ toast('結束日期不可早於開始日期',1); return; }
+  const mode=$('#lvMode').value, t1=$('#lvT1').value, t2=$('#lvT2').value;
+  const cf = findConflicts(from,to,mode,t1,t2);
+  const l = {id:'L'+(LEAVES.length+1+Math.floor(rnd()*900)), from, to, mode, t1, t2,
+             why:$('#lvWhy').value.trim(), status:'pending', conflicts:cf.map(s=>s.id)};
+  if(FLAGS.quota) l._over = leaveHours(l) > quota().left;
+  LEAVES.push(l);
+  $('#lvWhy').value='';
+  toast('已送出申請，狀態為「待審核」，並已通知審核者');
+  renderLeave(); renderBadges();
+}
+function withdrawLeave(id){
+  const i = LEAVES.findIndex(l=>l.id===id); LEAVES.splice(i,1);
+  toast('已撤回——待審期間撤回不扣抵額度'); renderLeave(); renderBadges();
+}
+function approveLeave(id){
+  const l = LEAVES.find(x=>x.id===id);
+  if(l.conflicts && l.conflicts.length){
+    openModal('無法核准 · 尚有衝突場次未處理',
+      '<div class="msg err show">這段休假期間內還有 '+l.conflicts.length+' 堂已有人報名的課。</div>'+
+      '<ul style="padding-left:1.1rem;font-size:.9rem">'+l.conflicts.map(id=>{const s=SESSIONS.find(x=>x.id===id);
+        return '<li>'+fdatetime(s.start)+'　'+s.course+'（'+s.roster.length+' 人）</li>';}).join('')+'</ul>'+
+      '<div class="note spec"><b>規格</b>：核准前必須先<b>改派或取消</b>那些場次，系統<b>絕不自動動學員的課</b>。改派／取消的通知與退款走既有流程。</div>',
+      '<button class="btn plain" onclick="closeModal()">知道了</button>'+
+      '<button class="btn" onclick="resolveConflicts(\''+id+'\')">模擬：由排班者改派完成</button>');
+    return;
+  }
+  l.status='approved'; l.by='王主任'; l._unread=true;
+  toast('已核准——額度於此時扣抵，該區間自可授課時段扣除');
+  renderLeave(); renderAvail(); renderBadges();
+}
+function resolveConflicts(id){
+  const l = LEAVES.find(x=>x.id===id);
+  l.conflicts.forEach(sid=>{ const s=SESSIONS.find(x=>x.id===sid); if(s) s.status='cancelled'; });
+  l.conflicts=[]; closeModal();
+  toast('衝突場次已由排班者處理（原型以取消模擬），現在可以核准了');
+  renderLeave();
+}
+function rejectLeave(id){
+  const l = LEAVES.find(x=>x.id===id);
+  const reason = prompt('駁回理由（必填）：');
+  if(!reason){ toast('駁回必須填寫理由',1); return; }
+  l.status='rejected'; l.reason=reason; l._unread=true;
+  toast('已駁回並通知老師——駁回不扣抵額度');
+  renderLeave(); renderBadges();
+}
+function cancelLeave(id){
+  const l = LEAVES.find(x=>x.id===id);
+  l.status='pending'; l._cancelReq=true;
+  toast('已送出「取消休假」申請，需再次審核；核准後額度回補');
+  renderLeave(); renderBadges();
+}
+
+/* ══════════════════════════════════════════════
+   10. 課後回饋
+   ══════════════════════════════════════════════ */
+let FBSESS=null;
+function renderFeedback(){
+  const cands = SESSIONS.filter(s=>isDone(s) && !isCancelled(s) && endOf(s).getTime() > now().getTime()-21*DAY)
+                        .sort((a,b)=>b.start-a.start);
+  let rows='<tr><th>日期</th><th>課程</th><th>需填人數</th><th>狀態</th><th></th></tr>';
+  rows += cands.map(s=>{
+    const w=fbWindow(s), tg=fbTargets(s), filled=tg.filter(sid=>s.fb[sid]).length;
+    const st = w.state==='expired' ? '<span class="pill grey">逾期唯讀</span>'
+             : fbDone(s) ? '<span class="pill ok">已完成</span>'
+             : '<span class="pill wait">未填 '+(tg.length-filled)+'/'+tg.length+'</span>';
+    const left = w.state==='open' ? '剩 '+Math.ceil(w.left/DAY)+' 天' : '';
+    return '<tr><td>'+fdate(s.start)+' '+hm(s.start)+'</td><td>'+s.course+'</td><td>'+tg.length+
+      '<br><span style="font-size:.74rem;color:var(--muted)">'+(s.roster.length-tg.length?'缺席 '+(s.roster.length-tg.length)+' 人不需填':'')+'</span></td>'+
+      '<td>'+st+'<br><span style="font-size:.74rem;color:var(--muted)">'+left+'</span></td>'+
+      '<td><button class="btn tiny '+(w.state==='expired'?'plain':'')+'" onclick="openFb(\''+s.id+'\')">'+(w.state==='expired'?'檢視':'填寫')+'</button></td></tr>';
+  }).join('');
+  $('#fbTbl').innerHTML = rows;
+  if(FBSESS) renderFbEditor(); else $('#fbEditor').innerHTML='';
+}
+function openFb(id){ FBSESS = SESSIONS.find(s=>s.id===id); renderFbEditor(); $('#fbEditor').scrollIntoView({behavior:'smooth'}); }
+function renderFbEditor(){
+  const s=FBSESS, w=fbWindow(s), ro = w.state!=='open';
+  const levels = ['','初級','中級','高級'];
+  let h = '<div class="card"><h2>'+fdate(s.start)+' '+hm(s.start)+'　'+s.course+
+    ' <span class="hint">'+(ro?'逾期唯讀':'補填期限剩 '+Math.ceil(w.left/DAY)+' 天')+'</span></h2>';
+  if(ro) h += '<div class="msg err show">已超過補填期限（完成後 7 天），此份回饋轉為唯讀。需由管理後台解鎖才能修改。</div>';
+
+  if(!ro) h += '<div class="fld"><label>全場共同評語 <span style="font-weight:400;color:var(--muted)">（可套用到所有學員）</span></label>'+
+    '<textarea id="fbAll" style="min-height:52px" placeholder="例：今天練漸層上色，整體專注度不錯。"></textarea>'+
+    '<button class="btn small plain" style="margin-top:7px" onclick="applyAll()">套用到所有學員</button></div>';
+
+  h += s.roster.map(sid=>{
+    const stu=SMAP[sid], absent = s.roll[sid]==='absent', saved=s.fb[sid];
+    if(absent) return '<div class="fbrow ro"><div class="nm">'+stu.name+' <span class="pill grey">缺席</span>'+
+      '<span style="margin-left:auto;font-size:.78rem;color:var(--muted)">不需填寫</span></div></div>';
+    return '<div class="fbrow"><div class="nm">'+stu.name+
+      (s.roll[sid]==='in'?' <span class="pill ok">已報到</span>':' <span class="pill grey">未登記</span>')+
+      (saved?'<span style="margin-left:auto;font-size:.76rem;color:var(--ok)">已填寫</span>':'')+'</div>'+
+      '<textarea id="fb_'+sid+'" '+(ro?'disabled':'')+' placeholder="評語">'+(saved?saved.text:'')+'</textarea>'+
+      (FLAGS.level ? '<div style="display:flex;align-items:center;gap:9px"><label style="font-size:.8rem;color:var(--muted)">建議等級</label>'+
+        '<select id="lv_'+sid+'" '+(ro?'disabled':'')+'>'+levels.map(l=>'<option value="'+l+'"'+((saved&&saved.level)===l?' selected':'')+'>'+(l||'不變更')+'</option>').join('')+'</select>'+
+        '<span style="font-size:.76rem;color:var(--muted)">目前：'+stu.level+'</span></div>' : '')+
+      '</div>';
+  }).join('');
+
+  h += (ro?'':'<button class="btn" onclick="saveFb()">儲存回饋</button> ')+
+       '<button class="btn plain" onclick="FBSESS=null;renderFeedback()">收起</button>';
+  h += '<div class="note spec"><b>規格</b>：'+(FLAGS.level
+        ? '等級模組啟用中，出現「建議等級」欄；老師只能<b>建議</b>，學員的實際等級不會因此改動，須由管理後台核可。'
+        : '等級模組已關閉，回饋表單<b>不出現「建議等級」欄</b>，只有文字評語。')+
+        '　回饋是否對學員／家長公開由租戶開關決定，預設不公開；公開時也不顯示建議等級。</div></div>';
+  $('#fbEditor').innerHTML = h;
+}
+function applyAll(){
+  const v = $('#fbAll').value;
+  FBSESS.roster.forEach(sid=>{ const el=$('#fb_'+sid); if(el && !el.disabled) el.value=v; });
+  toast('已套用到所有需填寫的學員');
+}
+function saveFb(){
+  const s=FBSESS; let n=0, lv=0;
+  fbTargets(s).forEach(sid=>{
+    const t=$('#fb_'+sid); if(!t) return;
+    const level = FLAGS.level ? ($('#lv_'+sid)||{}).value||'' : '';
+    if(t.value.trim() || level){ s.fb[sid]={text:t.value.trim(), level, at:now()}; n++; if(level) lv++; }
+  });
+  let msg='已儲存 '+n+' 筆回饋。';
+  if(lv) msg += ' 其中 '+lv+' 筆填了建議等級——已送出建議，<b>學員等級尚未變更</b>，需由管理後台核可。';
+  openModal('回饋已儲存', '<p style="margin-top:0">'+msg+'</p>'+
+    '<div class="note spec"><b>規格</b>：建立與每次修改都留紀錄，畫面顯示最後修改人與時間。</div>');
+  renderFeedback(); renderBadges();
+}
+
+/* ══════════════════════════════════════════════
+   11. 學員歷程
+   ══════════════════════════════════════════════ */
+function myStudents(){
+  const map = {};
+  SESSIONS.filter(s=>isDone(s) && !isCancelled(s)).forEach(s=>{
+    s.roster.forEach(sid=>{
+      map[sid] = map[sid] || {id:sid, sessions:[], in:0, absent:0, none:0};
+      map[sid].sessions.push(s);
+      const v=s.roll[sid];
+      if(v==='in') map[sid].in++; else if(v==='absent') map[sid].absent++; else map[sid].none++;
+    });
+  });
+  return map;
+}
+function rate(o){ const d=o.in+o.absent; return d? Math.round(o.in/d*100) : null; }
+
+function renderStudents(){
+  const map = myStudents(), list = Object.values(map);
+  const tot = list.reduce((a,o)=>({in:a.in+o.in, absent:a.absent+o.absent, none:a.none+o.none}), {in:0,absent:0,none:0});
+  const r = rate(tot);
+  $('#stKpi').innerHTML =
+    '<div class="kpi"><div class="lb">整體出席率</div><div class="vl">'+(r===null?'—':r+' <small>%</small>')+'</div></div>'+
+    '<div class="kpi"><div class="lb">已報到</div><div class="vl">'+tot.in+' <small>人次</small></div></div>'+
+    '<div class="kpi"><div class="lb">缺席</div><div class="vl">'+tot.absent+' <small>人次</small></div></div>'+
+    '<div class="kpi"><div class="lb">未登記（不計入分母）</div><div class="vl" style="color:var(--warn)">'+tot.none+' <small>人次</small></div></div>';
+
+  const q = ($('#stQ').value||'').trim();
+  let shown = list;
+  if(q){
+    shown = list.filter(o=>SMAP[o.id].name.includes(q));
+    const other = STUDENTS.find(s=>s.name.includes(q) && !map[s.id]);
+    if(!shown.length){
+      $('#stTbl').innerHTML = '<tr><td style="color:var(--bad)">查無此學員——只能查詢<b>上過你課程</b>的學員'+
+        (other?'（「'+other.name+'」不在你的任何一堂課裡）':'')+'。</td></tr>';
+      $('#stDetail').innerHTML=''; return;
+    }
+  }
+  let rows='<tr><th>學員</th>'+(FLAGS.level?'<th>目前等級</th>':'')+'<th>在我課上堂數</th><th>出席率</th><th></th></tr>';
+  rows += shown.sort((a,b)=>b.sessions.length-a.sessions.length).map(o=>{
+    const s=SMAP[o.id], rr=rate(o);
+    return '<tr><td>'+s.name+'</td>'+(FLAGS.level?'<td>'+s.level+'</td>':'')+'<td>'+o.sessions.length+' 堂</td>'+
+      '<td>'+(rr===null?'—':rr+'%')+(o.none?' <span style="font-size:.74rem;color:var(--warn)">（'+o.none+' 堂未登記）</span>':'')+'</td>'+
+      '<td><button class="btn tiny plain" onclick="openStu(\''+o.id+'\')">歷程</button></td></tr>';
+  }).join('');
+  $('#stTbl').innerHTML = rows;
+}
+function openStu(id){
+  const o = myStudents()[id], s = SMAP[id], rr = rate(o);
+  const first = o.sessions[0], last = o.sessions[o.sessions.length-1];
+  let h = '<div class="card"><h2>'+s.name+' 的歷程 <span class="hint">只含在你課上的紀錄</span></h2>'+
+    '<div class="grid4" style="margin-bottom:14px">'+
+    '<div class="kpi"><div class="lb">上過堂數</div><div class="vl">'+o.sessions.length+' <small>堂</small></div></div>'+
+    '<div class="kpi"><div class="lb">出席率</div><div class="vl">'+(rr===null?'—':rr+' <small>%</small>')+'</div></div>'+
+    '<div class="kpi"><div class="lb">缺席</div><div class="vl">'+o.absent+' <small>次</small></div></div>'+
+    (FLAGS.level?'<div class="kpi"><div class="lb">目前等級</div><div class="vl">'+s.level+'</div></div>':'')+
+    '</div>'+
+    '<table style="margin-bottom:12px"><tr><td style="width:110px;color:var(--muted)">起訖</td><td>'+fdate(first.start)+' ～ '+fdate(last.start)+'</td></tr>'+
+    (s.note?'<tr><td style="color:var(--muted)">備註</td><td>'+s.note+'</td></tr>':'')+
+    (FLAGS.contact
+      ? '<tr><td style="color:var(--muted)">聯絡電話</td><td>'+s.phone+'</td></tr><tr><td style="color:var(--muted)">家長聯絡</td><td>'+s.guardian+'</td></tr>'
+      : '<tr><td style="color:var(--muted)">聯絡資料</td><td><span class="pill grey">未開放</span> 租戶未開啟老師端顯示聯絡資料</td></tr>')+
+    '</table>'+
+    '<div class="tw"><table><tr><th>日期</th><th>課程</th><th>出席</th><th>我填的回饋</th></tr>'+
+    o.sessions.slice().reverse().map(ss=>{
+      const v=ss.roll[id], fb=ss.fb[id];
+      return '<tr><td>'+fdate(ss.start)+'</td><td>'+ss.course+'</td><td>'+
+        (v==='in'?'<span class="pill ok">已報到</span>':v==='absent'?'<span class="pill bad">缺席</span>':'<span class="pill grey">未登記</span>')+
+        '</td><td style="font-size:.84rem;color:var(--muted)">'+(fb?fb.text+(fb.level?'　<span class="pill wait">建議 '+fb.level+'（待核可）</span>':''):'—')+'</td></tr>';
+    }).join('')+'</table></div>'+
+    '<div class="note spec"><b>規格</b>：不含金額、付款狀態與訂單資訊；聯絡資料預設不顯示，由租戶開關決定。</div>'+
+    '<button class="btn plain" style="margin-top:11px" onclick="document.getElementById(\'stDetail\').innerHTML=\'\'">收起</button></div>';
+  $('#stDetail').innerHTML = h;
+  $('#stDetail').scrollIntoView({behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════════
+   12. 我的資格・個資・統計
+   ══════════════════════════════════════════════ */
+let statRange='m0';
+$$('#statTabs button').forEach(b=>b.onclick=()=>{
+  $$('#statTabs button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  statRange=b.dataset.v; renderStats();
+});
+function renderMe(){
+  $('#qualTbl').innerHTML = '<tr><th>項目</th><th>內容</th></tr>'+
+    QUAL.filter(q=>FLAGS.level || q[0]!=='可帶的等級範圍')
+        .map(q=>'<tr><td>'+q[0]+'</td><td>'+q[1]+'</td></tr>').join('');
+  $('#pfBio').value = PROFILE.bio; $('#pfTag').value = PROFILE.tag;
+  $('#pfMode').textContent = FLAGS.approve ? '目前設定：修改需管理員審核' : '目前設定：存檔即生效';
+  $('#pfState').innerHTML = PROFILE.pending
+    ? '<span class="pill wait">待審核</span> 前台仍顯示舊內容' : '';
+  renderStats();
+}
+function saveProfile(){
+  const bio=$('#pfBio').value, tag=$('#pfTag').value;
+  if(FLAGS.approve){
+    PROFILE.pending = {bio, tag};
+    toast('已送出修改，進入待審狀態——前台仍顯示舊內容，待管理員審核');
+  }else{
+    PROFILE.bio=bio; PROFILE.tag=tag; PROFILE.pending=null;
+    toast('已儲存，存檔即生效——官網老師頁隨即更新');
+  }
+  renderMe();
+}
+function renderStats(){
+  const t=now(); let from, to, label;
+  if(statRange==='m0'){ from=new Date(t.getFullYear(),t.getMonth(),1); to=new Date(t.getFullYear(),t.getMonth()+1,1); label='本月'; }
+  else if(statRange==='m1'){ from=new Date(t.getFullYear(),t.getMonth()-1,1); to=new Date(t.getFullYear(),t.getMonth(),1); label='上月'; }
+  else { from=new Date(2000,0,1); to=addDays(t,1); label='全期間'; }
+
+  const inRange = s => s.start>=from && s.start<to;
+  const done = SESSIONS.filter(s=>inRange(s) && isDone(s) && !isCancelled(s));
+  const cx   = SESSIONS.filter(s=>inRange(s) && isCancelled(s));
+  const mins = done.reduce((a,s)=>a+s.dur,0);
+  const lvDays = leaveDays();
+  const lost = cx.length + SESSIONS.filter(s=>inRange(s) && !isCancelled(s) && lvDays.has(dkey(s.start))).length;
+
+  $('#statKpi').innerHTML =
+    '<div class="kpi"><div class="lb">'+label+' 授課堂數</div><div class="vl">'+done.length+' <small>堂</small></div></div>'+
+    '<div class="kpi"><div class="lb">'+label+' 授課時數</div><div class="vl">'+(mins/60).toFixed(1)+' <small>小時</small></div></div>'+
+    '<div class="kpi"><div class="lb">因取消／休假未上</div><div class="vl">'+lost+' <small>堂</small></div></div>'+
+    '<div class="kpi"><div class="lb">平均每堂人數</div><div class="vl">'+(done.length?(done.reduce((a,s)=>a+s.roster.length,0)/done.length).toFixed(1):'—')+' <small>人</small></div></div>';
+
+  const byCourse = {};
+  done.forEach(s=>{ byCourse[s.course]=byCourse[s.course]||{n:0,m:0}; byCourse[s.course].n++; byCourse[s.course].m+=s.dur; });
+  $('#statTbl').innerHTML = '<tr><th>課程</th><th>堂數</th><th>時數</th></tr>'+
+    (Object.keys(byCourse).length
+      ? Object.entries(byCourse).map(([k,v])=>'<tr><td>'+k+'</td><td>'+v.n+' 堂</td><td>'+(v.m/60).toFixed(1)+' 小時</td></tr>').join('')
+      : '<tr><td colspan="3" style="color:var(--muted)">此期間沒有已完成的課</td></tr>');
+}
+
+/* ══════════════════════════════════════════════
+   13. 測試面板
+   ══════════════════════════════════════════════ */
+function setFlag(k,v){
+  FLAGS[k]=v;
+  const msgs = {
+    level: v?'等級模組已啟用——回饋表單會出現「建議等級」':'等級模組已關閉——回饋表單不出現「建議等級」，資格也不顯示等級範圍',
+    quota: v?'休假額度模組已啟用':'休假額度模組已關閉——額度卡整組消失，申請流程照走',
+    contact: v?'已開放老師端顯示學員聯絡資料':'已關閉學員聯絡資料（規格預設值）',
+    approve: v?'個資修改改為需管理員審核':'個資修改改為存檔即生效'
+  };
+  toast(msgs[k]);
+  go(CUR);
+}
+function setClock(v){
+  const real = new Date();
+  if(v==='0'){ CLOCK_OFFSET=0; }
+  else if(v==='sun'){
+    const d = new Date(real); d.setDate(d.getDate() + ((7-d.getDay())%7 || 7)); d.setHours(11,0,0,0);
+    CLOCK_OFFSET = d - real;
+  }else{
+    CLOCK_OFFSET = 0;
+    const next = SESSIONS.find(s=>!isCancelled(s) && s.start>new Date());
+    if(!next){ toast('找不到未來的場次',1); return; }
+    const map = {
+      pre10: next.start.getTime() - 10*MIN,
+      mid:   next.start.getTime() + Math.min(20, next.dur/2)*MIN,
+      after2: endOf(next).getTime() + 2*HOUR,
+      eod:   new Date(next.start.getFullYear(), next.start.getMonth(), next.start.getDate(), 22, 30).getTime()
+    };
+    CLOCK_OFFSET = map[v] - real.getTime();
+  }
+  buildData();
+  toast('現在時間已切換為 '+fdatetime(now())+'（原型時間旅行）');
+  go(CUR);
+}
+function resetAll(){
+  CLOCK_OFFSET=0; $('#tpClock').value='0';
+  FLAGS.level=true; FLAGS.quota=true; FLAGS.contact=false; FLAGS.approve=false;
+  $('#swLevel').checked=true; $('#swQuota').checked=true; $('#swContact').checked=false; $('#swApprove').checked=false;
+  PROFILE = { bio:'教畫畫十二年，喜歡讓孩子從塗鴉開始建立自信。上課節奏慢，會等每個孩子畫完。', tag:'兒童繪畫｜幼兒律動', pending:null };
+  BUFFER=15; failCount=0; lockUntil=0; FBSESS=null; schOff=0;
+  buildData(); go('today'); toast('原型資料已重置');
+}
+
+/* ══════════════════════════════════════════════
+   14. 啟動
+   ══════════════════════════════════════════════ */
+function tick(){
+  const t=now();
+  $('#tbClock').textContent = TENANT.tz+'　'+t.getFullYear()+'/'+pad(t.getMonth()+1)+'/'+pad(t.getDate())+' '+hm(t)+
+    (CLOCK_OFFSET? '（原型時間旅行中）':'');
+}
+buildData();
+showAuth('vLogin');
+tick(); setInterval(()=>{ tick(); if(loggedIn && CUR==='today') renderToday(); }, 30000);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+$('#liEmail').addEventListener('keydown', e=>{ if(e.key==='Enter') sendCode(); });
+$('#cdInput').addEventListener('keydown', e=>{ if(e.key==='Enter') verifyCode(); });
+$('#cdInput').addEventListener('input', e=>{ const v=e.target.value.replace(/\D/g,'').slice(0,6); if(e.target.value!==v) e.target.value=v; });
+</script>
+</body>
+</html>

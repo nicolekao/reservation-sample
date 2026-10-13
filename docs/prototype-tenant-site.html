@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小樹才藝班 · 課程預約（官網範本）</title>
+<style>
+  /* ===== 主題引擎：顏色角色（租戶可自訂，這裡示範「才藝班經典」配色） ===== */
+  :root{
+    --primary:#e8734a;        /* 主色：按鈕、連結、重點 */
+    --primary-ink:#ffffff;    /* 主色上的文字色 */
+    --accent:#2ba58c;         /* 次色/強調 */
+    --neutral:#3c4043;        /* 中性色：頁尾深底 */
+    --bg:#fdf9f4;             /* 頁面背景 */
+    --card:#ffffff;           /* 卡片背景 */
+    --line:#eee3d8;           /* 邊界 */
+    --ink:#33302c;            /* 內文 */
+    --muted:#8a8177;          /* 次要文字 */
+    --ok:#0a7d3a; --ok-bg:#e3f6ea;
+    --radius:14px;            /* 圓角風格 */
+    --shadow:0 2px 10px rgba(80,60,30,.08);
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;
+    font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  img{max-width:100%}
+  a{color:var(--primary)}
+  .wrap{max-width:1020px;margin:0 auto;padding:0 20px;}
+
+  /* ===== 導覽列（我的預約常駐） ===== */
+  header.site{position:sticky;top:0;z-index:20;background:rgba(253,249,244,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+  .nav{display:flex;align-items:center;gap:20px;height:60px;}
+  .brand{font-weight:800;font-size:1.15rem;letter-spacing:.5px;display:flex;align-items:center;gap:8px;}
+  .brand .dot{width:12px;height:12px;border-radius:50%;background:var(--primary);display:inline-block;}
+  .nav nav{display:flex;gap:4px;margin-left:auto;}
+  .nav nav a{color:var(--ink);text-decoration:none;padding:8px 12px;border-radius:9px;font-size:.95rem;}
+  .nav nav a:hover{background:#f4e9dd;}
+  .btn{display:inline-block;border:none;cursor:pointer;font:inherit;text-decoration:none;text-align:center;
+    background:var(--primary);color:var(--primary-ink);font-weight:700;padding:10px 22px;border-radius:12px;}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.ghost{background:transparent;color:var(--primary);border:2px solid var(--primary);}
+  .btn.small{padding:6px 14px;font-size:.9rem;border-radius:9px;}
+  .btn[disabled]{opacity:.4;cursor:not-allowed}
+
+  /* ===== Hero ===== */
+  .hero{background:linear-gradient(115deg,#f9e0cd 0%,#fdf3e4 55%,#e8f5ef 100%);border-bottom:1px solid var(--line);}
+  .hero .inner{padding:72px 0 64px;max-width:640px;}
+  .hero h1{font-size:2.3rem;margin:0 0 10px;letter-spacing:1px;}
+  .hero p{font-size:1.08rem;color:#6b6156;margin:0 0 26px;}
+  .hero .actions{display:flex;gap:12px;flex-wrap:wrap;}
+
+  /* ===== 區塊 ===== */
+  section.block{padding:56px 0 8px;}
+  h2.sec{font-size:1.45rem;margin:0 0 6px;}
+  p.sec-sub{color:var(--muted);margin:0 0 24px;}
+  .grid{display:grid;gap:18px;}
+  .grid.c3{grid-template-columns:repeat(3,1fr);}
+  .grid.c2{grid-template-columns:1fr 1fr;}
+  @media(max-width:860px){.grid.c3{grid-template-columns:1fr 1fr;}}
+  @media(max-width:600px){.grid.c3,.grid.c2{grid-template-columns:1fr;}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;}
+  .course h3{margin:0 0 6px;font-size:1.08rem;}
+  .course .meta{display:flex;gap:14px;color:var(--muted);font-size:.88rem;margin:0 0 10px;flex-wrap:wrap;}
+  .course .price{font-size:1.25rem;font-weight:800;color:var(--primary);margin:0 0 14px;}
+  .course .price small{font-size:.75rem;color:var(--muted);font-weight:400;}
+
+  .teacher{display:flex;gap:14px;align-items:flex-start;}
+  .avatar{flex:0 0 56px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:1.3rem;}
+  .teacher h3{margin:0;font-size:1.02rem;}
+  .teacher p{margin:4px 0 0;color:var(--muted);font-size:.88rem;line-height:1.55;}
+
+  /* 營業時間（含休息時段） */
+  table.hours{border-collapse:collapse;width:100%;font-size:.95rem;}
+  table.hours td{padding:8px 4px;border-bottom:1px dashed var(--line);}
+  table.hours td:last-child{text-align:right;}
+  .break-note{color:var(--accent);font-size:.82rem;}
+  .closed{color:var(--muted);}
+
+  .map{background:repeating-linear-gradient(45deg,#eef2ee 0 12px,#e6ece6 12px 24px);border:1px solid var(--line);
+    border-radius:var(--radius);min-height:220px;display:flex;align-items:center;justify-content:center;color:#7d8a7d;font-size:.9rem;}
+  .contact li{margin:.4rem 0;}
+
+  footer.site{margin-top:64px;background:var(--neutral);color:#e8e4de;padding:28px 0;font-size:.88rem;}
+  footer.site a{color:#f4c9a8;text-decoration:none;margin-right:16px;}
+  footer.site .wrap{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;}
+
+  /* ===== 預約精靈（overlay） ===== */
+  .overlay{position:fixed;inset:0;background:rgba(40,30,20,.45);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow-y:auto;}
+  .overlay.open{display:flex;}
+  .sheet{background:var(--card);border-radius:18px;max-width:760px;width:100%;box-shadow:0 18px 60px rgba(0,0,0,.25);overflow:hidden;}
+  .sheet .head{display:flex;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);}
+  .sheet .head b{font-size:1.05rem;}
+  .sheet .head .tz{margin-left:auto;font-size:.78rem;color:var(--muted);white-space:nowrap;}
+  .sheet .close{border:none;background:none;font-size:1.3rem;cursor:pointer;color:var(--muted);padding:4px 8px;}
+  .sheet .body{padding:20px 22px 26px;}
+
+  /* 麵包屑：已選項同步顯示、可點回上一步 */
+  .crumbs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px;}
+  .crumb{font-size:.82rem;padding:6px 12px;border-radius:99px;border:1.5px solid var(--line);color:var(--muted);background:#faf6f0;}
+  .crumb.done{border-color:var(--accent);color:var(--accent);cursor:pointer;}
+  .crumb.done:hover{background:#e9f6f2;}
+  .crumb.now{border-color:var(--primary);color:var(--primary);font-weight:700;}
+
+  .options{display:grid;gap:12px;grid-template-columns:1fr 1fr;}
+  @media(max-width:600px){.options{grid-template-columns:1fr;}}
+  .opt{border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;background:var(--card);text-align:left;font:inherit;}
+  .opt:hover{border-color:var(--primary);}
+  .opt h4{margin:0 0 4px;font-size:.98rem;}
+  .opt .sub{color:var(--muted);font-size:.82rem;}
+
+  .daypick{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;}
+  .day{flex:0 0 auto;border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;text-align:center;cursor:pointer;background:var(--card);font:inherit;}
+  .day.sel{border-color:var(--primary);color:var(--primary);font-weight:700;}
+  .day.off{opacity:.35;cursor:not-allowed;}
+  .day small{display:block;font-size:.72rem;color:var(--muted);}
+  .slots{display:flex;flex-wrap:wrap;gap:8px;}
+  .slot{border:1.5px solid var(--line);border-radius:9px;padding:7px 14px;cursor:pointer;background:var(--card);font:inherit;}
+  .slot:hover{border-color:var(--primary);color:var(--primary);}
+  .slots .none{color:var(--muted);font-size:.9rem;}
+
+  .form label{display:block;font-size:.86rem;font-weight:700;margin:14px 0 4px;}
+  .form input[type=text],.form input[type=email],.form input[type=tel]{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fffdfa;}
+  .form .policy{display:flex;gap:8px;align-items:flex-start;font-size:.86rem;margin:16px 0;}
+  .summary{background:#faf6f0;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:.88rem;margin:0 0 16px;}
+  .summary b{color:var(--primary);}
+
+  /* 完成頁 */
+  .done-check{width:64px;height:64px;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:6px auto 12px;}
+  .done-wrap{text-align:center;}
+  .code{font-family:ui-monospace,Menlo,monospace;font-size:1.3rem;font-weight:800;letter-spacing:2px;background:#faf6f0;border:1.5px dashed var(--primary);border-radius:10px;padding:8px 18px;display:inline-block;margin:8px 0 4px;}
+  .done-detail{max-width:380px;margin:14px auto;text-align:left;font-size:.92rem;}
+  .done-detail div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);}
+  .done-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:16px 0;}
+  .cal-grid .opt{text-align:center;}
+  .note{font-size:.8rem;color:var(--muted);margin-top:14px;}
+</style>
+</head>
+<body>
+
+<!-- ===== 導覽列：我的預約常駐 ===== -->
+<header class="site"><div class="wrap nav">
+  <span class="brand"><span class="dot"></span>小樹才藝班</span>
+  <nav>
+    <a href="#courses">課程</a>
+    <a href="#teachers">老師</a>
+    <a href="#about">關於我們</a>
+    <a href="#contact">聯絡</a>
+  </nav>
+  <button class="btn ghost small" onclick="openMy()">我的預約</button>
+</div></header>
+
+<!-- ===== Hero：品牌名＋主視覺＋預約按鈕 ===== -->
+<div class="hero"><div class="wrap"><div class="inner">
+  <h1>小樹才藝班</h1>
+  <p>位於中山的兒童才藝教室——畫畫、舞蹈、黏土手作，小班教學、依程度分級，讓孩子在遊戲裡長出自己的樣子。</p>
+  <div class="actions">
+    <button class="btn" onclick="openWizard()">立即預約</button>
+    <a class="btn ghost" href="#courses">看課程</a>
+  </div>
+</div></div></div>
+
+<!-- ===== 課程（名稱／時長／人數／費用 TWD） ===== -->
+<section class="block" id="courses"><div class="wrap">
+  <h2 class="sec">課程</h2>
+  <p class="sec-sub">點「預約」直接從該課程開始四步驟預約。</p>
+  <div class="grid c3" id="courseCards"></div>
+</div></section>
+
+<!-- ===== 老師（照片可選填：無照片顯示預設頭像） ===== -->
+<section class="block" id="teachers"><div class="wrap">
+  <h2 class="sec">老師</h2>
+  <p class="sec-sub">每位老師都能在預約時指定。</p>
+  <div class="grid c3" id="teacherCards"></div>
+</div></section>
+
+<!-- ===== 關於＋營業時間（含休息時段） ===== -->
+<section class="block" id="about"><div class="wrap"><div class="grid c2">
+  <div class="card">
+    <h2 class="sec" style="font-size:1.2rem;">關於我們</h2>
+    <p style="color:#6b6156;font-size:.95rem;">小樹才藝班成立於 2018 年，相信每個孩子都有自己的節奏。我們提供小班制的畫畫、舞蹈與手作課程，由專業老師依年齡與程度帶班，歡迎預約體驗。</p>
+  </div>
+  <div class="card">
+    <h2 class="sec" style="font-size:1.2rem;">營業時間</h2>
+    <table class="hours">
+      <tr><td>週一 – 週五</td><td>09:00 – 18:00<br><span class="break-note">午休 12:00 – 13:00 不開課</span></td></tr>
+      <tr><td>週六</td><td>09:00 – 17:00<br><span class="break-note">午休 12:00 – 13:00 不開課</span></td></tr>
+      <tr><td>週日</td><td class="closed">公休</td></tr>
+    </table>
+  </div>
+</div></div></section>
+
+<!-- ===== 聯絡＋地圖 ===== -->
+<section class="block" id="contact"><div class="wrap"><div class="grid c2">
+  <div class="card">
+    <h2 class="sec" style="font-size:1.2rem;">聯絡資訊</h2>
+    <ul class="contact" style="list-style:none;padding:0;margin:0;font-size:.95rem;">
+      <li>📞 02-2522-1234</li>
+      <li>✉️ hello@smalltree.example</li>
+      <li>📍 台北市中山區中山北路二段 100 號 2F</li>
+    </ul>
+  </div>
+  <div class="map">［地圖：來自開通時填的地點資料］</div>
+</div></div></section>
+
+<!-- ===== 頁尾：白牌（只有租戶品牌與租戶政策） ===== -->
+<footer class="site"><div class="wrap">
+  <span>© 2026 小樹才藝班</span>
+  <span>
+    <a href="#" onclick="alert('（範本）開啟租戶自訂政策：退費規則');return false;">退費規則</a>
+    <a href="#" onclick="alert('（範本）開啟租戶自訂政策：上課須知');return false;">上課須知</a>
+  </span>
+</div></footer>
+
+<!-- ===== 預約精靈 ===== -->
+<div class="overlay" id="wizard">
+  <div class="sheet">
+    <div class="head">
+      <b>預約課程</b>
+      <span class="tz">我們的時間：<span id="clock">--:--</span>（Asia/Taipei）</span>
+      <button class="close" onclick="closeWizard()" title="關閉">✕</button>
+    </div>
+    <div class="body">
+      <div class="crumbs" id="crumbs"></div>
+      <div id="stepBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 我的預約（免登入） ===== -->
+<div class="overlay" id="myBox">
+  <div class="sheet" style="max-width:520px;">
+    <div class="head"><b>我的預約</b><button class="close" onclick="closeMy()" title="關閉">✕</button></div>
+    <div class="body form" id="myBody"></div>
+  </div>
+</div>
+
+<script>
+/* ====== 租戶設定（來自「租戶自助設定」，範本用假資料） ====== */
+const TENANT = {
+  name: '小樹才藝班',
+  tz: 'Asia/Taipei',
+  address: '台北市中山區中山北路二段 100 號 2F',
+  hours: { // 0=日 … 6=六；null=公休（承 1.4.7：營業區間−休息區間）
+    0: null,
+    1: {open:'09:00', close:'18:00', breaks:[['12:00','13:00']]},
+    2: {open:'09:00', close:'18:00', breaks:[['12:00','13:00']]},
+    3: {open:'09:00', close:'18:00', breaks:[['12:00','13:00']]},
+    4: {open:'09:00', close:'18:00', breaks:[['12:00','13:00']]},
+    5: {open:'09:00', close:'18:00', breaks:[['12:00','13:00']]},
+    6: {open:'09:00', close:'17:00', breaks:[['12:00','13:00']]},
+  },
+  courses: [ // 1.4.2 四欄位：名稱／時長（分）／人數／費用（TWD）
+    {id:'paint',  name:'兒童畫畫（下午班）', dur:60, cap:8,  price:450, desc:'水彩、蠟筆與構圖基礎，適合 5–10 歲。'},
+    {id:'dance',  name:'幼兒律動舞蹈',       dur:60, cap:10, price:400, desc:'跟著音樂動起來，訓練節奏感與肢體協調。'},
+    {id:'clay',   name:'黏土手作',           dur:90, cap:6,  price:550, desc:'捏出自己的小世界，含全部材料。'},
+    {id:'one2one',name:'一對一素描指導',     dur:60, cap:1,  price:800, desc:'依程度客製的個人課程。'},
+  ],
+  teachers: [ // 1.4.8：名稱必填、介紹／照片選填（無照片→名稱首字＋色塊）
+    {id:'lin',  name:'林老師', color:'#e8734a', intro:'畫畫｜師大美術系，10 年兒童美術教學經驗。', teach:['paint','one2one']},
+    {id:'chen', name:'陳老師', color:'#2ba58c', intro:'舞蹈｜北藝大舞蹈系，幼兒律動專長。',        teach:['dance']},
+    {id:'wang', name:'王老師', color:'#5b79d4', intro:'手作｜黏土與複合媒材創作者。',              teach:['clay']},
+  ],
+};
+
+/* ====== 首頁卡片渲染 ====== */
+const $ = s => document.querySelector(s);
+const fmtDur = m => m % 60 === 0 ? (m/60)+' 小時' : m+' 分鐘';
+
+$('#courseCards').innerHTML = TENANT.courses.map(c => `
+  <div class="card course">
+    <h3>${c.name}</h3>
+    <div class="meta"><span>⏱ ${fmtDur(c.dur)}</span><span>👥 至多 ${c.cap} 人</span></div>
+    <p style="font-size:.88rem;color:var(--muted);margin:0 0 10px;">${c.desc}</p>
+    <div class="price">NT$${c.price}<small> / 堂</small></div>
+    <button class="btn small" onclick="openWizard('${c.id}')">預約</button>
+  </div>`).join('');
+
+$('#teacherCards').innerHTML = TENANT.teachers.map(t => `
+  <div class="card teacher">
+    <div class="avatar" style="background:${t.color}">${t.name[0]}</div>
+    <div><h3>${t.name}</h3><p>${t.intro}</p></div>
+  </div>`).join('');
+
+/* ====== 租戶時區時鐘 ====== */
+function tick(){
+  $('#clock').textContent = new Intl.DateTimeFormat('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:TENANT.tz}).format(new Date());
+}
+tick(); setInterval(tick, 15000);
+
+/* ====== 預約精靈（步驟由租戶設定；本範本：課程→老師→時段→資料） ====== */
+const state = {step:0, course:null, teacher:null, day:null, slot:null};
+const STEPS = ['選課程','選老師','選時段','填資料'];
+
+function openWizard(courseId){
+  Object.assign(state,{step:0,course:null,teacher:null,day:null,slot:null});
+  if(courseId){ state.course = TENANT.courses.find(c=>c.id===courseId); state.step = 1; }
+  $('#wizard').classList.add('open'); render();
+}
+function closeWizard(){ $('#wizard').classList.remove('open'); }
+function goto(i){ if(i < state.step){ state.step = i; if(i<=2){state.slot=null;} if(i<=1){state.day=null;} render(); } }
+
+function crumbs(){
+  const label = i => {
+    if(i===0 && state.course) return '課程：'+state.course.name;
+    if(i===1 && state.teacher) return '老師：'+state.teacher.name;
+    if(i===2 && state.slot) return '時段：'+state.day.label+' '+state.slot;
+    return STEPS[i];
+  };
+  $('#crumbs').innerHTML = STEPS.map((s,i)=>{
+    const cls = i < state.step ? 'crumb done' : (i===state.step ? 'crumb now' : 'crumb');
+    return `<span class="${cls}" ${i<state.step?`onclick="goto(${i})" title="點擊回到此步驟改選"`:''}>${i+1}·${label(i)}</span>`;
+  }).join('');
+}
+
+/* 產生近 7 天（週日公休 off）＋可選時段＝營業區間−休息區間；過期時段不顯示 */
+function next7(){
+  const out=[]; const now=new Date();
+  for(let i=0;i<7;i++){
+    const d=new Date(now); d.setDate(now.getDate()+i);
+    out.push({date:d, dow:d.getDay(), label:(d.getMonth()+1)+'/'+d.getDate(),
+      wk:'日一二三四五六'[d.getDay()], off: !TENANT.hours[d.getDay()], today:i===0});
+  }
+  return out;
+}
+function slotsFor(day, durMin){
+  const h = TENANT.hours[day.dow]; if(!h) return [];
+  const toMin = s => +s.slice(0,2)*60 + +s.slice(3);
+  const out=[]; const now=new Date();
+  for(let m=toMin(h.open); m+durMin<=toMin(h.close); m+=60){
+    const inBreak = h.breaks.some(([a,b]) => m < toMin(b) && m+durMin > toMin(a));
+    if(inBreak) continue;                       // 休息時段排除（午休不可約）
+    if(day.today && m <= now.getHours()*60+now.getMinutes()) continue; // 已過時段自動隱藏
+    out.push(String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'));
+  }
+  return out;
+}
+
+function render(){
+  crumbs();
+  const box = $('#stepBox');
+  if(state.step===0){
+    box.innerHTML = `<div class="options">` + TENANT.courses.map(c=>`
+      <button class="opt" onclick='pickCourse("${c.id}")'>
+        <h4>${c.name}</h4><span class="sub">⏱ ${fmtDur(c.dur)}｜👥 至多 ${c.cap} 人｜NT$${c.price}</span>
+      </button>`).join('') + `</div>`;
+  }
+  else if(state.step===1){
+    const ts = TENANT.teachers.filter(t=>t.teach.includes(state.course.id)); // 依課程綁定過濾
+    box.innerHTML = `<div class="options">` + ts.map(t=>`
+      <button class="opt" onclick='pickTeacher("${t.id}")' style="display:flex;gap:12px;align-items:center;">
+        <span class="avatar" style="background:${t.color};flex:0 0 44px;width:44px;height:44px;font-size:1.05rem;">${t.name[0]}</span>
+        <span><h4 style="margin:0;">${t.name}</h4><span class="sub">${t.intro}</span></span>
+      </button>`).join('') + `</div>`;
+  }
+  else if(state.step===2){
+    const days = next7();
+    if(!state.day) state.day = days.find(d=>!d.off);
+    box.innerHTML = `
+      <div class="daypick">` + days.map(d=>`
+        <button class="day ${d.off?'off':''} ${state.day&&d.label===state.day.label?'sel':''}"
+          ${d.off?'disabled title="公休"':`onclick='pickDay("${d.label}")'`}>
+          <small>週${d.wk}</small>${d.label}${d.off?'<small>公休</small>':''}
+        </button>`).join('') + `</div>
+      <div class="slots" id="slotBox"></div>
+      <p class="note">時段以本店時間（Asia/Taipei）為準；午休 12:00–13:00 與已過時段不顯示。</p>`;
+    renderSlots();
+  }
+  else if(state.step===3){
+    box.innerHTML = `
+      <div class="summary">📋 <b>${state.course.name}</b>｜${state.teacher.name}｜${state.day.label}（週${state.day.wk}）${state.slot}
+        ｜${fmtDur(state.course.dur)}｜NT$${state.course.price}</div>
+      <div class="form">
+        <label>訂購人姓名 *</label><input type="text" id="fName" placeholder="例：王小明的媽媽">
+        <label>Email *（預約確認信與自助管理連結會寄到這裡）</label><input type="email" id="fMail" placeholder="you@example.com">
+        <label>電話 *</label><input type="tel" id="fTel" placeholder="09xx-xxx-xxx">
+        <label>學員姓名 *</label><input type="text" id="fLearner" placeholder="上課的孩子姓名">
+        <div class="policy"><input type="checkbox" id="fPolicy" style="margin-top:4px;">
+          <span>我已閱讀並同意 <a href="#" onclick="alert('（範本）租戶自訂政策內容');return false;">小樹才藝班退費規則與上課須知</a>（租戶自己的政策，非平台條款）*</span></div>
+        <button class="btn" style="width:100%;" onclick="submitBooking()">確認預約</button>
+      </div>`;
+  }
+  else if(state.step===4){
+    box.innerHTML = `
+      <div class="done-wrap">
+        <div class="done-check">✓</div>
+        <h3 style="margin:0 0 4px;">預約完成！</h3>
+        <p style="color:var(--muted);font-size:.9rem;margin:0;">確認信已寄出，請檢查電子信箱。</p>
+        <div class="code">${state.code}</div>
+        <p style="font-size:.78rem;color:var(--muted);margin:2px 0 0;">預約代碼——之後免登入查詢、取消、改期都靠它＋Email</p>
+        <div class="done-detail">
+          <div><span>課程</span><b>${state.course.name}</b></div>
+          <div><span>老師</span><b>${state.teacher.name}</b></div>
+          <div><span>時間</span><b>${state.day.label}（週${state.day.wk}）${state.slot}–${endTime()}</b></div>
+          <div><span>地點</span><b style="text-align:right;">${TENANT.address}</b></div>
+          <div><span>狀態</span><b style="color:var(--ok);">已確認</b></div>
+        </div>
+        <div class="done-actions">
+          <button class="btn ghost small" onclick="alert('（範本）取消／改期：受租戶政策期限約束')">取消／改期</button>
+          <button class="btn ghost small" onclick="openWizard()">再約一次</button>
+          <button class="btn small" onclick="showCal()">加入日曆</button>
+          <button class="btn ghost small" onclick="closeWizard();openMy(true)">我的預約</button>
+        </div>
+        <div id="calBox"></div>
+      </div>`;
+  }
+}
+function endTime(){
+  const [h,m]=state.slot.split(':').map(Number); const e=h*60+m+state.course.dur;
+  return String(Math.floor(e/60)).padStart(2,'0')+':'+String(e%60).padStart(2,'0');
+}
+function pickCourse(id){ state.course=TENANT.courses.find(c=>c.id===id); state.teacher=null; state.day=null; state.slot=null; state.step=1; render(); }
+function pickTeacher(id){ state.teacher=TENANT.teachers.find(t=>t.id===id); state.step=2; state.day=null; render(); }
+function pickDay(label){ state.day=next7().find(d=>d.label===label); renderSlotsSel(label); }
+function renderSlotsSel(label){ document.querySelectorAll('.day').forEach(b=>b.classList.toggle('sel', b.textContent.includes(label))); renderSlots(); }
+function renderSlots(){
+  const list = slotsFor(state.day, state.course.dur);
+  $('#slotBox').innerHTML = list.length
+    ? list.map(s=>`<button class="slot" onclick='pickSlot("${s}")'>${s}</button>`).join('')
+    : `<span class="none">這天已沒有可選時段，請改選其他日期。</span>`;
+}
+function pickSlot(s){ state.slot=s; state.step=3; render(); }
+function submitBooking(){
+  for(const id of ['fName','fMail','fTel','fLearner']) if(!$('#'+id).value.trim()){ alert('請填寫必填欄位'); return; }
+  if(!$('#fPolicy').checked){ alert('請先同意政策'); return; }
+  state.email = $('#fMail').value.trim();
+  state.code = Array.from({length:8},()=> 'abcdefghjkmnpqrstuvwxyz23456789'[Math.floor(Math.random()*31)]).join('');
+  state.step = 4; render();
+}
+/* 加入日曆：五種選項（事件帶滿課名／時間／地點／代碼／取消連結） */
+function showCal(){
+  $('#calBox').innerHTML = `<div class="cal-grid">` +
+    ['Google Calendar','Apple（.ics）','Outlook','Outlook.com','Yahoo'].map(n=>`
+      <button class="opt" onclick="alert('（範本）匯出日曆事件：\\n標題：${state.course.name}｜小樹才藝班\\n時間：${state.day.label} ${state.slot}–${endTime()}（Asia/Taipei）\\n地點：${TENANT.address}\\n說明：預約代碼 ${state.code}＋取消連結')">${n}</button>`).join('') + `</div>`;
+}
+
+/* ====== 我的預約（免登入：代碼＋Email） ====== */
+function openMy(fromDone){
+  $('#myBox').classList.add('open');
+  $('#myBody').innerHTML = fromDone && state.code ? myList() : `
+    <p style="font-size:.9rem;color:var(--muted);margin-top:0;">免建帳號——輸入預約代碼與訂購時填的 Email 即可管理預約（也可透過確認信裡的連結直接開啟）。</p>
+    <label>預約代碼</label><input type="text" id="qCode" placeholder="例：1ob70omk">
+    <label>Email</label><input type="email" id="qMail" placeholder="訂購時填的 Email">
+    <button class="btn" style="width:100%;margin-top:16px;" onclick="lookup()">查詢</button>`;
+}
+function closeMy(){ $('#myBox').classList.remove('open'); }
+function lookup(){
+  if(state.code && $('#qCode').value.trim().toLowerCase()===state.code && $('#qMail').value.trim().toLowerCase()===(state.email||'').toLowerCase()){
+    $('#myBody').innerHTML = myList();
+  } else {
+    alert('查無資料：代碼與 Email 必須同時正確（範本內請先完成一筆預約）');
+  }
+}
+function myList(){
+  return `
+    <div class="summary" style="margin-top:0;">
+      <b>${state.course.name}</b>｜${state.teacher.name}<br>
+      ${state.day.label}（週${state.day.wk}）${state.slot}–${endTime()}｜代碼 <b>${state.code}</b>｜<span style="color:var(--ok);font-weight:700;">已確認</span>
+    </div>
+    <div class="done-actions" style="justify-content:flex-start;">
+      <button class="btn ghost small" onclick="alert('（範本）取消：受政策期限約束')">取消</button>
+      <button class="btn ghost small" onclick="alert('（範本）改期流程')">改期</button>
+      <button class="btn ghost small" onclick="closeMy();openWizard()">再約一次</button>
+    </div>`;
+}
+
+/* ESC 關閉 */
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeWizard(); closeMy(); }});
+</script>
+</body>
+</html>

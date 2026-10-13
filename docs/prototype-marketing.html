@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平台行銷與註冊官網 · 可測試原型</title>
+<style>
+  :root{
+    --brand:#2f6f62; --brand2:#3f8d7c; --ink:#1e2a27; --muted:#6b7b77;
+    --bg:#fbfaf7; --card:#fff; --line:#e4e8e5; --line2:#f0f3f1;
+    --soft:#eef5f2; --accent:#e8734a;
+    --ok:#0a7d3a; --okbg:#e6f6ec; --warn:#b26a00; --warnbg:#fff5e6;
+    --bad:#b3261e; --badbg:#fdeceb;
+    --r:14px; --sh:0 1px 2px rgba(30,50,45,.04),0 6px 22px rgba(30,50,45,.07);
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font:16px/1.7 "Noto Sans TC","PingFang TC",Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  button,input,select,textarea{font:inherit;color:inherit}
+  a{color:var(--brand);cursor:pointer}
+  .btn{display:inline-block;border:none;cursor:pointer;text-decoration:none;text-align:center;
+    background:var(--brand);color:#fff;font-weight:700;padding:11px 22px;border-radius:11px;}
+  .btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+  .btn.g{background:transparent;color:var(--brand);border:1.5px solid var(--brand)}
+  .btn.w{background:#fff;color:var(--brand)}
+  .btn.p{background:var(--line2);color:var(--ink)}
+  .btn.a{background:var(--accent)}
+  .btn.s{padding:7px 15px;font-size:.87rem;border-radius:9px}
+  .btn.t{padding:4px 11px;font-size:.78rem;border-radius:8px}
+
+  /* nav */
+  .nav{position:sticky;top:0;z-index:40;background:rgba(251,250,247,.93);backdrop-filter:blur(9px);
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:11px 22px;flex-wrap:wrap}
+  .nav .logo{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.06rem;margin-right:12px;cursor:pointer}
+  .nav .logo i{width:32px;height:32px;border-radius:9px;background:var(--brand);color:#fff;display:flex;
+    align-items:center;justify-content:center;font-style:normal;font-size:.9rem;font-weight:800}
+  .nav a.n{padding:7px 12px;border-radius:9px;font-size:.92rem;color:var(--ink);text-decoration:none}
+  .nav a.n:hover{background:var(--soft)}
+  .nav a.n.on{background:var(--soft);color:var(--brand);font-weight:700}
+  .nav .sp{margin-left:auto}
+  @media(max-width:880px){.nav{padding:9px 12px}.nav a.n{padding:6px 9px;font-size:.86rem}}
+
+  .wrap{max-width:1060px;margin:0 auto;padding:34px 22px 80px}
+  .page{display:none} .page.on{display:block}
+  h1.h{font-size:2rem;line-height:1.35;margin:0 0 12px}
+  h2.h2{font-size:1.35rem;margin:34px 0 14px}
+  h3.h3{font-size:1.02rem;margin:0 0 8px}
+  p.lead{color:var(--muted);font-size:1.02rem;margin:0 0 22px}
+  .kick{display:inline-block;background:var(--soft);color:var(--brand);font-size:.78rem;font-weight:700;
+    padding:4px 11px;border-radius:99px;margin-bottom:13px}
+
+  /* hero */
+  .hero{background:linear-gradient(150deg,#e9f2ee 0%,#f7f4ee 100%);border-radius:20px;padding:44px 40px;margin-bottom:34px}
+  .hero h1{font-size:2.3rem;line-height:1.3;margin:0 0 14px}
+  .hero p{font-size:1.06rem;color:#4a5b57;margin:0 0 22px;max-width:640px}
+  @media(max-width:760px){.hero{padding:28px 20px}.hero h1{font-size:1.6rem}}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)} .g5{grid-template-columns:repeat(5,1fr)}
+  @media(max-width:900px){.g3,.g4,.g5{grid-template-columns:1fr 1fr}}
+  @media(max-width:620px){.g2,.g3,.g4,.g5{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:18px 20px}
+  .card.hov{cursor:pointer;transition:.16s} .card.hov:hover{transform:translateY(-2px);border-color:var(--brand2)}
+  .card .ic{font-size:1.5rem;margin-bottom:7px}
+  .card h3{margin:0 0 6px;font-size:1rem}
+  .card p{margin:0;font-size:.88rem;color:var(--muted)}
+
+  /* pricing */
+  .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;align-items:start}
+  @media(max-width:900px){.plans{grid-template-columns:1fr 1fr}}
+  @media(max-width:620px){.plans{grid-template-columns:1fr}}
+  .plan{background:#fff;border:1.5px solid var(--line);border-radius:var(--r);padding:20px 18px;position:relative}
+  .plan.best{border-color:var(--brand);box-shadow:0 6px 26px rgba(47,111,98,.14)}
+  .plan.best::before{content:"最多人選";position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+    background:var(--brand);color:#fff;font-size:.72rem;font-weight:700;padding:3px 11px;border-radius:99px;white-space:nowrap}
+  .plan .nm{font-weight:800;font-size:1.06rem}
+  .plan .pr{font-size:1.75rem;font-weight:800;margin:8px 0 2px}
+  .plan .pr small{font-size:.8rem;font-weight:600;color:var(--muted)}
+  .plan .save{font-size:.78rem;color:var(--ok);font-weight:700;min-height:20px}
+  .plan ul{list-style:none;padding:0;margin:14px 0;font-size:.86rem}
+  .plan ul li{padding:4px 0;border-bottom:1px solid var(--line2)}
+  .plan ul li:last-child{border:none}
+  .seg{display:inline-flex;background:var(--line2);border-radius:99px;padding:3px;margin-bottom:18px}
+  .seg button{border:none;background:none;padding:7px 17px;border-radius:99px;cursor:pointer;font-size:.88rem}
+  .seg button.on{background:#fff;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+  table{border-collapse:collapse;width:100%;font-size:.89rem}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line2)}
+  th{color:var(--muted);font-size:.78rem;font-weight:700}
+  .tw{overflow-x:auto}
+  .yes{color:var(--ok);font-weight:800} .no{color:var(--line);font-weight:800}
+
+  .fld{margin-bottom:15px}
+  .fld label{display:block;font-size:.82rem;font-weight:700;margin-bottom:5px}
+  .fld .req{color:var(--bad)}
+  .fld input,.fld select,.fld textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;background:#fff}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--brand)}
+  .fld input[type=checkbox],.fld input[type=radio]{width:auto;padding:0;margin:0;flex:0 0 auto;border-width:1px}
+  .fld .hint{font-size:.77rem;color:var(--muted);margin-top:4px}
+  label.opt{display:flex;gap:9px;align-items:flex-start;font-size:.89rem;font-weight:400;padding:5px 0;margin:0;cursor:pointer}
+  .msg{border-radius:11px;padding:11px 13px;font-size:.86rem;margin-bottom:14px;display:none}
+  .msg.show{display:block}
+  .msg.err{background:var(--badbg);color:var(--bad);border:1px solid #f2cbc8}
+  .msg.info{background:var(--soft);color:#2c5f54;border:1px solid #cfe3dc}
+  .msg.ok{background:var(--okbg);color:var(--ok);border:1px solid #c4e8d2}
+  .msg.warn{background:var(--warnbg);color:var(--warn);border:1px solid #f0dfc0}
+
+  .steps{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap}
+  .steps div{flex:1;min-width:110px;font-size:.8rem;padding:9px 11px;border-radius:10px;background:var(--line2);color:var(--muted)}
+  .steps div.on{background:var(--brand);color:#fff;font-weight:700}
+  .steps div.done{background:var(--soft);color:var(--brand);font-weight:600;cursor:pointer}
+
+  .pill{font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:99px;display:inline-block}
+  .pill.ok{color:var(--ok);background:var(--okbg)} .pill.warn{color:var(--warn);background:var(--warnbg)}
+  .pill.bad{color:var(--bad);background:var(--badbg)} .pill.g{color:var(--muted);background:var(--line2)}
+  .pill.b{color:var(--brand);background:var(--soft)}
+  .note{font-size:.81rem;color:var(--muted);background:var(--bg);border:1px dashed var(--line);border-radius:11px;padding:10px 13px;margin-top:13px}
+  .note b{color:var(--ink)}
+  .note.spec{border-color:#cfe3dc;background:#f3f9f6;color:#2c5f54} .note.spec b{color:#1d4a41}
+
+  /* demo frame */
+  .frame{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .frame .bar{background:var(--line2);padding:7px 13px;font-size:.78rem;color:var(--muted);display:flex;gap:8px;align-items:center}
+  .frame .bar .u{background:#fff;border-radius:7px;padding:2px 10px;flex:1;font-family:ui-monospace,monospace;font-size:.75rem}
+  .frame .body{padding:20px}
+  .demoribbon{background:var(--warnbg);color:var(--warn);font-size:.8rem;font-weight:700;padding:7px 13px;text-align:center;border-bottom:1px solid #f0dfc0}
+  .swatch{display:inline-block;width:22px;height:22px;border-radius:6px;border:2px solid transparent;cursor:pointer;vertical-align:-5px;margin-right:5px}
+  .swatch.on{border-color:var(--ink)}
+
+  footer{border-top:1px solid var(--line);background:#fff;padding:26px 22px 40px}
+  footer .inner{max-width:1060px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;font-size:.86rem}
+  footer .col{min-width:150px}
+  footer .col b{display:block;margin-bottom:8px;font-size:.8rem;color:var(--muted)}
+  footer .col a{display:block;padding:3px 0;text-decoration:none}
+
+  .mask{position:fixed;inset:0;background:rgba(25,40,36,.5);display:none;align-items:flex-start;justify-content:center;z-index:70;padding:26px 14px;overflow-y:auto}
+  .mask.on{display:flex}
+  .modal{background:#fff;border-radius:16px;width:100%;max-width:620px;box-shadow:0 16px 50px rgba(20,40,35,.3)}
+  .modal .mh{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center}
+  .modal .mh h3{margin:0;font-size:1.04rem;flex:1}
+  .modal .mb{padding:18px 20px} .modal .mf{padding:13px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+  .x{background:none;border:none;font-size:1.25rem;cursor:pointer;color:var(--muted)}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(18px);z-index:90;background:var(--ink);
+    color:#fff;padding:11px 19px;border-radius:12px;font-size:.87rem;max-width:min(600px,92vw);opacity:0;pointer-events:none;transition:.2s}
+  #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  #toast.bad{background:var(--bad)} #toast.ok{background:var(--ok)}
+
+  #tp{position:fixed;right:15px;bottom:15px;z-index:80;width:292px;background:#fff;border:1px solid var(--line);
+    border-radius:13px;box-shadow:0 10px 34px rgba(20,40,35,.2);font-size:.82rem;overflow:hidden}
+  #tp .h{background:var(--ink);color:#fff;padding:9px 13px;display:flex;gap:8px;cursor:pointer;font-weight:700;font-size:.84rem}
+  #tp .b{padding:11px 13px;display:none;max-height:66vh;overflow-y:auto} #tp.open .b{display:block}
+  #tp .r{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--line2)}
+  #tp .r:last-child{border:none} #tp .r span{flex:1;line-height:1.35}
+  #tp select{padding:4px 6px;border:1px solid var(--line);border-radius:7px;font-size:.78rem;max-width:132px}
+  ol.st{padding-left:1.2rem;font-size:.88rem} ol.st li{margin:9px 0}
+  ol.st code{background:var(--line2);border-radius:5px;padding:1px 6px;font-size:.85em}
+  .exp{color:var(--ok);font-weight:600}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo" onclick="go('home')"><i>開課</i>開課吧</div>
+  <a class="n" data-p="home" onclick="go('home')">首頁</a>
+  <a class="n" data-p="features" onclick="go('features')">功能</a>
+  <a class="n" data-p="industry" onclick="go('industry')">適用行業</a>
+  <a class="n" data-p="demo" onclick="go('demo')">看示範</a>
+  <a class="n" data-p="pricing" onclick="go('pricing')">方案與價格</a>
+  <a class="n" data-p="contact" onclick="go('contact')">聯絡我們</a>
+  <a class="n" data-p="script" onclick="go('script')">🧪 測試腳本</a>
+  <div class="sp"></div>
+  <button class="btn s" onclick="startCheckout()">開始使用</button>
+</nav>
+
+<div class="wrap">
+
+<!-- ═══ 首頁 ═══ -->
+<section class="page on" id="p-home">
+  <div class="hero">
+    <span class="kick">課程預訂 SaaS</span>
+    <h1>開班、排課、收費，一個網站全部搞定</h1>
+    <p>才藝班、健身房、音樂教室、語言中心、美容工作室——選一個跟你這行相符的範本，開通當下就有 80% 設定好，剩下的改成自己的就能開賣。</p>
+    <button class="btn" onclick="startCheckout()">選方案開始使用</button>
+    <button class="btn g" onclick="go('demo')">先看示範，不用註冊</button>
+    <button class="btn g" onclick="go('contact')">先問問看</button>
+  </div>
+
+  <h2 class="h2">三條路都可以</h2>
+  <div class="grid g3">
+    <div class="card hov" onclick="startCheckout()"><div class="ic">🛒</div><h3>直接買方案</h3>
+      <p>已經比較完了？選方案結帳，付完直接進引導設定，不必先試用。</p></div>
+    <div class="card hov" onclick="go('demo')"><div class="ic">👀</div><h3>先看示範站</h3>
+      <p>不用註冊就能看前台跟後台，五個行業各有一個範例站。</p></div>
+    <div class="card hov" onclick="go('contact')"><div class="ic">💬</div><h3>先聯絡我們</h3>
+      <p>還在評估？只留姓名和 Email，其他都可以不填。</p></div>
+  </div>
+
+  <h2 class="h2">找你這一行</h2>
+  <div class="grid g5" id="homeInd"></div>
+
+  <h2 class="h2">為什麼不用從零開始</h2>
+  <div class="grid g3">
+    <div class="card"><h3>範本帶好預設</h3><p>用詞、分類、等級、範例課程、政策、報名欄位都先給你，你是「改」不是「建」。</p></div>
+    <div class="card"><h3>版型跟著行業走</h3><p>選了行業，只顯示相符的版型，附三組配色，挑一組就完成外觀。</p></div>
+    <div class="card"><h3>之後想改都能改</h3><p>範本只是起點，複製一份給你之後就歸你，平台改版不會回頭動你的設定。</p></div>
+  </div>
+</section>
+
+<!-- ═══ 功能介紹 ═══ -->
+<section class="page" id="p-features">
+  <h1 class="h">功能介紹</h1>
+  <p class="lead">每個功能標示哪些方案才有。這裡的方案標示<b>直接讀方案定義</b>——方案改了功能開關，這一頁與定價頁會一起變，不會對不上。</p>
+  <div id="featBody"></div>
+  <div class="note spec"><b>規格 1.2</b>：功能與方案的對應<b>取自方案定義</b>，不另外手寫一份。每個功能只寫「解決什麼問題」，並提供「看示範」連到對應畫面。</div>
+</section>
+
+<!-- ═══ 行業落地頁 ═══ -->
+<section class="page" id="p-industry">
+  <h1 class="h">適用行業</h1>
+  <p class="lead">五個行業各有一頁。從行業頁進註冊時，<b>課程主題會預先帶入</b>，你也可以在結帳時改。</p>
+  <div class="grid g5" id="indList"></div>
+  <div class="card" style="margin-top:22px">
+    <h3 class="h3">我的行業不在上面</h3>
+    <p style="font-size:.9rem;color:var(--muted);margin:0 0 12px">可以自建主題：自訂名稱、套通用預設版型，其他設定自己來。</p>
+    <button class="btn g s" onclick="customIndustry()">自建主題看看</button>
+  </div>
+</section>
+<section class="page" id="p-ind1"></section>
+
+<!-- ═══ 示範站 ═══ -->
+<section class="page" id="p-demo">
+  <h1 class="h">線上示範</h1>
+  <p class="lead">五個示範站都是<b>真的租戶</b>，不是截圖。前台免登入直接看，後台給你一個唯讀帳號逛。</p>
+  <div class="grid g5" id="demoList"></div>
+  <div class="note spec" style="margin-top:18px"><b>規格 1.4</b>：示範站資料<b>每日重置</b>；<b>不計入</b>用量、租戶數、MRR 與轉換率；前台可走完預約流程但<b>不成立預約、不寄信、不收款</b>；後台唯讀，存檔一律擋下。</div>
+</section>
+<section class="page" id="p-demo1"></section>
+
+<!-- ═══ 定價 ═══ -->
+<section class="page" id="p-pricing">
+  <h1 class="h">方案與價格</h1>
+  <p class="lead">用量上限與功能都寫清楚，沒有隱藏條件。</p>
+  <div class="seg" id="cycleSeg">
+    <button class="on" data-c="m" onclick="setCycle('m')">月繳</button>
+    <button data-c="y" onclick="setCycle('y')">年繳（省更多）</button>
+  </div>
+  <div class="plans" id="planCards"></div>
+  <h2 class="h2">功能比較</h2>
+  <div class="card tw"><table id="cmpTbl"></table></div>
+  <div class="note spec"><b>規格 1.7</b>：最後一欄「企業／連鎖」<b>不寫價格</b>，走聯絡銷售。分店或場地數超過最高方案、需要客製合約或付款方式時走這條。</div>
+</section>
+
+<!-- ═══ 結帳 ═══ -->
+<section class="page" id="p-checkout">
+  <h1 class="h">開始使用</h1>
+  <div class="steps" id="coSteps"></div>
+  <div id="coBody"></div>
+</section>
+
+<!-- ═══ 聯絡我們 ═══ -->
+<section class="page" id="p-contact">
+  <h1 class="h">聯絡我們</h1>
+  <p class="lead">還在評估也可以先問。<b>只有姓名和 Email 必填</b>，其他都能留白。</p>
+  <div class="grid g2">
+    <div class="card">
+      <div class="msg err" id="ctErr"></div>
+      <div class="fld"><label>姓名 <span class="req">*</span></label><input id="ctName"></div>
+      <div class="fld"><label>Email <span class="req">*</span></label><input id="ctMail" type="email"></div>
+      <div class="fld"><label>電話</label><input id="ctTel"></div>
+      <div class="fld"><label>單位名稱</label><input id="ctOrg"></div>
+      <div class="fld"><label>行業</label><select id="ctInd"></select></div>
+      <div class="fld"><label>規模（老師人數）</label><select id="ctSize">
+        <option>1–3 人</option><option>4–10 人</option><option>11–40 人</option><option>40 人以上</option></select></div>
+      <div class="fld"><label>需求說明</label><textarea id="ctMemo" style="min-height:76px"></textarea></div>
+      <div class="fld"><label>希望的聯絡方式與時段</label><input id="ctWhen" placeholder="例：平日下午電話"></div>
+      <div class="fld"><label class="opt"><input type="checkbox" id="ctBot"><span>我不是機器人（原型：勾一下就好）</span></label></div>
+      <button class="btn" onclick="sendContact()">送出</button>
+      <div class="note spec"><b>規格 1.6</b>：送出後建立一張<b>來源為「官網諮詢」的工單</b>——此時<b>還不是租戶</b>，沒有租戶主檔。談成後由平台手動開通並把工單關聯過去。</div>
+    </div>
+    <div>
+      <div class="card">
+        <h3 class="h3">分店多、需要客製？</h3>
+        <p style="font-size:.9rem;color:var(--muted)">超過最高方案上限、需要客製合約或月結匯款的話走這條。</p>
+        <button class="btn g s" onclick="go('enterprise')">大客戶報價</button>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3 class="h3">已收到的諮詢（原型用）</h3>
+        <div class="tw"><table id="ctTbl"></table></div>
+        <div class="note">這一區只是讓你看到送出後長什麼樣——實際上會進平台後台的工單清單。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 大客戶報價 ═══ -->
+<section class="page" id="p-enterprise">
+  <h1 class="h">企業／連鎖報價</h1>
+  <p class="lead">走這條的常見情況都列在下面。表單沿用聯絡我們，另外多收幾個判斷規模的欄位。</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3 class="h3">什麼情況走這條</h3>
+      <ul style="font-size:.9rem;padding-left:1.1rem;margin:0">
+        <li>分店或場地數超過最高方案上限</li>
+        <li>需要客製合約條款或資料處理協議</li>
+        <li>需要客製付款方式（月結、匯款、採購單）</li>
+        <li>需要多租戶集中管理 —— <b style="color:var(--bad)">本期不支援</b>，我們會直接告訴你</li>
+      </ul>
+      <div class="note">議定價格以<b>價格快照</b>綁在你的訂閱上，不會影響公開方案；成交後由我們人工開通。官網上不顯示議定價、不提供線上簽約。</div>
+    </div>
+    <div class="card">
+      <div class="msg err" id="epErr"></div>
+      <div class="fld"><label>姓名 <span class="req">*</span></label><input id="epName"></div>
+      <div class="fld"><label>Email <span class="req">*</span></label><input id="epMail" type="email"></div>
+      <div class="fld"><label>單位名稱</label><input id="epOrg"></div>
+      <div class="grid g2" style="gap:0 12px">
+        <div class="fld"><label>分店／場地數</label><input id="epBranch" type="number" value="12"></div>
+        <div class="fld"><label>老師人數</label><input id="epTeach" type="number" value="60"></div>
+        <div class="fld"><label>預估月預約量</label><input id="epBook" type="number" value="8000"></div>
+        <div class="fld"><label>希望合約起始日</label><input id="epFrom" type="date"></div>
+      </div>
+      <div class="fld"><label class="opt"><input type="checkbox" id="epBot"><span>我不是機器人</span></label></div>
+      <button class="btn" onclick="sendEnterprise()">送出報價需求</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 法務文件 ═══ -->
+<section class="page" id="p-legal"></section>
+
+<!-- ═══ 測試腳本 ═══ -->
+<section class="page" id="p-script">
+  <h1 class="h">測試腳本</h1>
+  <p class="lead">每一條都對應第 44 章「行銷與註冊官網」的一條規格。右下角測試面板可以改子網域保留秒數與付款結果。</p>
+
+  <div class="card"><h3 class="h3">1.2 功能介紹頁</h3><ol class="st">
+    <li>打開「功能」→ <span class="exp">每個功能都標了哪些方案才有。</span></li>
+    <li>測試面板把「自訂主題」從成長改到專業 → <span class="exp">功能頁與定價頁的比較表<b>同時</b>改變——因為兩邊讀的是同一份方案定義。</span></li>
+    <li>任一功能按「看示範」→ <span class="exp">跳到示範站對應的畫面。</span></li>
+  </ol></div>
+
+  <div class="card"><h3 class="h3">1.3 行業落地頁</h3><ol class="st">
+    <li>「適用行業」→ 點任一行業 → <span class="exp">看到該行業的痛點、範本預設內容、推薦版型與配色。</span></li>
+    <li>在行業頁按「用這個行業開始」→ <span class="exp">結帳第 2 步的課程主題<b>已經預先選好</b>，而且可以改。</span></li>
+    <li>回「適用行業」按「自建主題看看」→ <span class="exp">說明可自訂名稱、套通用預設版型，並提示要設定的東西比較多。</span></li>
+  </ol></div>
+
+  <div class="card"><h3 class="h3">1.4 示範站</h3><ol class="st">
+    <li>「看示範」→ 任一行業 → 前台 → <span class="exp">免登入就能看，頂端有「這是示範站」提示。</span></li>
+    <li>走完預約三步 → <span class="exp">完成頁明確寫著<b>沒有真的成立預約、沒有寄信、沒有收款</b>。</span></li>
+    <li>切到後台示範 → 改任何欄位按儲存 → <span class="exp">被擋下，提示「示範站不可修改，註冊試用即可自己動手」。</span></li>
+    <li>在示範站切換配色 → <span class="exp">前台顏色即時改變。</span></li>
+    <li>看頁面下方說明 → <span class="exp">資料每日重置、不計入用量與經營數字。</span></li>
+  </ol></div>
+
+  <div class="card"><h3 class="h3">1.5 結帳</h3><ol class="st">
+    <li>定價頁切「年繳」→ <span class="exp">價格改變並顯示<b>省多少</b>。</span></li>
+    <li>結帳第 2 步子網域填 <code>smalltree</code> → <span class="exp">已被使用，擋下。</span>填 <code>admin</code> → <span class="exp">保留字，擋下。</span>填沒用過的 → <span class="exp">可用，並<b>保留 30 分鐘</b>開始倒數。</span></li>
+    <li>測試面板把保留秒數改成 20 秒，等它跑完 → <span class="exp">子網域釋出，回頭時提示要重新確認。</span></li>
+    <li>第 3 步發票類型選「公司」→ <span class="exp">統編與公司名變成必填。</span></li>
+    <li>優惠碼填 <code>SPRING20</code> → <span class="exp">折 20%，金額即時試算。</span>填 <code>OLD10</code> → <span class="exp">已過期。</span>填 <code>FULL5</code> → <span class="exp">已用完。</span>填亂碼 → <span class="exp">查無此優惠碼（四種訊息各不相同）。</span></li>
+    <li>不勾條款 → <span class="exp">付款按鈕停用。</span>只勾條款不勾行銷訊息 → <span class="exp">可以送出，兩者是獨立的。</span></li>
+    <li>測試面板把付款結果設成「失敗」再付款 → <span class="exp">停在待付款、顯示原因、<b>資料完全沒有被清掉</b>，可直接重試。</span></li>
+    <li>改回「成功」再付 → <span class="exp">產生訂閱訂單與發票、狀態直接進「使用中」（跳過試用）、<b>直接進導引設定</b>。</span></li>
+    <li>看完成頁的同意紀錄 → <span class="exp">記下了條款版本號、時間與來源。</span></li>
+  </ol></div>
+
+  <div class="card"><h3 class="h3">1.6／1.7 聯絡我們與大客戶</h3><ol class="st">
+    <li>只填姓名和 Email 送出 → <span class="exp">成功——其他欄位都不是必填。</span></li>
+    <li>姓名留白 → <span class="exp">擋下。</span>沒勾機器人驗證 → <span class="exp">擋下。</span></li>
+    <li>用<b>同一個 Email</b> 再送一次 → <span class="exp">合併成同一筆，不會建兩張工單。</span></li>
+    <li>看右側清單 → <span class="exp">來源是「官網諮詢」，狀態「待處理」，而且<b>沒有建立租戶</b>。</span></li>
+    <li>「大客戶報價」送出 → <span class="exp">同樣建工單但<b>標記為報價需求並優先排序</b>；分店數超過最高方案時會特別提示。</span></li>
+  </ol></div>
+
+  <div class="card"><h3 class="h3">1.8 條款與必勾</h3><ol class="st">
+    <li>頁尾點「服務條款」→ <span class="exp">獨立頁面，有<b>版本號與生效日</b>。</span></li>
+    <li>點「查看歷史版本」→ <span class="exp">列出舊版本，可切換閱讀。</span></li>
+    <li>結帳第 4 步 → <span class="exp">條款必勾<b>預設不勾</b>；行銷訊息是<b>另一個獨立勾選框</b>，也預設不勾。</span></li>
+    <li>兩份文件在結帳流程中點開 → <span class="exp">不會離開結帳流程（另開視窗）。</span></li>
+  </ol></div>
+</section>
+
+</div>
+
+<footer>
+  <div class="inner">
+    <div class="col"><b>產品</b>
+      <a onclick="go('features')">功能介紹</a><a onclick="go('industry')">適用行業</a>
+      <a onclick="go('demo')">線上示範</a><a onclick="go('pricing')">方案與價格</a></div>
+    <div class="col"><b>聯絡</b>
+      <a onclick="go('contact')">聯絡我們</a><a onclick="go('enterprise')">企業／連鎖報價</a></div>
+    <div class="col"><b>法務</b>
+      <a onclick="openLegal('tos')">平台服務條款</a>
+      <a onclick="openLegal('privacy')">隱私政策</a>
+      <a onclick="openLegal('dpa')">資料處理協議（DPA）</a></div>
+    <div class="col" style="flex:1;min-width:200px;color:var(--muted);font-size:.8rem">
+      「開課吧」是原型用的<b>暫定品牌名</b>，尚未定案。<br>本頁為規格原型，不是實際商品頁。</div>
+  </div>
+</footer>
+
+<div class="mask" id="mask" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><div class="mh"><h3 id="mT"></h3><button class="x" onclick="closeModal()">✕</button></div>
+    <div class="mb" id="mB"></div><div class="mf" id="mF"></div></div>
+</div>
+<div id="toast"></div>
+
+<div id="tp">
+  <div class="h" onclick="document.getElementById('tp').classList.toggle('open')">🧪 測試面板 <span style="margin-left:auto;font-weight:400;font-size:.76rem">展開／收合</span></div>
+  <div class="b">
+    <div class="r"><span><b>子網域保留</b><br><small style="color:var(--muted)">測倒數與釋出</small></span>
+      <select id="tpHold" onchange="HOLD=+this.value"><option value="1800">30 分鐘</option><option value="20">20 秒</option></select></div>
+    <div class="r"><span><b>付款結果</b></span>
+      <select id="tpPay" onchange="PAYOK=this.value==='1'"><option value="1">成功</option><option value="0">失敗</option></select></div>
+    <div class="r"><span><b>「自訂主題」屬於哪個方案</b><br><small style="color:var(--muted)">改了功能頁與定價頁會一起變</small></span>
+      <select id="tpFeat" onchange="moveFeat(this.value)"><option value="p2">成長</option><option value="p3">專業</option></select></div>
+    <div class="r"><span><button class="btn t p" style="width:100%" onclick="resetAll()">重置原型資料</button></span></div>
+  </div>
+</div>
+
+<script>
+/* ═══════ 工具 ═══════ */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const pad=n=>String(n).padStart(2,'0');
+const money=n=>'NT$'+n.toLocaleString();
+const fd=d=>d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate());
+const fdt=d=>fd(d)+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+function toast(m,k){const t=$('#toast');t.textContent=m;t.className='on'+(k?' '+k:'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='',3400);}
+function openModal(t,b,f){$('#mT').innerHTML=t;$('#mB').innerHTML=b;$('#mF').innerHTML=f||'<button class="btn p" onclick="closeModal()">關閉</button>';$('#mask').classList.add('on');}
+function closeModal(){$('#mask').classList.remove('on');}
+
+/* ═══════ 單一資料來源：方案定義 ═══════ */
+let HOLD=1800, PAYOK=true;
+let PLANS=[
+  {id:'p1',name:'入門',m:990,y:9900,limits:{teachers:3,bookings:200,rooms:2},best:false},
+  {id:'p2',name:'成長',m:2490,y:24900,limits:{teachers:10,bookings:1000,rooms:5},best:true},
+  {id:'p3',name:'專業',m:5990,y:59900,limits:{teachers:40,bookings:5000,rooms:20},best:false},
+];
+/* 功能 → 最低需要哪個方案。功能頁與定價頁都讀這一份 */
+let FEATURES=[
+  {g:'對外官網',k:'site',n:'一頁式官網與線上預約',why:'學員直接在你的網站上挑時段報名，不用再私訊問。',min:'p1'},
+  {g:'對外官網',k:'theme',n:'自訂主題與版型',why:'換版型與配色不動內容，招牌名、課程、營業時間都留著。',min:'p2'},
+  {g:'對外官網',k:'domain',n:'綁自己的網域',why:'用 class.yourbrand.com 而不是平台子網址。',min:'p3'},
+  {g:'預約與排課',k:'sched',n:'四種排課型態',why:'固定週課、隨到隨上、一對一循環、一次性講座都排得出來。',min:'p1'},
+  {g:'預約與排課',k:'avail',n:'老師可授課時段',why:'老師自己設可上課的時間，學員只約得到他有空的時段。',min:'p2'},
+  {g:'預約與排課',k:'waitlist',n:'名額與候補',why:'額滿自動排候補，有人退掉就遞補並通知。',min:'p2'},
+  {g:'學員與收費',k:'pay',n:'線上收款與發票',why:'綁自己的收款帳號，錢直接進你的戶頭。',min:'p1'},
+  {g:'學員與收費',k:'pack',n:'堂數包與會員',why:'賣 10 堂包或月費會員，系統自動扣堂數。',min:'p2'},
+  {g:'學員與收費',k:'cert',n:'完課證書',why:'課程結束自動發證書，內容與樣式可自己改。',min:'p2'},
+  {g:'管理',k:'role',n:'多人分權',route:'',why:'客服、財務、排班各看各的，不用全部給同一個帳號。',min:'p2'},
+  {g:'管理',k:'report',n:'營運報表與匯出',why:'看營收、預約量、課程熱門度，可匯出對帳。',min:'p2'},
+  {g:'管理',k:'api',n:'開放 API 與 Webhook',why:'把訂單與預約資料接回自家的記帳或行銷工具。',min:'p3'},
+];
+const plan=id=>PLANS.find(p=>p.id===id);
+const rank=id=>PLANS.findIndex(p=>p.id===id);
+const has=(pid,f)=>rank(pid)>=rank(f.min);
+function moveFeat(to){ FEATURES.find(f=>f.k==='theme').min=to;
+  toast('「自訂主題」已改為 '+plan(to).name+' 方案起——功能頁與定價頁一起變了','ok'); render(); }
+
+/* ═══════ 行業 ═══════ */
+const IND=[
+  {k:'talent',n:'才藝班',ic:'🎨',pain:['家長一直私訊問還有沒有位子','每期重新排課排到崩潰','想讓家長看到孩子的進度'],
+   courses:['兒童繪畫（初級）','兒童繪畫（中級）','幼兒律動','黏土手作'],levels:'初級／中級／高級',
+   fields:['姓名','年齡','才藝類別','有無基礎'],layout:'A 經典形象',colors:['#e8734a','#7a5cc4','#3f6fb5'],demo:'小樹才藝班'},
+  {k:'fitness',n:'運動健身',ic:'💪',pain:['一對一時段最難排','教練臨時請假要一個個通知','會員剩幾堂算不清'],
+   courses:['私人訓練 50 分','團體體能','核心強化'],levels:'（不分級）',
+   fields:['姓名','年齡','健康聲明','運動經驗'],layout:'G 純色極簡',colors:['#2f6f62','#1f2933','#c2410c'],demo:'鐵心體能'},
+  {k:'beauty',n:'美妝美容',ic:'💄',pain:['客人只約特定美容師','服務時間長短差很多','想收訂金避免空跑'],
+   courses:['新娘妝實作','日常妝教學','美睫基礎'],levels:'基礎／進階',
+   fields:['姓名','聯絡電話','膚況描述','是否過敏'],layout:'C 側欄名片',colors:['#b4527a','#8a6cc4','#2f6f62'],demo:'美好妝研'},
+  {k:'music',n:'音樂教室',ic:'🎹',pain:['一對一課要對老師的時間','每週固定同一時段要排一整季','琴房會撞'],
+   courses:['一對一鋼琴 50 分','小提琴入門','樂理基礎'],levels:'初階／中階／高階',
+   fields:['姓名','年齡','學習年資','使用樂器'],layout:'D 雜誌圖文',colors:['#3f6fb5','#7a5cc4','#2f6f62'],demo:'MUSE 音樂教室'},
+  {k:'lang',n:'語言中心',ic:'🗣️',pain:['分級測驗後要編班','線上課跨時區','補課換班很雜'],
+   courses:['英文會話 A1','日文入門','商用英文'],levels:'A1～C1',
+   fields:['姓名','母語','目標檢定','是否需線上'],layout:'E 日曆優先',colors:['#2f6f62','#3f6fb5','#c2410c'],demo:'say語言中心'},
+];
+const ind=k=>IND.find(i=>i.k===k);
+const TAKEN=['smalltree','starbeat','muse','daily-yoga','say-lang'];
+const RESERVED=['admin','api','www','app','mail','platform','static','help','status','blog'];
+
+/* ═══════ 法務文件 ═══════ */
+const LEGAL={
+  tos:{t:'平台服務條款',v:'3.2',at:'2026/07/01',hist:[['3.1','2026/01/15'],['3.0','2025/09/01'],['2.4','2025/03/10']],
+    body:['本條款規範平台與租戶（使用本服務對外販售課程的營運者）之間的權利義務。',
+          '租戶自行對其學員負責，包含課程內容、退費與客服；平台不介入租戶與學員之間的契約。',
+          '平台得於停止服務前以合理期間通知，並提供資料匯出。']},
+  privacy:{t:'隱私政策',v:'2.5',at:'2026/07/01',hist:[['2.4','2026/02/01'],['2.3','2025/08/20']],
+    body:['本政策說明平台如何處理租戶與其後台成員的個人資料。',
+          '學員的個人資料由租戶自行蒐集與管理，平台僅以「處理方」身分代為保管。',
+          '你可以要求查詢、匯出、更正或刪除自己的資料，法定必留者除外。']},
+  dpa:{t:'資料處理協議（DPA）',v:'1.4',at:'2026/05/20',hist:[['1.3','2025/11/11']],
+    body:['本協議約定平台代租戶保管與處理個人資料的範圍與方式。',
+          '角色定義：租戶為個人資料的「主控方」，平台為「處理方」。',
+          '平台客服進入租戶後台協助時，學員聯絡資料預設遮蔽，且全程留存紀錄供租戶查閱。']}
+};
+
+/* ═══════ 狀態 ═══════ */
+let CUR='home', CYCLE='m', TICKETS=[], SUBS=[];
+let CO=null;          // 結帳狀態
+let holdTimer=null;
+
+function go(p){
+  CUR=p;
+  $$('.page').forEach(s=>s.classList.remove('on'));
+  const el=$('#p-'+p); if(el)el.classList.add('on');
+  $$('.nav a.n').forEach(a=>a.classList.toggle('on',a.dataset.p===p));
+  render(); window.scrollTo(0,0);
+}
+function render(){
+  if(CUR==='home')renderHome();
+  if(CUR==='features')renderFeatures();
+  if(CUR==='industry')renderIndustry();
+  if(CUR==='demo')renderDemo();
+  if(CUR==='pricing')renderPricing();
+  if(CUR==='contact')renderContact();
+  if(CUR==='checkout')renderCheckout();
+}
+
+/* ═══════ 首頁 ═══════ */
+function renderHome(){
+  $('#homeInd').innerHTML=IND.map(i=>'<div class="card hov" onclick="openInd(\''+i.k+'\')">'+
+    '<div class="ic">'+i.ic+'</div><h3>'+i.n+'</h3><p>'+i.courses[0]+' 等預設課程</p></div>').join('');
+}
+
+/* ═══════ 1.2 功能介紹頁 ═══════ */
+function renderFeatures(){
+  const groups=[...new Set(FEATURES.map(f=>f.g))];
+  $('#featBody').innerHTML=groups.map(g=>
+    '<h2 class="h2">'+g+'</h2><div class="grid g3">'+
+    FEATURES.filter(f=>f.g===g).map(f=>'<div class="card"><h3>'+f.n+'</h3><p>'+f.why+'</p>'+
+      '<div style="margin-top:11px"><span class="pill b">'+plan(f.min).name+' 方案起</span> '+
+      '<button class="btn t g" onclick="go(\'demo\')">看示範</button></div></div>').join('')+
+    '</div>').join('');
+}
+
+/* ═══════ 1.3 行業落地頁 ═══════ */
+function renderIndustry(){
+  $('#indList').innerHTML=IND.map(i=>'<div class="card hov" onclick="openInd(\''+i.k+'\')">'+
+    '<div class="ic">'+i.ic+'</div><h3>'+i.n+'</h3><p>'+i.pain[0]+'</p></div>').join('');
+}
+function openInd(k){
+  const i=ind(k);
+  $('#p-ind1').innerHTML=
+    '<a onclick="go(\'industry\')">← 回適用行業</a>'+
+    '<h1 class="h" style="margin-top:10px">'+i.ic+' '+i.n+'</h1>'+
+    '<p class="lead">開通當下就有這一行常用的預設，你只要改成自己的。</p>'+
+    '<div class="grid g2">'+
+      '<div class="card"><h3 class="h3">你可能遇到的問題</h3><ul style="font-size:.9rem;padding-left:1.1rem;margin:0">'+
+        i.pain.map(p=>'<li>'+p+'</li>').join('')+'</ul></div>'+
+      '<div class="card"><h3 class="h3">開通後就有的預設</h3>'+
+        '<table><tr><td style="width:88px;color:var(--muted)">預設課程</td><td>'+i.courses.join('、')+'</td></tr>'+
+        '<tr><td style="color:var(--muted)">等級</td><td>'+i.levels+'</td></tr>'+
+        '<tr><td style="color:var(--muted)">報名欄位</td><td>'+i.fields.join('、')+'</td></tr>'+
+        '<tr><td style="color:var(--muted)">推薦版型</td><td>'+i.layout+'</td></tr>'+
+        '<tr><td style="color:var(--muted)">推薦配色</td><td>'+i.colors.map(c=>'<span class="swatch" style="background:'+c+'"></span>').join('')+'</td></tr></table></div>'+
+    '</div>'+
+    '<div class="card" style="margin-top:16px;background:var(--soft);border-color:#cfe3dc">'+
+      '<h3 class="h3">用這一行的設定開始</h3>'+
+      '<p style="font-size:.9rem;color:#2c5f54;margin:0 0 12px">從這裡開始的話，結帳時的課程主題會<b>預先帶入「'+i.n+'」</b>，你也可以在那一步改掉。</p>'+
+      '<button class="btn" onclick="startCheckout(\''+k+'\')">用這個行業開始</button> '+
+      '<button class="btn g" onclick="openDemo(\''+k+'\')">先看 '+i.n+' 的示範站</button></div>'+
+    '<div class="note spec"><b>規格 1.3</b>：五頁各自獨立網址可分別投放廣告；每頁都有「我的行業不在上面」出口；主題下架時落地頁一併下架並導向通用介紹。</div>';
+  go('ind1');
+}
+function customIndustry(){
+  openModal('自建主題',
+    '<p style="margin-top:0">選項都不符合的話可以自己建：</p>'+
+    '<ul style="padding-left:1.1rem;font-size:.9rem">'+
+    '<li>自訂主題名稱</li><li>底層套「空白（通用）範本」</li><li>套版清單改列<b>通用預設版型</b></li></ul>'+
+    '<div class="note warn" style="background:var(--warnbg);border-color:#f0dfc0;color:var(--warn)">'+
+    '⚠️ 要提醒你：<b>要設定的東西會比較多</b>——沒有現成的課程、等級與報名欄位預設可用。</div>',
+    '<button class="btn p" onclick="closeModal()">再想想</button><button class="btn" onclick="closeModal();startCheckout(\'custom\')">自建主題並開始</button>');
+}
+
+/* ═══════ 1.4 示範站 ═══════ */
+function renderDemo(){
+  $('#demoList').innerHTML=IND.map(i=>'<div class="card hov" onclick="openDemo(\''+i.k+'\')">'+
+    '<div class="ic">'+i.ic+'</div><h3>'+i.n+'</h3><p>'+i.demo+'</p>'+
+    '<div style="margin-top:9px"><span class="pill g">示範租戶</span></div></div>').join('');
+}
+let DEMO={k:null,view:'front',color:0,step:1};
+function openDemo(k){ DEMO={k,view:'front',color:0,step:1}; renderDemo1(); go('demo1'); }
+function demoTab(v){ DEMO.view=v; DEMO.step=1; renderDemo1(); }
+function demoColor(n){ DEMO.color=n; renderDemo1(); toast('配色已切換——同一份內容，只換顏色'); }
+function demoStep(n){ DEMO.step=n; renderDemo1(); }
+function demoSave(){
+  openModal('示範站不可修改',
+    '<div class="msg err show">這是唯讀的示範帳號，存檔一律被擋下。</div>'+
+    '<p style="margin-top:0">想自己動手改的話，<b>註冊試用即可</b>——你會拿到一個完全屬於你的後台。</p>'+
+    '<div class="note spec"><b>規格 1.4</b>：後台示範提供<b>唯讀帳號</b>一鍵登入，可瀏覽所有頁面與資料，但存檔一律擋下；也看不到任何真實租戶的資料。</div>',
+    '<button class="btn p" onclick="closeModal()">知道了</button>'+
+    '<button class="btn" onclick="closeModal();startCheckout(\''+DEMO.k+'\')">用我自己的資料試試</button>');
+}
+function renderDemo1(){
+  const i=ind(DEMO.k), c=i.colors[DEMO.color];
+  const tab=(v,l)=>'<button class="btn s '+(DEMO.view===v?'':'g')+'" onclick="demoTab(\''+v+'\')">'+l+'</button>';
+  let inner='';
+  if(DEMO.view==='front'){
+    const step=DEMO.step;
+    const sbtn=(n,l)=>'<div class="'+(step===n?'on':step>n?'done':'')+'" '+(step>n?'onclick="demoStep('+n+')"':'')+'>'+n+' '+l+'</div>';
+    let body='';
+    if(step===1) body='<h3 class="h3">選課程</h3>'+i.courses.map((c2,n)=>'<div class="card hov" style="margin-bottom:9px" onclick="demoStep(2)">'+
+        '<b>'+c2+'</b><div style="font-size:.83rem;color:var(--muted)">'+(50+n*10)+' 分鐘　·　'+(n===0?'1':'8')+' 人</div></div>').join('');
+    else if(step===2) body='<h3 class="h3">選時段</h3><div class="grid g4">'+
+        ['09:30','10:30','14:00','15:00','18:00','19:00'].map(t=>'<button class="btn g s" onclick="demoStep(3)">'+t+'</button>').join('')+
+        '</div><div class="note">午休 12:00–13:00 已從可選時段排除。</div>';
+    else if(step===3) body='<h3 class="h3">填資料</h3>'+i.fields.map(f=>'<div class="fld"><label>'+f+'</label><input placeholder="示範用，隨意填"></div>').join('')+
+        '<button class="btn" style="background:'+c+'" onclick="demoStep(4)">送出預約</button>';
+    else body='<div class="msg warn show">⚠️ <b>這是示範，沒有真的成立預約</b>——沒有寄出任何信件，也沒有收款。</div>'+
+        '<h3 class="h3">預約完成（示範）</h3><table>'+
+        '<tr><td style="width:96px;color:var(--muted)">預約代碼</td><td style="font-family:ui-monospace,monospace">DEMO-0000</td></tr>'+
+        '<tr><td style="color:var(--muted)">課程</td><td>'+i.courses[0]+'</td></tr>'+
+        '<tr><td style="color:var(--muted)">場地</td><td>本店</td></tr></table>'+
+        '<div style="margin-top:14px"><button class="btn" style="background:'+c+'" onclick="startCheckout(\''+DEMO.k+'\')">用我自己的資料試試</button> '+
+        '<button class="btn g" onclick="demoStep(1)">再走一次</button></div>';
+    inner='<div class="frame"><div class="bar"><span>🔒</span><span class="u">'+i.demo.replace(/\s/g,'')+'.demo.開課吧.com</span><span>免登入</span></div>'+
+      '<div class="demoribbon">這是示範站 · 資料每日重置 · 不會真的成立預約或收款</div>'+
+      '<div class="body"><div style="background:linear-gradient(120deg,'+c+',#fff 140%);color:#fff;border-radius:12px;padding:22px;margin-bottom:18px">'+
+      '<div style="font-size:1.3rem;font-weight:800">'+i.demo+'</div><div style="opacity:.9;font-size:.9rem">週一～週六 09:00–21:00　·　午休 12:00–13:00</div></div>'+
+      '<div class="steps">'+sbtn(1,'選課程')+sbtn(2,'選時段')+sbtn(3,'填資料')+sbtn(4,'完成')+'</div>'+body+'</div></div>';
+  }else{
+    inner='<div class="frame"><div class="bar"><span>🔒</span><span class="u">'+i.demo.replace(/\s/g,'')+'.demo.開課吧.com/admin</span><span>唯讀示範帳號</span></div>'+
+      '<div class="demoribbon">唯讀示範 · 可以逛，存檔會被擋</div><div class="body">'+
+      '<h3 class="h3">課程管理</h3><div class="tw"><table><tr><th>課程</th><th>時長</th><th>人數</th><th>狀態</th><th></th></tr>'+
+      i.courses.map((c2,n)=>'<tr><td>'+c2+'</td><td>'+(50+n*10)+' 分</td><td>'+(n===0?1:8)+'</td>'+
+        '<td><span class="pill ok">已上架</span></td><td><button class="btn t p" onclick="demoSave()">編輯</button></td></tr>').join('')+
+      '</table></div>'+
+      '<h3 class="h3" style="margin-top:20px">營業時間</h3>'+
+      '<div class="fld" style="max-width:260px"><label>週一 起訖</label><input value="09:00 – 21:00"></div>'+
+      '<button class="btn" onclick="demoSave()">儲存</button>'+
+      '<div class="note">試著改上面的欄位再按儲存——會被擋下。</div></div></div>';
+  }
+  $('#p-demo1').innerHTML=
+    '<a onclick="go(\'demo\')">← 回示範清單</a>'+
+    '<h1 class="h" style="margin-top:10px">'+i.ic+' '+i.demo+' <span class="pill g">示範租戶</span></h1>'+
+    '<p class="lead">'+i.n+' 範本的實際樣子。前台免登入，後台是唯讀帳號。</p>'+
+    '<div style="margin-bottom:14px">'+tab('front','前台示範')+' '+tab('admin','後台示範')+
+      '　<span style="font-size:.83rem;color:var(--muted)">配色：</span>'+
+      i.colors.map((c,n)=>'<span class="swatch '+(DEMO.color===n?'on':'')+'" style="background:'+c+'" onclick="demoColor('+n+')"></span>').join('')+'</div>'+
+    inner+
+    '<div class="note spec"><b>規格 1.4</b>：示範站是<b>真的租戶</b>（標記為示範），資料每日重置回初始狀態；'+
+    '<b>不計入</b>用量計量、租戶數、MRR 與轉換率，在平台的租戶總覽以「示範」標籤可篩選排除。</div>';
+}
+
+/* ═══════ 定價 ═══════ */
+function setCycle(c){CYCLE=c;$$('#cycleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));renderPricing();}
+function renderPricing(){
+  $('#planCards').innerHTML=PLANS.map(p=>{
+    const per=CYCLE==='m'?p.m:Math.round(p.y/12);
+    const save=CYCLE==='y'?(p.m*12-p.y):0;
+    return '<div class="plan'+(p.best?' best':'')+'"><div class="nm">'+p.name+'</div>'+
+      '<div class="pr">'+money(per)+'<small> / 月</small></div>'+
+      '<div class="save">'+(save?'年繳省 '+money(save):'&nbsp;')+'</div>'+
+      '<ul><li>老師 '+p.limits.teachers+' 位</li><li>每月預約 '+p.limits.bookings.toLocaleString()+' 筆</li>'+
+      '<li>場地 '+p.limits.rooms+' 個</li></ul>'+
+      '<button class="btn" style="width:100%" onclick="startCheckout(null,\''+p.id+'\')">選這個方案</button></div>';
+  }).join('')+
+  '<div class="plan"><div class="nm">企業／連鎖</div><div class="pr" style="font-size:1.15rem">聯絡我們</div>'+
+   '<div class="save">&nbsp;</div><ul><li>超過專業方案上限</li><li>客製合約與付款方式</li><li>人工報價</li></ul>'+
+   '<button class="btn g" style="width:100%" onclick="go(\'enterprise\')">聯絡銷售</button></div>';
+
+  const groups=[...new Set(FEATURES.map(f=>f.g))];
+  let t='<tr><th>功能</th>'+PLANS.map(p=>'<th style="text-align:center">'+p.name+'</th>').join('')+'<th style="text-align:center">企業</th></tr>';
+  groups.forEach(g=>{
+    t+='<tr><td colspan="5" style="background:var(--line2);font-weight:700;font-size:.82rem">'+g+'</td></tr>';
+    FEATURES.filter(f=>f.g===g).forEach(f=>{
+      t+='<tr><td>'+f.n+'</td>'+PLANS.map(p=>'<td style="text-align:center" class="'+(has(p.id,f)?'yes':'no')+'">'+(has(p.id,f)?'✓':'—')+'</td>').join('')+
+        '<td style="text-align:center" class="yes">✓</td></tr>';
+    });
+  });
+  t+='<tr><td>用量上限</td>'+PLANS.map(p=>'<td style="text-align:center;font-size:.8rem">老師 '+p.limits.teachers+'<br>預約 '+p.limits.bookings+'</td>').join('')+
+     '<td style="text-align:center;font-size:.8rem">客製</td></tr>';
+  $('#cmpTbl').innerHTML=t;
+}
+
+/* ═══════ 1.5 結帳 ═══════ */
+function startCheckout(indK,planId){
+  CO={step:1, plan:planId||'p2', cycle:CYCLE, ind:indK||null, name:'',mail:'',tenant:'',sub:'',
+      subOk:false, holdUntil:null, invType:'person', vat:'', comp:'', invMail:'', billSame:true,
+      promo:'', promoOK:null, agree:false, mkt:false, status:null, order:null};
+  clearInterval(holdTimer); holdTimer=null;
+  go('checkout');
+  if(indK&&indK!=='custom') toast('已帶入課程主題「'+ind(indK).n+'」，第 2 步可以改');
+  if(indK==='custom') toast('已選「自建主題」，第 2 步可改');
+}
+const coPrice=()=>{ const p=plan(CO.plan); return CO.cycle==='m'?p.m:p.y; };
+function coDiscount(){ if(CO.promoOK!=='ok')return 0; return Math.round(coPrice()*0.2); }
+const coTotal=()=>coPrice()-coDiscount();
+
+function renderCheckout(){
+  const S=['選方案','帳號與租戶','帳務與發票','付款'];
+  $('#coSteps').innerHTML=S.map((s,n)=>{const i=n+1;
+    return '<div class="'+(CO.step===i?'on':CO.step>i?'done':'')+'" '+(CO.step>i?'onclick="coGo('+i+')"':'')+'>'+i+' '+s+'</div>';}).join('');
+  const f={1:coStep1,2:coStep2,3:coStep3,4:coStep4,5:coDone}[CO.step];
+  $('#coBody').innerHTML=f();
+  if(CO.step===2) coCheckSub(true);
+  if(CO.step===3) coInvType();
+}
+function coGo(n){ CO.step=n; renderCheckout(); }
+function coStep1(){
+  return '<div class="grid g2"><div>'+
+    '<div class="fld"><label>方案</label><select onchange="CO.plan=this.value;renderCheckout()">'+
+      PLANS.map(p=>'<option value="'+p.id+'"'+(CO.plan===p.id?' selected':'')+'>'+p.name+'</option>').join('')+'</select></div>'+
+    '<div class="fld"><label>計費週期</label>'+
+      '<label class="opt"><input type="radio" name="cyc" '+(CO.cycle==='m'?'checked':'')+' onchange="CO.cycle=\'m\';renderCheckout()"><span>月繳 '+money(plan(CO.plan).m)+' / 月</span></label>'+
+      '<label class="opt"><input type="radio" name="cyc" '+(CO.cycle==='y'?'checked':'')+' onchange="CO.cycle=\'y\';renderCheckout()"><span>年繳 '+money(plan(CO.plan).y)+' / 年　<span class="pill ok">省 '+money(plan(CO.plan).m*12-plan(CO.plan).y)+'</span></span></label></div>'+
+    '<button class="btn" onclick="coGo(2)">下一步</button></div>'+
+    '<div class="card"><h3 class="h3">這個方案含</h3><ul style="font-size:.88rem;padding-left:1.1rem;margin:0 0 12px">'+
+      '<li>老師 '+plan(CO.plan).limits.teachers+' 位</li><li>每月預約 '+plan(CO.plan).limits.bookings.toLocaleString()+' 筆</li>'+
+      '<li>場地 '+plan(CO.plan).limits.rooms+' 個</li></ul>'+
+      '<div style="font-size:.86rem;color:var(--muted)">功能：'+FEATURES.filter(f=>has(CO.plan,f)).map(f=>f.n).join('、')+'</div>'+
+      '<div class="note spec" style="margin-top:12px"><b>規格 1.5</b>：這裡的方案與上限<b>與定價頁同一份資料</b>。</div></div></div>';
+}
+function coStep2(){
+  const opts=IND.map(i=>'<option value="'+i.k+'"'+(CO.ind===i.k?' selected':'')+'>'+i.n+'</option>').join('')+
+    '<option value="custom"'+(CO.ind==='custom'?' selected':'')+'>自建主題（都不符合）</option>';
+  return '<div class="grid g2"><div>'+
+    '<div class="msg err" id="s2err"></div>'+
+    '<div class="fld"><label>姓名 <span class="req">*</span></label><input id="s2name" value="'+CO.name+'" oninput="CO.name=this.value"></div>'+
+    '<div class="fld"><label>Email <span class="req">*</span></label><input id="s2mail" type="email" value="'+CO.mail+'" oninput="CO.mail=this.value">'+
+      '<div class="hint">這個 Email 就是你的<b>擁有者帳號</b></div></div>'+
+    '<div class="fld"><label>單位名稱 <span class="req">*</span></label><input id="s2ten" value="'+CO.tenant+'" oninput="CO.tenant=this.value"></div>'+
+    '<div class="fld"><label>子網域 <span class="req">*</span></label>'+
+      '<input id="s2sub" value="'+CO.sub+'" oninput="CO.sub=this.value.toLowerCase();coCheckSub()" placeholder="yourschool">'+
+      '<div class="hint" id="subHint">會變成 <b>你的網址.開課吧.com</b></div></div>'+
+    '<div class="fld"><label>課程主題</label><select onchange="CO.ind=this.value">'+opts+'</select>'+
+      (CO.ind?'<div class="hint">已從'+(CO.ind==='custom'?'「自建主題」':ind(CO.ind).n+'頁')+'帶入，可以改</div>':'')+'</div>'+
+    '<button class="btn" onclick="coNext2()">下一步</button></div>'+
+    '<div class="card"><h3 class="h3">子網域規則</h3><ul style="font-size:.87rem;padding-left:1.1rem;margin:0">'+
+      '<li>已被使用的不能選（例如 <code>smalltree</code>）</li>'+
+      '<li>保留字不能用（<code>admin</code>、<code>api</code>、<code>www</code>…）</li>'+
+      '<li>檢查通過後<b>保留 30 分鐘</b>，避免兩人搶同一個</li>'+
+      '<li>逾時未完成付款就釋出，回頭時要重新確認</li></ul>'+
+      '<div class="note spec"><b>規格 1.5 ①</b>：送出這一步就<b>建立租戶</b>，狀態為<b>待付款</b>——之後付款失敗可直接重試，不需重填。</div></div></div>';
+}
+function coCheckSub(silent){
+  const v=(CO.sub||'').trim(), h=$('#subHint'); if(!h)return;
+  CO.subOk=false;
+  if(!v){ h.innerHTML='會變成 <b>你的網址.開課吧.com</b>'; h.style.color=''; return; }
+  if(RESERVED.includes(v)){ h.innerHTML='⛔ <b>'+v+'</b> 是保留字，不能使用'; h.style.color='var(--bad)'; return; }
+  if(TAKEN.includes(v)||SUBS.includes(v)){ h.innerHTML='⛔ <b>'+v+'</b> 已經被使用了'; h.style.color='var(--bad)'; return; }
+  if(!/^[a-z0-9-]{3,}$/.test(v)){ h.innerHTML='⛔ 只能用小寫英數與連字號，至少 3 個字'; h.style.color='var(--bad)'; return; }
+  CO.subOk=true;
+  if(!CO.holdUntil||!silent){ CO.holdUntil=Date.now()+HOLD*1000; startHold(); }
+  h.innerHTML='✅ <b>'+v+'.開課吧.com</b> 可以使用'+(CO.holdUntil?'　<span id="holdCd" style="color:var(--warn)"></span>':'');
+  h.style.color='var(--ok)'; tickHold();
+}
+function startHold(){ clearInterval(holdTimer); holdTimer=setInterval(tickHold,1000); }
+function tickHold(){
+  const el=$('#holdCd'); if(!CO||!CO.holdUntil){return;}
+  const left=Math.ceil((CO.holdUntil-Date.now())/1000);
+  if(left<=0){
+    clearInterval(holdTimer); holdTimer=null; CO.holdUntil=null; CO.subOk=false;
+    if(CUR==='checkout'){ const h=$('#subHint');
+      if(h){h.innerHTML='⚠️ 保留時間已過，<b>子網域已釋出</b>——請重新確認一次';h.style.color='var(--warn)';} }
+    toast('子網域保留時間已過並釋出，請重新確認','bad');
+    return;
+  }
+  if(el) el.textContent='（保留中，剩 '+Math.floor(left/60)+':'+pad(left%60)+'）';
+}
+function coNext2(){
+  const e=$('#s2err');
+  const miss=[]; if(!CO.name.trim())miss.push('姓名'); if(!CO.mail.trim())miss.push('Email'); if(!CO.tenant.trim())miss.push('單位名稱');
+  if(miss.length){ e.textContent='請填寫：'+miss.join('、'); e.className='msg err show'; return; }
+  if(!CO.subOk){ e.textContent='子網域尚未通過檢查'; e.className='msg err show'; return; }
+  if(!CO.status){ CO.status='待付款'; SUBS.push(CO.sub);
+    toast('已建立租戶「'+CO.tenant+'」，狀態：待付款——付款失敗可直接重試'); }
+  coGo(3);
+}
+function coStep3(){
+  return '<div class="grid g2"><div>'+
+    '<div class="msg err" id="s3err"></div>'+
+    '<div class="fld"><label>發票類型</label>'+
+      '<label class="opt"><input type="radio" name="inv" '+(CO.invType==='person'?'checked':'')+' onchange="CO.invType=\'person\';coInvType()"><span>個人</span></label>'+
+      '<label class="opt"><input type="radio" name="inv" '+(CO.invType==='comp'?'checked':'')+' onchange="CO.invType=\'comp\';coInvType()"><span>公司（三聯式）</span></label></div>'+
+    '<div id="compFields" style="display:none">'+
+      '<div class="fld"><label>統一編號 <span class="req">*</span></label><input id="s3vat" value="'+CO.vat+'" oninput="CO.vat=this.value" placeholder="8 位數字"></div>'+
+      '<div class="fld"><label>公司名稱 <span class="req">*</span></label><input id="s3comp" value="'+CO.comp+'" oninput="CO.comp=this.value"></div></div>'+
+    '<div class="fld"><label>發票寄送 Email</label><input id="s3im" value="'+CO.invMail+'" oninput="CO.invMail=this.value" placeholder="留空就用擁有者的 Email"></div>'+
+    '<div class="fld"><label class="opt"><input type="checkbox" '+(CO.billSame?'checked':'')+' onchange="CO.billSame=this.checked"><span>帳務聯絡人同擁有者</span></label></div>'+
+    '<div class="fld"><label>優惠碼</label><div style="display:flex;gap:8px">'+
+      '<input id="s3promo" value="'+CO.promo+'" oninput="CO.promo=this.value" placeholder="有的話填這裡" style="flex:1">'+
+      '<button class="btn g s" onclick="applyPromo()">套用</button></div>'+
+      '<div class="hint" id="promoHint">'+promoMsg()+'</div></div>'+
+    '<button class="btn" onclick="coNext3()">下一步</button></div>'+
+    '<div class="card"><h3 class="h3">訂單摘要</h3>'+coSummary()+
+      '<div class="note spec"><b>規格 1.5 ②</b>：發票資料依所在地區規格；<b>訂閱層的優惠碼</b>與學員預約用的優惠碼是兩套獨立系統。</div></div></div>';
+}
+function coInvType(){ const el=$('#compFields'); if(el)el.style.display=CO.invType==='comp'?'block':'none'; }
+function promoMsg(){
+  if(CO.promoOK==='ok')return '<span style="color:var(--ok)">✅ 已套用，折 20%</span>';
+  if(CO.promoOK==='exp')return '<span style="color:var(--bad)">⛔ 這組優惠碼<b>已過期</b></span>';
+  if(CO.promoOK==='full')return '<span style="color:var(--bad)">⛔ 這組優惠碼<b>已達使用上限</b></span>';
+  if(CO.promoOK==='no')return '<span style="color:var(--bad)">⛔ <b>查無此優惠碼</b></span>';
+  return '訂閱用的優惠碼，與學員預約的優惠碼不同';
+}
+function applyPromo(){
+  const v=(CO.promo||'').trim().toUpperCase();
+  CO.promoOK = v===''?null : v==='SPRING20'?'ok' : v==='OLD10'?'exp' : v==='FULL5'?'full' : 'no';
+  renderCheckout();
+}
+function coSummary(){
+  const d=coDiscount();
+  return '<table><tr><td style="color:var(--muted)">方案</td><td>'+plan(CO.plan).name+'（'+(CO.cycle==='m'?'月繳':'年繳')+'）</td></tr>'+
+    '<tr><td style="color:var(--muted)">金額</td><td>'+money(coPrice())+'</td></tr>'+
+    (d?'<tr><td style="color:var(--muted)">優惠碼折抵</td><td style="color:var(--ok)">−'+money(d)+'</td></tr>':'')+
+    '<tr><td style="color:var(--muted)"><b>應付</b></td><td><b>'+money(coTotal())+'</b></td></tr>'+
+    '<tr><td style="color:var(--muted)">網址</td><td>'+(CO.sub||'—')+'.開課吧.com</td></tr>'+
+    '<tr><td style="color:var(--muted)">課程主題</td><td>'+(CO.ind?(CO.ind==='custom'?'自建主題':ind(CO.ind).n):'—')+'</td></tr></table>';
+}
+function coNext3(){
+  const e=$('#s3err');
+  if(CO.invType==='comp'&&(!CO.vat.trim()||!CO.comp.trim())){
+    e.textContent='選「公司」時，統一編號與公司名稱都是必填'; e.className='msg err show'; return; }
+  if(CO.invType==='comp'&&!/^\d{8}$/.test(CO.vat.trim())){
+    e.textContent='統一編號應為 8 位數字'; e.className='msg err show'; return; }
+  coGo(4);
+}
+function coStep4(){
+  const t=LEGAL.tos, p=LEGAL.privacy;
+  return '<div class="grid g2"><div>'+
+    '<div class="msg err" id="s4err"></div>'+
+    '<div class="msg warn show" id="payFail" style="display:none"></div>'+
+    '<div class="fld"><label>付款方式</label><select><option>信用卡（自動續扣）</option></select></div>'+
+    '<div class="fld"><label>卡號</label><input value="4242 4242 4242 4242"></div>'+
+    '<div class="grid g2" style="gap:0 12px"><div class="fld"><label>到期</label><input value="12/29"></div>'+
+      '<div class="fld"><label>安全碼</label><input value="123"></div></div>'+
+    '<div class="fld" style="border-top:1px solid var(--line);padding-top:14px">'+
+      '<label class="opt"><input type="checkbox" id="s4agree" '+(CO.agree?'checked':'')+' onchange="CO.agree=this.checked;coPayBtn()">'+
+      '<span>我已閱讀並同意 <a onclick="event.stopPropagation();openLegal(\'tos\',1)">平台服務條款</a> 與 '+
+      '<a onclick="event.stopPropagation();openLegal(\'privacy\',1)">隱私政策</a><br>'+
+      '<span style="font-size:.78rem;color:var(--muted)">條款 v'+t.v+'　·　隱私政策 v'+p.v+'</span></span></label>'+
+      '<label class="opt"><input type="checkbox" id="s4mkt" '+(CO.mkt?'checked':'')+' onchange="CO.mkt=this.checked">'+
+      '<span>我想收到產品更新與行銷訊息<br><span style="font-size:.78rem;color:var(--muted)">選填，與上面那項無關</span></span></label></div>'+
+    '<button class="btn" id="payBtn" onclick="doPay()" '+(CO.agree?'':'disabled')+'>付款 '+money(coTotal())+'</button>'+
+    '<div class="note spec"><b>規格 1.8 ②</b>：必勾項<b>預設不勾</b>、不可預先勾選；行銷訊息是<b>獨立勾選框</b>，同意條款不等於同意收行銷信。</div></div>'+
+    '<div class="card"><h3 class="h3">訂單摘要</h3>'+coSummary()+
+      '<div class="note">收款方是<b>平台</b>——這筆錢跟你之後向學員收的課程費完全分開。</div></div></div>';
+}
+function coPayBtn(){ const b=$('#payBtn'); if(b)b.disabled=!CO.agree; }
+function doPay(){
+  if(!CO.agree){ toast('請先勾選同意條款','bad'); return; }
+  if(!PAYOK){
+    const f=$('#payFail'); f.style.display='block';
+    f.innerHTML='⛔ <b>付款失敗</b>：發卡行拒絕這筆交易（原型模擬）。<br>'+
+      '你的租戶「'+CO.tenant+'」仍在<b>待付款</b>狀態，<b>資料都留著</b>——換一張卡直接再按付款就好，不必重填。';
+    toast('付款失敗，資料沒有被清掉，可直接重試','bad'); return;
+  }
+  CO.status='使用中';
+  CO.order={no:'SO-'+fd(new Date()).replace(/\//g,'')+'-'+Math.floor(Math.random()*900+100),
+    at:new Date(), amount:coTotal(), inv:'INV-'+Math.floor(Math.random()*9e7+1e7),
+    tosV:LEGAL.tos.v, privV:LEGAL.privacy.v, mkt:CO.mkt};
+  clearInterval(holdTimer); holdTimer=null; CO.holdUntil=null;
+  CO.step=5; renderCheckout();
+}
+function coDone(){
+  const o=CO.order;
+  return '<div class="msg ok show">✅ 付款完成，你的網站已經開通了。</div>'+
+    '<div class="grid g2"><div class="card"><h3 class="h3">訂閱訂單</h3><table>'+
+    '<tr><td style="width:110px;color:var(--muted)">訂單編號</td><td style="font-family:ui-monospace,monospace">'+o.no+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">金額</td><td>'+money(o.amount)+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">發票</td><td style="font-family:ui-monospace,monospace">'+o.inv+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">訂閱狀態</td><td><span class="pill ok">使用中</span>（<b>跳過試用</b>）</td></tr>'+
+    '<tr><td style="color:var(--muted)">續約日</td><td>'+fd(new Date(o.at.getFullYear()+(CO.cycle==='y'?1:0),o.at.getMonth()+(CO.cycle==='m'?1:0),o.at.getDate()))+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">網址</td><td>'+CO.sub+'.開課吧.com</td></tr></table>'+
+    '<div class="note spec">訂閱訂單屬「平台持有、指向某租戶」的資料——你在自己的後台看得到帳單，但它不會混進你的課程訂單裡。</div></div>'+
+    '<div class="card"><h3 class="h3">同意紀錄</h3><table>'+
+    '<tr><td style="width:110px;color:var(--muted)">服務條款</td><td>v'+o.tosV+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">隱私政策</td><td>v'+o.privV+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">同意時間</td><td>'+fdt(o.at)+'</td></tr>'+
+    '<tr><td style="color:var(--muted)">來源</td><td>官網結帳</td></tr>'+
+    '<tr><td style="color:var(--muted)">行銷訊息</td><td>'+(o.mkt?'<span class="pill ok">同意</span>':'<span class="pill g">未同意</span>')+'</td></tr></table>'+
+    '<div class="note spec"><b>規格 1.8 ②</b>：同意紀錄含<b>文件版本號、時間與來源</b>。</div></div></div>'+
+    '<div class="card" style="margin-top:16px;background:var(--soft);border-color:#cfe3dc">'+
+    '<h3 class="h3">接下來：引導設定（五步）</h3>'+
+    '<div class="steps"><div class="on">1 主題與品牌</div><div>2 營業時間</div><div>3 老師</div><div>4 課程</div><div>5 完成</div></div>'+
+    '<p style="font-size:.9rem;color:#2c5f54;margin:0 0 12px">試用與付費<b>兩條入口匯流到同一個精靈</b>，流程完全一樣，差別只在訂閱狀態。'+
+    (CO.ind&&CO.ind!=='custom'?'課程主題已帶入「'+ind(CO.ind).n+'」。':'')+'</p>'+
+    '<button class="btn" onclick="toast(\'原型到此為止——引導精靈的規格見第 39 章\')">進入引導設定</button> '+
+    '<button class="btn g" onclick="resetAll()">重新走一次</button></div>';
+}
+
+/* ═══════ 1.6／1.7 諮詢 ═══════ */
+function renderContact(){
+  const s=$('#ctInd'); if(s&&!s.options.length)
+    s.innerHTML='<option value="">未選擇</option>'+IND.map(i=>'<option>'+i.n+'</option>').join('')+'<option>其他</option>';
+  $('#ctTbl').innerHTML='<tr><th>工單</th><th>來源</th><th>姓名</th><th>狀態</th></tr>'+
+    (TICKETS.length?TICKETS.map(t=>'<tr><td style="font-family:ui-monospace,monospace">'+t.id+
+      (t.quote?'<br><span class="pill warn">報價需求</span>':'')+'</td>'+
+      '<td><span class="pill b">官網諮詢</span></td><td>'+t.name+'<br><span style="font-size:.76rem;color:var(--muted)">'+t.mail+
+      (t.n>1?'　·　合併 '+t.n+' 次':'')+'</span></td>'+
+      '<td><span class="pill warn">待處理</span><br><span style="font-size:.74rem;color:var(--muted)">非租戶</span></td></tr>').join('')
+     :'<tr><td colspan="4" style="color:var(--muted)">還沒有諮詢</td></tr>');
+}
+function sendContact(){
+  const e=$('#ctErr'), n=$('#ctName').value.trim(), m=$('#ctMail').value.trim();
+  if(!n||!m){ e.textContent='姓名與 Email 是必填（其他欄位都可以留白）'; e.className='msg err show'; return; }
+  if(!$('#ctBot').checked){ e.textContent='請先通過機器人驗證'; e.className='msg err show'; return; }
+  e.className='msg err';
+  const ex=TICKETS.find(t=>t.mail.toLowerCase()===m.toLowerCase());
+  if(ex){ ex.n++; renderContact();
+    openModal('已合併到同一筆',
+      '<div class="msg info show">這個 Email 短時間內已經送過，<b>合併為同一筆</b>，不會建第二張工單。</div>'+
+      '<p style="margin-top:0">工單 <b>'+ex.id+'</b> 目前累計 '+ex.n+' 次送出。</p>'+
+      '<div class="note spec"><b>規格 1.6</b>：同一 Email 短時間重複送出時合併，不重複建單。</div>'); return; }
+  const id='#C'+(1000+TICKETS.length+1);
+  TICKETS.push({id,name:n,mail:m,n:1,quote:false});
+  ['ctName','ctMail','ctTel','ctOrg','ctMemo','ctWhen'].forEach(x=>$('#'+x).value=''); $('#ctBot').checked=false;
+  renderContact();
+  openModal('已收到你的訊息',
+    '<div class="msg ok show">工單 <b>'+id+'</b> 已建立，我們會在一個工作日內回覆。</div>'+
+    '<p style="margin-top:0">送出後系統做了這些事：</p>'+
+    '<ul style="padding-left:1.1rem;font-size:.9rem">'+
+    '<li>建立一張<b>來源為「官網諮詢」</b>的工單，狀態「待處理」</li>'+
+    '<li><b>沒有建立租戶</b>——你現在還不是租戶，工單歸屬為「潛在客戶」</li>'+
+    '<li>寄了一封自動回覆信給你，說明多久內會回</li>'+
+    '<li>回覆時限<b>單獨設定</b>，不吃方案分級（你還沒有方案）</li></ul>'+
+    '<div class="note spec"><b>規格 1.6</b>：談成後由平台在後台<b>手動開通</b>，並把這張工單關聯到新建的租戶上，保留完整往來紀錄。</div>');
+}
+function sendEnterprise(){
+  const e=$('#epErr'), n=$('#epName').value.trim(), m=$('#epMail').value.trim();
+  if(!n||!m){ e.textContent='姓名與 Email 是必填'; e.className='msg err show'; return; }
+  if(!$('#epBot').checked){ e.textContent='請先通過機器人驗證'; e.className='msg err show'; return; }
+  e.className='msg err';
+  const br=+$('#epBranch').value||0, tc=+$('#epTeach').value||0;
+  const over=tc>PLANS[2].limits.teachers;
+  const id='#Q'+(2000+TICKETS.length+1);
+  TICKETS.push({id,name:n,mail:m,n:1,quote:true});
+  renderContact();
+  openModal('已收到報價需求',
+    '<div class="msg ok show">工單 <b>'+id+'</b> 已建立，並<b>標記為報價需求、優先排序</b>。</div>'+
+    (over?'<div class="msg warn show">你填的老師人數（'+tc+'）已超過專業方案上限（'+PLANS[2].limits.teachers+'），確實需要走客製報價。</div>':'')+
+    (br>1?'<div class="msg info show">'+br+' 家分店：提醒你<b>多租戶集中管理本期不支援</b>，每家分店會是獨立的租戶。</div>':'')+
+    '<ul style="padding-left:1.1rem;font-size:.9rem">'+
+    '<li>由我們人工報價，不在官網顯示議定價格</li>'+
+    '<li>成交後在平台後台<b>手動開通</b>，議定價以<b>價格快照</b>綁在你的訂閱上</li>'+
+    '<li>不影響公開方案的定價</li>'+
+    '<li>本期<b>不提供線上簽約</b>，合約走人工</li></ul>');
+}
+
+/* ═══════ 1.8 法務 ═══════ */
+let LEGAL_CUR='tos', LEGAL_VER=null;
+function openLegal(k,inFlow){
+  LEGAL_CUR=k; LEGAL_VER=null;
+  if(inFlow){ renderLegalModal(); return; }
+  renderLegalPage(); go('legal');
+}
+function renderLegalPage(){
+  const d=LEGAL[LEGAL_CUR];
+  const ver=LEGAL_VER||d.v, isOld=!!LEGAL_VER;
+  $('#p-legal').innerHTML=
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">'+
+      Object.entries(LEGAL).map(([k,v])=>'<button class="btn s '+(k===LEGAL_CUR?'':'g')+'" onclick="openLegal(\''+k+'\')">'+v.t+'</button>').join('')+'</div>'+
+    '<h1 class="h">'+d.t+'</h1>'+
+    '<p class="lead">版本 <b>v'+ver+'</b>　·　生效日 '+(isOld?(d.hist.find(x=>x[0]===ver)||['',''])[1]:d.at)+
+      (isOld?'　<span class="pill g">歷史版本</span>':'　<span class="pill ok">現行版本</span>')+'</p>'+
+    (isOld?'<div class="msg warn show">你正在看歷史版本。<a onclick="LEGAL_VER=null;renderLegalPage()">回到現行版本</a></div>':'')+
+    '<div class="card">'+d.body.map(p=>'<p style="font-size:.92rem">'+p+'</p>').join('')+
+      '<p style="font-size:.85rem;color:var(--muted)">（原型節錄；完整內容以法遵章為準）</p></div>'+
+    '<div class="card" style="margin-top:16px"><h3 class="h3">歷史版本</h3>'+
+      '<div class="tw"><table><tr><th>版本</th><th>生效日</th><th></th></tr>'+
+      '<tr><td>v'+d.v+'</td><td>'+d.at+'</td><td><span class="pill ok">現行</span></td></tr>'+
+      d.hist.map(x=>'<tr><td>v'+x[0]+'</td><td>'+x[1]+'</td><td><button class="btn t p" onclick="LEGAL_VER=\''+x[0]+'\';renderLegalPage()">閱讀</button></td></tr>').join('')+
+      '</table></div>'+
+      '<div class="note spec"><b>規格 1.8 ①</b>：每份文件<b>獨立網址</b>、頁尾固定連結、顯示<b>版本號與生效日</b>並保留歷史版本——判斷「當時同意的是哪一版」要靠它。</div></div>'+
+    '<div class="note spec">⚠️ 這裡是<b>平台的</b>條款。租戶自己的退費政策與上課須知是另一套，只出現在租戶的預約流程裡。</div>';
+}
+function renderLegalModal(){
+  const d=LEGAL[LEGAL_CUR];
+  openModal(d.t+'　<span class="pill g">v'+d.v+'</span>',
+    '<div class="msg info show">在結帳流程中開啟——<b>不會離開你剛才填的資料</b>。</div>'+
+    d.body.map(p=>'<p style="font-size:.9rem">'+p+'</p>').join('')+
+    '<div class="note">生效日 '+d.at+'　·　<a onclick="closeModal();openLegal(\''+LEGAL_CUR+'\')">看完整頁面與歷史版本</a></div>',
+    '<button class="btn" onclick="closeModal()">回到結帳</button>');
+}
+
+/* ═══════ 測試面板 ═══════ */
+function resetAll(){
+  HOLD=1800; PAYOK=true; $('#tpHold').value='1800'; $('#tpPay').value='1';
+  FEATURES.find(f=>f.k==='theme').min='p2'; $('#tpFeat').value='p2';
+  TICKETS=[]; SUBS=[]; CO=null; CYCLE='m'; LEGAL_VER=null;
+  clearInterval(holdTimer); holdTimer=null;
+  $$('#cycleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.c==='m'));
+  go('home'); toast('原型資料已重置');
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+renderHome();
+</script>
+</body>
+</html>

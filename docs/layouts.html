@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>官網版型展示 · 5 版型 × 6 主題 × 4 配色（D 為照片版型 · 方案 2 參考實作）</title>
+<style>
+  /* ===== 配色（顏色角色）：UI 顏色，配色切換只改這組 ===== */
+  :root{
+    --primary:#e8734a; --primary-ink:#fff;
+    --accent:#2ba58c;
+    --bg:#fdf9f4; --card:#ffffff; --line:#eee3d8;
+    --ink:#33302c; --muted:#8a8177; --deep:#3c4043;
+    --radius:14px; --shadow:0 2px 10px rgba(80,60,30,.08);
+    /* 主題素材色（行業示意圖的佔位漸層）：主題切換改這組 */
+    --theme-a:#f9e0cd; --theme-b:#e8f5ef; --theme-ink:#33302c;
+  }
+  :root[data-scheme="persian"]{ /* 參考 SimplyBook Persian：紫＋金 */
+    --primary:#6d5bc7; --primary-ink:#fff; --accent:#c9a86a;
+    --bg:#faf9fc; --card:#ffffff; --line:#e6e2f2;
+    --ink:#2c2a38; --muted:#8b87a0; --deep:#322f45;
+  }
+  :root[data-scheme="french"]{ /* 參考 SimplyBook French：藍＋紅 */
+    --primary:#2b5fb8; --primary-ink:#fff; --accent:#d8434e;
+    --bg:#f7f9fc; --card:#ffffff; --line:#dfe6f0;
+    --ink:#24303f; --muted:#7d8a9b; --deep:#1d2b3f;
+  }
+  :root[data-scheme="teal"]{ /* 參考 SimplyBook Teal Refresh：青綠＋橘 */
+    --primary:#178f83; --primary-ink:#fff; --accent:#ef8354;
+    --bg:#f4faf9; --card:#ffffff; --line:#d9ebe8;
+    --ink:#223734; --muted:#77908c; --deep:#163833;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.7;
+    font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  .btn{display:inline-block;border:none;cursor:pointer;font:inherit;text-align:center;text-decoration:none;
+    background:var(--primary);color:var(--primary-ink);font-weight:700;padding:10px 22px;border-radius:12px;}
+  .btn.ghost{background:transparent;color:var(--primary);border:2px solid var(--primary);}
+  .btn.small{padding:6px 14px;font-size:.88rem;border-radius:9px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px;}
+  .ph{background:linear-gradient(120deg,var(--theme-a),var(--theme-b));border:1px solid var(--line);position:relative;overflow:hidden;}
+  .avatar{border-radius:50%;background:var(--accent);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;}
+
+  /* ===== 展示工具列 ===== */
+  .toolbar{position:sticky;top:0;z-index:60;background:#23202b;color:#fff;padding:12px 16px;
+    display:flex;flex-direction:column;align-items:flex-start;gap:9px;}
+  .toolbar .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%;}
+  .toolbar b{font-size:.85rem;flex:0 0 auto;min-width:34px;opacity:.75;}
+  .toolbar .group{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .toolbar button{font:inherit;font-size:.8rem;cursor:pointer;border:1.5px solid rgba(255,255,255,.35);
+    background:transparent;color:#fff;border-radius:99px;padding:4px 13px;}
+  .toolbar button.on{background:#fff;color:#222;border-color:#fff;font-weight:700;}
+  .note{background:var(--card);border-bottom:1px solid var(--line);padding:10px 20px;font-size:.85rem;color:var(--muted);}
+  .note b{color:var(--ink)}
+  .note .fit{display:inline-block;margin-left:8px;font-size:.76rem;color:var(--primary);}
+
+  /* ============ A 經典形象 ============ */
+  .A .nav{display:flex;align-items:center;gap:18px;height:60px;}
+  .A .nav b{font-size:1.1rem}
+  .A .nav a{color:var(--ink);text-decoration:none;font-size:.92rem;opacity:.85}
+  .A .nav .btn{margin-left:auto}
+  .A .hero{background:linear-gradient(115deg,var(--theme-a),var(--theme-b));padding:76px 0;color:var(--theme-ink);}
+  .A .hero h1{font-size:2.4rem;margin:0 0 10px;}
+  .A .hero p{max-width:520px;opacity:.75;margin:0 0 24px;}
+  .A h2{font-size:1.4rem;margin:44px 0 16px;}
+  .A .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:760px){.A .cards{grid-template-columns:1fr;}}
+  .A .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .A .card .ph{height:110px;border-radius:10px;margin-bottom:12px;}
+  .A .card h3{margin:0 0 4px;font-size:1.02rem;}
+  .A .meta{color:var(--muted);font-size:.83rem;margin-bottom:8px;}
+  .A .price{color:var(--primary);font-weight:800;font-size:1.15rem;margin-bottom:12px;}
+  .A .trow{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;}
+  .A .info3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:860px){.A .info3{grid-template-columns:1fr;}}
+  .A .info3 .card h3{margin:0 0 10px;font-size:1rem;color:var(--primary);}
+  .A .hrow{display:flex;justify-content:space-between;font-size:.9rem;padding:4px 0;border-bottom:1px dashed var(--line);}
+  .A .hrow:last-child{border-bottom:none;}
+  .A .hrow.brk{color:var(--accent);font-size:.8rem;border-bottom:none;padding-top:0;}
+  .A .foot{background:var(--deep);color:#eee;margin-top:56px;padding:22px 0;font-size:.85rem;}
+
+  /* ============ C 側欄名片（側欄導覽＋多區塊內容） ============ */
+  .C .shell{display:flex;min-height:640px;}
+  .C .side{flex:0 0 300px;background:var(--card);border-right:1px solid var(--line);padding:32px 26px;}
+  @media(max-width:900px){
+    .C .cbanner{min-height:300px;}
+    .C .cbanner h1{font-size:2.2rem;}
+    .C .shell{display:block}
+    .C .side{border-right:none;border-bottom:1px solid var(--line);}
+    .C .toggle,.C.collapsed .rail{display:none;}
+    .C.collapsed .side{flex-basis:auto;padding:32px 26px;}
+    .C.collapsed .full{display:block;}
+  }
+  .C .side .logo{width:64px;height:64px;border-radius:18px;background:var(--primary);color:var(--primary-ink);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;margin-bottom:12px;}
+  .C .side .status{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:700;
+    color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);
+    border-radius:99px;padding:4px 11px;margin-bottom:10px;}
+  .C .side .status::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);}
+  .C .side h1{font-size:1.25rem;margin:0 0 12px;}
+  .C .sidenav{display:flex;flex-direction:column;gap:2px;margin:0 0 16px;}
+  .C .sidenav a{color:var(--ink);text-decoration:none;font-size:.92rem;padding:7px 10px;border-radius:8px;border-left:3px solid transparent;}
+  .C .sidenav a:hover{background:var(--bg);}
+  .C .sidenav a.on{color:var(--primary);font-weight:700;border-left-color:var(--primary);background:var(--bg);}
+  .C .side p{color:var(--muted);font-size:.86rem;}
+  .C .hours{font-size:.84rem;margin:16px 0;border-top:1px dashed var(--line);padding-top:12px;}
+  .C .hours div{display:flex;justify-content:space-between;padding:3px 0;}
+  .C .hours span:last-child{color:var(--muted)}
+  .C .hours .brk{color:var(--accent);font-size:.78rem;}
+  .C .hours .brk span:last-child{color:var(--accent);}
+  .C .cinfo{font-size:.83rem;color:var(--muted);line-height:1.9;border-top:1px dashed var(--line);padding-top:12px;}
+  .C .social{display:flex;gap:8px;margin-top:16px;}
+  .C .social span{flex:1;text-align:center;font-size:.72rem;font-weight:700;color:var(--muted);
+    border:1px solid var(--line);border-radius:8px;padding:6px 0;}
+  /* 收合／展開 */
+  .C .side{position:relative;transition:flex-basis .28s ease,padding .28s ease;}
+  .C .toggle{position:absolute;top:14px;right:12px;z-index:3;display:flex;align-items:center;gap:4px;
+    background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:4px 10px;cursor:pointer;
+    font:inherit;font-size:.72rem;color:var(--muted);}
+  .C .toggle:hover{color:var(--primary);border-color:var(--primary);}
+  .C .toggle .ar{font-size:.95rem;line-height:1;}
+  .C .rail{display:none;}
+  .C.collapsed .side{flex-basis:76px;padding:18px 8px;}
+  .C.collapsed .full{display:none;}
+  .C.collapsed .toggle{display:none;}
+  .C.collapsed .rail{display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .C .rail-btn{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;font-size:1.4rem;line-height:1;
+    background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-weight:700;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);}
+  .C .rail-btn:hover{filter:brightness(1.08);}
+  .C .rail-logo{width:36px;height:36px;border-radius:11px;background:var(--primary);color:var(--primary-ink);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;}
+  .C .rail-hint{writing-mode:vertical-rl;font-size:.72rem;letter-spacing:3px;color:var(--primary);font-weight:700;
+    border-left:2px solid var(--primary);padding-left:5px;}
+  .C .rail-nav{display:flex;flex-direction:column;gap:10px;align-items:center;
+    border-top:1px dashed var(--line);padding-top:14px;width:100%;}
+  .C .ri{font-size:1.05rem;opacity:.55;cursor:pointer;line-height:1;}
+  .C .ri:hover{opacity:1;}
+  .C .ri.on{opacity:1;}
+  /* 橫幅 */
+  /* 滿版橫幅：以負邊距抵銷 .main 內距，貼齊側欄與上、右邊界 */
+  .C .cbanner{position:relative;overflow:hidden;border-radius:0;margin:-30px -30px 26px;
+    min-height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+    background:linear-gradient(135deg,var(--accent) -10%,var(--primary) 60%);color:#fff;}
+  .C .cbanner h1{margin:0;font-size:3.1rem;letter-spacing:3px;text-shadow:0 3px 18px rgba(0,0,0,.22);z-index:2;}
+  .C .cbanner .btn{z-index:2;background:#fff;color:var(--primary);padding:13px 46px;font-size:1.02rem;}
+  .C .cbanner .arc{position:absolute;right:-120px;top:50%;transform:translateY(-50%);
+    width:460px;height:460px;border-radius:50%;border:18px solid rgba(255,255,255,.3);}
+  .C .cbanner .line{position:absolute;left:-2%;right:-2%;top:64%;height:14px;background:rgba(255,255,255,.28);
+    transform:rotate(-3deg);}
+  .C .cbanner .scrolldot{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+    width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.6);}
+  .C .main{flex:1;padding:30px 30px 46px;min-width:0;}
+  .C .main h2{margin:26px 0 14px;font-size:1.15rem;}
+  .C .main h2:first-of-type{margin-top:20px;}
+  .C .welcome{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:space-between;
+    background:linear-gradient(120deg,var(--primary),var(--accent));color:#fff;border-radius:16px;padding:20px 24px;}
+  .C .welcome .wtxt b{display:block;font-size:1.1rem;}
+  .C .welcome .wtxt span{font-size:.8rem;opacity:.9;}
+  .C .welcome .stats{display:flex;gap:20px;}
+  .C .welcome .stats span{text-align:center;font-size:.74rem;opacity:.92;}
+  .C .welcome .stats b{display:block;font-size:1.35rem;}
+  .C .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:1120px){.C .grid{grid-template-columns:1fr;}}
+  .C .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;}
+  .C .card .bar{display:block;height:6px;}
+  .C .card .bar.v0{background:linear-gradient(90deg,var(--primary),var(--accent));}
+  .C .card .bar.v1{background:var(--deep);}
+  .C .card .bar.v2{background:linear-gradient(90deg,var(--accent),var(--primary));}
+  .C .cbody{padding:14px 16px 16px;}
+  .C .ctop{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .C .ctop h3{margin:0;font-size:1rem;}
+  .C .price{font-weight:800;color:var(--primary);white-space:nowrap;}
+  .C .chips{display:flex;gap:6px;margin:8px 0;}
+  .C .chips span{font-size:.74rem;color:var(--muted);background:var(--bg);border:1px solid var(--line);
+    border-radius:99px;padding:2px 9px;}
+  .C .cbody p{color:var(--muted);font-size:.83rem;margin:0 0 12px;}
+  .C .tcard{display:flex;gap:14px;align-items:center;padding:14px 16px;}
+  .C .tcard h3{margin:0;font-size:.98rem;}
+  .C .tcard .meta{color:var(--muted);font-size:.8rem;}
+  .C .sessions{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);box-shadow:var(--shadow);}
+  .C .srow{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:.88rem;}
+  .C .srow:last-child{border-bottom:none;}
+  .C .srow .date{display:flex;flex-direction:column;align-items:center;min-width:44px;font-size:.68rem;color:var(--muted);}
+  .C .srow .date b{font-size:.95rem;color:var(--ink);}
+  .C .srow .time{font-weight:700;color:var(--primary);min-width:52px;}
+  .C .srow .sname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .C .srow .seat{font-size:.76rem;color:var(--muted);white-space:nowrap;}
+  @media(max-width:640px){.C .srow .sname{white-space:normal;}.C .srow{flex-wrap:wrap;}}
+  .C .reviews{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:1120px){.C .reviews{grid-template-columns:1fr;}}
+  .C .rv{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);}
+  .C .rv .stars{color:var(--accent);letter-spacing:2px;font-size:.88rem;}
+  .C .rv p{font-size:.85rem;color:var(--ink);margin:8px 0 10px;line-height:1.7;}
+  .C .rv span{font-size:.78rem;color:var(--muted);}
+
+  /* ============ D 雜誌圖文（排版驅動、不依賴照片） ============ */
+  .D .hero{position:relative;overflow:hidden;min-height:440px;display:flex;align-items:center;color:#fff;
+    background:linear-gradient(140deg,var(--primary) 0%,var(--accent) 100%);}
+  .D .hero .ring{position:absolute;right:-120px;top:-120px;width:460px;height:460px;border-radius:50%;
+    border:60px solid rgba(255,255,255,.10);}
+  .D .hero .inner{position:relative;z-index:2;padding:56px 0;}
+  .D .hero .eyebrow{display:inline-block;font-size:.78rem;letter-spacing:3px;font-weight:700;
+    border:1.5px solid rgba(255,255,255,.55);border-radius:99px;padding:5px 14px;margin-bottom:18px;}
+  .D .hero h1{font-size:3rem;margin:0;letter-spacing:3px;line-height:1.15;}
+  .D .hero p{opacity:.9;margin:10px 0 22px;font-size:1.05rem;}
+  .D .hero .btn{background:#fff;color:var(--ink);}
+  .D .feature{display:flex;gap:36px;align-items:center;margin:64px 0;}
+  .D .feature:nth-child(even){flex-direction:row-reverse;}
+  .D .plate{flex:1 1 0;min-height:280px;border-radius:18px;position:relative;overflow:hidden;
+    display:flex;align-items:flex-end;padding:26px;}
+  .D .plate .ghost{position:absolute;right:.08em;top:-.26em;font-size:clamp(6rem,15vw,11rem);
+    font-weight:900;line-height:1;color:rgba(255,255,255,.18);letter-spacing:-.05em;}
+  .D .plate .plate-title{position:relative;z-index:2;color:#fff;font-weight:800;font-size:1.6rem;
+    letter-spacing:1px;text-shadow:0 2px 12px rgba(0,0,0,.2);}
+  .D .plate.v0{background:linear-gradient(135deg,var(--primary),var(--accent));}
+  .D .plate.v1{background:var(--deep);}
+  .D .plate.v2{background:linear-gradient(135deg,var(--accent),var(--primary));}
+  @media(max-width:820px){
+    .D .feature{flex-direction:column !important;gap:18px;margin:44px 0;}
+    .D .plate{flex:none;width:100%;min-height:210px;}
+    .D .hero h1{font-size:2.2rem;}
+  }
+  .D .plate::after{content:'';position:absolute;inset:0;
+    background:repeating-radial-gradient(circle at 0 0,rgba(255,255,255,.10) 0 2px,transparent 2px 15px);}
+  .D .feature .txt{flex:1;}
+  .D .feature .kicker{color:var(--primary);font-weight:700;font-size:.8rem;letter-spacing:2px;}
+  .D .feature h3{font-size:1.5rem;margin:6px 0 8px;}
+  .D .feature p{color:var(--muted);font-size:.95rem;margin:0 0 16px;}
+  .D .feature .meta{font-size:.85rem;color:var(--muted);margin-bottom:16px;}
+  .D .band{background:var(--deep);color:#f4f1ec;text-align:center;padding:52px 20px;margin-top:30px;}
+  .D .band h2{margin:0 0 8px;font-size:1.4rem;}
+  .D .band p{opacity:.75;margin:0 0 20px;font-size:.9rem;}
+
+  /* ============ E 沉浸玻璃卡（疊層面板、不依賴照片） ============ */
+  .E .hero{position:relative;padding:74px 0 130px;display:flex;align-items:center;
+    background:radial-gradient(120% 120% at 18% 12%,var(--accent) 0%,transparent 52%),
+               radial-gradient(120% 130% at 88% 88%,var(--primary) 0%,transparent 58%),
+               linear-gradient(150deg,var(--deep),var(--primary));}
+  .E .glass{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.42);
+    border-radius:24px;padding:40px 44px;max-width:620px;color:#fff;box-shadow:0 24px 70px rgba(0,0,0,.28);}
+  .E .glass .eyebrow{display:inline-block;font-size:.76rem;letter-spacing:2px;font-weight:700;
+    border:1.5px solid rgba(255,255,255,.5);border-radius:99px;padding:4px 13px;margin-bottom:16px;}
+  .E .glass h1{margin:0 0 6px;font-size:2.3rem;letter-spacing:2px;text-shadow:0 2px 14px rgba(0,0,0,.22);}
+  .E .glass p{margin:0 0 10px;opacity:.94;font-size:1rem;}
+  .E .glass .hours-mini{font-size:.8rem;opacity:.85;border-top:1px solid rgba(255,255,255,.3);padding-top:12px;margin-bottom:20px;}
+  .E .glass .cta{display:flex;gap:10px;flex-wrap:wrap;}
+  .E .glass .btn{background:#fff;color:var(--ink);}
+  .E .glass .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.7);}
+  /* 課程卡疊在 Hero 上——疊層面板的結構特徵 */
+  .E .scroller{display:flex;gap:16px;overflow-x:auto;padding:4px 2px 24px;
+    margin-top:-76px;position:relative;z-index:2;}
+  .E .ecard{flex:0 0 252px;background:var(--card);border:1px solid var(--line);border-radius:18px;
+    overflow:hidden;box-shadow:0 10px 30px rgba(30,20,10,.14);}
+  .E .ecard .cap{display:block;height:8px;}
+  .E .ecard .cap.v0{background:linear-gradient(90deg,var(--primary),var(--accent));}
+  .E .ecard .cap.v1{background:var(--deep);}
+  .E .ecard .cap.v2{background:linear-gradient(90deg,var(--accent),var(--primary));}
+  .E .ecard .in{padding:16px 18px 18px;}
+  .E .ecard .kick{color:var(--primary);font-weight:700;font-size:.72rem;letter-spacing:2px;}
+  .E .ecard h3{margin:4px 0 6px;font-size:1rem;}
+  .E .ecard p{color:var(--muted);font-size:.82rem;margin:0 0 10px;min-height:2.6em;}
+  .E .ecard .meta{color:var(--muted);font-size:.78rem;margin-bottom:12px;}
+  .E .ecard .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .E .ecard .price{font-weight:800;color:var(--primary);}
+  .E h2{font-size:1.25rem;margin:26px 0 14px;}
+  .E .tgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:44px;}
+  @media(max-width:760px){.E .tgrid{grid-template-columns:1fr;}}
+  .E .tcard{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);}
+  .E .tcard .meta{color:var(--muted);font-size:.82rem;}
+  .E .strip{background:var(--deep);color:#eee;padding:20px 0;font-size:.86rem;text-align:center;}
+
+  /* ============ G 純色極簡 ============ */
+  .G .hero{background:var(--primary);color:var(--primary-ink);text-align:center;padding:96px 20px;}
+  .G .hero h1{font-size:2.6rem;margin:0 0 6px;letter-spacing:4px;}
+  .G .hero p{opacity:.85;margin:0 0 26px;}
+  .G .hero .btn{background:var(--primary-ink);color:var(--primary);}
+  .G .infoline{text-align:center;font-size:.85rem;color:var(--muted);padding:14px 16px;border-bottom:1px solid var(--line);}
+  .G .hoursbar{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 26px;padding:22px 16px 6px;font-size:.84rem;}
+  .G .hoursbar span{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--ink);}
+  .G .hoursbar b{color:var(--primary);font-size:.9rem;}
+  .G .hoursbar .off{color:var(--muted);} .G .hoursbar .off b{color:var(--muted);}
+  .G .list{max-width:640px;margin:40px auto 70px;padding:0 20px;}
+  .G .row{display:flex;align-items:baseline;gap:14px;padding:16px 4px;border-bottom:1px solid var(--line);}
+  .G .row h3{margin:0;font-size:1rem;font-weight:600;}
+  .G .row .meta{color:var(--muted);font-size:.8rem;}
+  .G .row .dots{flex:1;border-bottom:2px dotted var(--line);transform:translateY(-4px);}
+  .G .row .p{font-weight:800;color:var(--primary);white-space:nowrap;}
+  .G .row a{font-size:.82rem;color:var(--primary);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;}
+
+  /* ============ D 雜誌圖文：主題素材包的行業示意圖 ============ */
+  .pic{background-color:var(--theme-a);background-size:cover;background-position:center;
+    background-repeat:no-repeat;}
+  .D .plate.pic .ghost{opacity:.28;}
+  /* 照片上的字要壓得住：底部加深色漸層 */
+  .D .plate.pic::after{background:linear-gradient(to top,rgba(18,14,10,.62) 0%,rgba(18,14,10,.12) 45%,transparent 70%);}
+  .D .plate.pic .plate-title{text-shadow:0 2px 12px rgba(0,0,0,.55);}
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="row"><b>版型</b><span class="group" id="layoutBtns"></span></div>
+  <div class="row"><b>主題</b><span class="group" id="themeBtns"></span></div>
+  <div class="row"><b>配色</b><span class="group" id="schemeBtns">
+    <button data-s="" class="on">暖橘</button>
+    <button data-s="persian">波斯紫</button>
+    <button data-s="french">法式藍</button>
+    <button data-s="teal">湖水綠</button>
+  </span></div>
+</div>
+<div class="note" id="noteBar"></div>
+<div id="stage"></div>
+
+<script>
+/* ================================================================
+   方案 2 參考實作：
+   - 版型（LAYOUTS）＝ theme-agnostic 模板函式（程式碼）
+   - 主題（THEMES）＝ 素材包（純資料：品牌示意、課程、老師、示意色）
+   - 配色（scheme）＝ 顏色角色變數
+   - fit ＝ 版型的「適用主題」metadata（多對多，只影響推薦顯示）
+   ================================================================ */
+
+const THEMES = {
+  talent: { name:'才藝', brand:'小樹才藝班', logo:'樹',
+    tagline:'讓孩子在遊戲裡長出自己的樣子',
+    about:'位於中山的兒童才藝教室——畫畫、舞蹈、黏土手作，小班教學、依程度分級。',
+    hue:['#f9e0cd','#e8f5ef'],
+    photos:{hero:'1609174112693-52fdcebffd89', pool:['1614712201488-9942af86b87b','1696527018053-3343b9853505','1560421683-6856ea585c78','1512253080918-79cf0c2e0650']},
+    courses:[
+      {k:'PAINTING', name:'兒童畫畫（下午班）', dur:'1 小時', cap:8,  price:450, desc:'水彩、蠟筆與構圖基礎，適合 5–10 歲。'},
+      {k:'DANCE',    name:'幼兒律動舞蹈',       dur:'1 小時', cap:10, price:400, desc:'跟著音樂動起來，訓練節奏感與肢體協調。'},
+      {k:'CLAY',     name:'黏土手作',           dur:'1.5 小時', cap:6, price:550, desc:'捏出自己的小世界，含全部材料。'},
+      {k:'SKETCH',   name:'一對一素描指導',     dur:'1 小時', cap:1,  price:800, desc:'依程度客製的個人課程。'},
+    ],
+    teachers:[
+      {name:'林老師', color:'#e8734a', intro:'畫畫｜師大美術系，10 年兒童美術教學經驗'},
+      {name:'陳老師', color:'#2ba58c', intro:'舞蹈｜北藝大舞蹈系，幼兒律動專長'},
+    ]},
+  sport: { name:'運動健身', brand:'WingFit 運動教室', logo:'W',
+    tagline:'科學化訓練，看得見的進步',
+    about:'以科學化訓練為核心，提供私人訓練、體能評估與團體課程，依目標與程度量身規劃。',
+    hue:['#28405e','#f0876a'], ink:'#ffffff',
+    photos:{hero:'1723117418183-2422c62a5a75', pool:['1611672585731-fa10603fb9e0','1669322779651-5ca89652492e','1641337221253-fdc7237f6b61','1604480133435-25b86862d276']},
+    courses:[
+      {k:'PT',    name:'私人訓練',     dur:'1 小時', cap:1,  price:800, desc:'一對一課表設計與動作指導。'},
+      {k:'TEST',  name:'體能評估',     dur:'1 小時', cap:1,  price:600, desc:'InBody 與動作篩檢，建立起點數據。'},
+      {k:'GROUP', name:'團體訓練',     dur:'1 小時', cap:10, price:450, desc:'高強度間歇，夥伴一起更能堅持。'},
+      {k:'SKILL', name:'技術訓練',     dur:'1.5 小時', cap:6, price:700, desc:'跑姿、舉重技術的專項打磨。'},
+    ],
+    teachers:[
+      {name:'Wing',  color:'#28405e', intro:'肌力與體能｜NSCA-CPT，8 年教學'},
+      {name:'Kenny', color:'#f0876a', intro:'運動表現｜前田徑選手'},
+    ]},
+  beauty: { name:'美妝美容', brand:'Bloom 美妍教室', logo:'B',
+    tagline:'學會妝點自己的每一天',
+    about:'從日常裸妝到新娘妝，彩妝講師手把手帶練，小班制、每人一鏡位。',
+    hue:['#f6d5e0','#fdf0e6'],
+    photos:{hero:'1516975080664-ed2fc6a32937', pool:['1596462502278-27bfdc403348','1709477542170-f11ee7d471a0','1620464003286-a5b0d79f32c2','1512496015851-a90fb38ba796']},
+    courses:[
+      {k:'BASIC',  name:'日常裸妝入門', dur:'1.5 小時', cap:8, price:900,  desc:'底妝、眉型與腮紅的日常公式。'},
+      {k:'KSTYLE', name:'韓系光澤感妝容', dur:'1.5 小時', cap:8, price:1000, desc:'水光肌與漸層唇的完整流程。'},
+      {k:'BRIDAL', name:'新娘妝體驗',   dur:'2 小時', cap:4, price:1500, desc:'婚前必修，含飾品與髮型搭配。'},
+      {k:'ONE',    name:'一對一妝容諮詢', dur:'1 小時', cap:1, price:1200, desc:'依臉型與場合客製專屬妝容。'},
+    ],
+    teachers:[
+      {name:'Amber', color:'#d87ba0', intro:'彩妝講師｜10 年新秘經驗'},
+      {name:'Chloe', color:'#c98f2d', intro:'形象顧問｜韓系妝容專長'},
+    ]},
+  music: { name:'音樂', brand:'森聲音樂教室', logo:'♪',
+    tagline:'每個人心裡都有一首歌',
+    about:'古典與流行並行的音樂教室，一對一與團體課皆備，定期舉辦成果發表會。',
+    hue:['#2e2a4f','#c9a86a'], ink:'#ffffff',
+    photos:{hero:'1632008341003-5c6767c7d237', pool:['1552422535-c45813c61732','1561014816-50ce5acb5e73','1612225330812-01a9c6b355ec']},
+    courses:[
+      {k:'PIANO',  name:'鋼琴一對一',   dur:'1 小時', cap:1, price:900, desc:'古典與流行曲目，依程度安排。'},
+      {k:'VIOLIN', name:'小提琴一對一', dur:'1 小時', cap:1, price:950, desc:'從持弓姿勢到樂團合奏。'},
+      {k:'THEORY', name:'兒童樂理團體', dur:'1 小時', cap:8, price:500, desc:'用遊戲學會看譜與節奏。'},
+      {k:'UKE',    name:'成人烏克麗麗', dur:'1 小時', cap:6, price:550, desc:'零基礎四堂就能自彈自唱。'},
+    ],
+    teachers:[
+      {name:'周老師', color:'#2e2a4f', intro:'鋼琴｜維也納音樂院碩士'},
+      {name:'Aki',   color:'#c9a86a', intro:'小提琴｜交響樂團客席'},
+    ]},
+  language: { name:'語言補教', brand:'說說語言學院', logo:'說',
+    tagline:'開口說，世界就打開了',
+    about:'成人會話與兒童美語並行，小班互動教學，外師與雙語師資可選。',
+    hue:['#d7e9f7','#fdf3d8'],
+    photos:{hero:'1758270705087-76e81a5117bd', pool:['1758270704787-615782711641','1544776193-352d25ca82cd','1577896851231-70ef18881754','1758270704464-f980b03b9633']},
+    courses:[
+      {k:'TALK',  name:'成人英語會話', dur:'1 小時', cap:8,  price:450, desc:'情境對話為主，敢說比說對重要。'},
+      {k:'KIDS',  name:'兒童美語',     dur:'1 小時', cap:10, price:400, desc:'歌謠與繪本，自然養成語感。'},
+      {k:'JP',    name:'日語入門',     dur:'1 小時', cap:8,  price:480, desc:'五十音到日常會話。'},
+      {k:'TUTOR', name:'一對一外師家教', dur:'1 小時', cap:1, price:900, desc:'客製教材與進度。'},
+    ],
+    teachers:[
+      {name:'Emily', color:'#4a7fb5', intro:'英語｜TESOL 認證，10 年教學'},
+      {name:'佐藤老師', color:'#c98f2d', intro:'日語｜東京外語大學'},
+    ]},
+  /* 自建主題：套通用（空白）素材包——只有租戶自填的文字與品牌色 */
+  custom: { name:'自建主題', brand:'我的教室', logo:'我', custom:true,
+    tagline:'（開通時填的一句話介紹）',
+    about:'（開通時填的品牌介紹；自建主題套通用素材包，不含行業示意圖。）',
+    hue:['#e8e4dd','#f2efe9'],
+    courses:[
+      {k:'CLASS A', name:'課程一', dur:'1 小時', cap:8, price:500, desc:'（課程說明）'},
+      {k:'CLASS B', name:'課程二', dur:'1 小時', cap:6, price:600, desc:'（課程說明）'},
+      {k:'CLASS C', name:'課程三', dur:'1.5 小時', cap:4, price:800, desc:'（課程說明）'},
+      {k:'CLASS D', name:'一對一課程', dur:'1 小時', cap:1, price:900, desc:'（課程說明）'},
+    ],
+    teachers:[
+      {name:'老師一', color:'#8a8177', intro:'（老師介紹）'},
+      {name:'老師二', color:'#a39a8d', intro:'（老師介紹）'},
+    ]},
+};
+
+const HOURS_TEXT = '週一–週六 09:00–18:00（午休 12:00–13:00）· 週日公休';
+const CONTACT = { tel:'02-2522-1234', mail:'hello@example.com', addr:'台北市中山區中山北路二段 100 號 2F' };
+const money = n => 'NT$' + n.toLocaleString();
+const hoursRows = `
+  <div><span>週一 – 週五</span><span>09:00 – 18:00</span></div>
+  <div class="brk"><span>午休</span><span>12:00 – 13:00 不開課</span></div>
+  <div><span>週六</span><span>09:00 – 17:00</span></div>
+  <div><span>週日</span><span>公休</span></div>`;
+
+/* ---- 版型 ＝ theme-agnostic 模板函式（t = 主題素材包） ---- */
+const LAYOUTS = {
+A:{ label:'A 經典形象', assets:'optional', schedule:'any', fit:['talent','sport','music','language','beauty','custom'],
+  note:'大 Hero＋課程卡片格狀＋老師列＋營業時間。品牌感最完整；關於區採<b>三欄卡片</b>（營業時間／介紹／聯絡）——SimplyBook 的 Air、經典等多數模板都用這個排法。<b>首頁只放前 3 門精選</b>，其餘走「查看全部課程」頁。',
+  render:t=>`<section class="A">
+  <div class="wrap nav"><b>${t.brand}</b><a href="#">課程</a><a href="#">老師</a><a href="#">關於</a><a class="btn small" href="#">我的預約</a></div>
+  <div class="hero"><div class="wrap"><h1>${t.brand}</h1><p>${t.about}</p>
+    <a class="btn" href="#">立即預約</a> <a class="btn ghost" href="#">地圖顯示</a></div></div>
+  <div class="wrap"><h2>課程</h2><div class="cards">
+    ${t.courses.slice(0,3).map(c=>`<div class="card"><div class="ph"></div><h3>${c.name}</h3><div class="meta">⏱ ${c.dur} · 👥 至多 ${c.cap} 人</div><div class="price">${money(c.price)}</div><a class="btn small" href="#">預約</a></div>`).join('')}
+  </div>
+  ${t.courses.length>3?`<p style="margin:14px 0 0;"><a href="#" style="color:var(--primary);font-weight:700;text-decoration:none;">查看全部 ${t.courses.length} 門課程 →</a></p>`:''}
+  <h2>老師</h2>
+  ${t.teachers.map(x=>`<div class="trow"><span class="avatar" style="width:48px;height:48px;background:${x.color}">${x.name[0]}</span><div><b>${x.name}</b><div style="font-size:.83rem;color:var(--muted);">${x.intro}</div></div></div>`).join('')}
+  <h2>關於我們</h2>
+  <div class="info3">
+    <div class="card"><h3>營業時間</h3>
+      <div class="hrow"><span>週一 – 週五</span><span>09:00 – 18:00</span></div>
+      <div class="hrow brk"><span>午休</span><span>12:00 – 13:00 不開課</span></div>
+      <div class="hrow"><span>週六</span><span>09:00 – 17:00</span></div>
+      <div class="hrow"><span>週日</span><span>公休</span></div>
+    </div>
+    <div class="card"><h3>${t.brand}</h3><p style="color:var(--muted);font-size:.9rem;margin:0;">${t.about}</p></div>
+    <div class="card"><h3>聯絡我們</h3>
+      <p style="color:var(--muted);font-size:.9rem;margin:0;line-height:2;">📞 ${CONTACT.tel}<br>✉️ ${CONTACT.mail}<br>📍 ${CONTACT.addr}</p>
+    </div>
+  </div>
+  </div>
+  <div class="foot"><div class="wrap">© 2026 ${t.brand} · 退費規則 · 上課須知</div></div></section>`},
+
+C:{ label:'C 側欄名片', assets:'optional', schedule:'any', fit:['talent','sport','music','language','beauty','custom'],
+  note:'左欄固定<b>頁面導覽＋品牌名片</b>（營業狀態、時間、聯絡、社群），右側依序是歡迎橫幅、課程、<b>近期場次</b>、老師、<b>學員評價</b>（參考 SimplyBook Dainty 的側欄導覽＋多區塊內容）。資訊量最大，適合課程多、需要單頁交代完整的租戶。側欄<b>可收合</b>——收起後保留直立導覽軌（箭頭鈕＋直書「展開選單」＋圖示），比只留一顆漢堡鈕更明確。',
+  render:t=>`<section class="C"><div class="shell">
+  <aside class="side">
+    <button class="toggle" onclick="this.closest('.C').classList.toggle('collapsed')" title="收合／展開側欄">
+      <span class="ar">‹</span><span class="tx">收合</span>
+    </button>
+    <div class="rail">
+      <button class="rail-btn" onclick="this.closest('.C').classList.remove('collapsed')" title="展開選單">›</button>
+      <span class="rail-logo">${t.logo}</span>
+      <span class="rail-hint">展開選單</span>
+      <div class="rail-nav"><span class="ri on" title="首頁">🏠</span><span class="ri" title="課程">📚</span><span class="ri" title="近期場次">📅</span><span class="ri" title="老師">👩‍🏫</span><span class="ri" title="評價">⭐</span><span class="ri" title="我的預約">📋</span></div>
+    </div>
+    <div class="full">
+    <div class="logo">${t.logo}</div>
+    <span class="status">現正營業中 · 今日至 18:00</span>
+    <h1>${t.brand}</h1>
+    <nav class="sidenav"><a href="#" class="on">首頁</a><a href="#">課程</a><a href="#">近期場次</a><a href="#">老師</a><a href="#">評價</a><a href="#">我的預約</a></nav>
+    <p>${t.about}</p>
+    <div class="hours">
+      <div><span>週一 – 週五</span><span>09:00 – 18:00</span></div>
+      <div class="brk"><span>午休</span><span>12:00 – 13:00</span></div>
+      <div><span>週六</span><span>09:00 – 17:00</span></div>
+      <div><span>週日</span><span>公休</span></div>
+    </div>
+    <div class="cinfo">📞 ${CONTACT.tel}<br>✉️ ${CONTACT.mail}<br>📍 ${CONTACT.addr}</div>
+    <a class="btn" style="width:100%;margin-top:16px;" href="#">立即預約</a>
+    <div class="social"><span>IG</span><span>FB</span><span>LINE</span></div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="cbanner">
+      <span class="arc"></span><span class="line"></span>
+      <h1>${t.brand}</h1>
+      <a class="btn" href="#">預約</a>
+      <span class="scrolldot"></span>
+    </div>
+    <div class="welcome">
+      <div class="wtxt"><b>${t.tagline}</b><span>線上預約 · 免註冊 · 可取消改期</span></div>
+      <div class="stats"><span><b>${t.courses.length}</b>門課程</span><span><b>${t.teachers.length}</b>位老師</span><span><b>6</b>天開課</span></div>
+    </div>
+
+    <h2>課程</h2>
+    <div class="grid">
+      ${t.courses.map((c,i)=>`<div class="card"><span class="bar v${i%3}"></span><div class="cbody">
+        <div class="ctop"><h3>${c.name}</h3><span class="price">${money(c.price)}</span></div>
+        <div class="chips"><span>⏱ ${c.dur}</span><span>👥 至多 ${c.cap} 人</span></div>
+        <p>${c.desc}</p>
+        <a class="btn small" href="#">預約</a>
+      </div></div>`).join('')}
+    </div>
+
+    <h2>近期場次</h2>
+    <div class="sessions">
+      ${[['8/13','週四','14:00'],['8/14','週五','10:00'],['8/15','週六','09:00'],['8/17','週一','15:00']].map((d,i)=>`
+        <div class="srow"><span class="date"><b>${d[0]}</b>${d[1]}</span><span class="time">${d[2]}</span>
+          <span class="sname">${t.courses[i % t.courses.length].name}</span>
+          <span class="seat">${i===2?'候補':'剩 '+(6-i)+' 位'}</span>
+          <a class="btn small ${i===2?'ghost':''}" href="#">${i===2?'候補':'預約'}</a></div>`).join('')}
+    </div>
+
+    <h2>老師</h2>
+    <div class="grid">
+      ${t.teachers.map(x=>`<div class="card tcard"><span class="avatar" style="width:56px;height:56px;flex:0 0 56px;background:${x.color}">${x.name[0]}</span><div><h3>${x.name}</h3><div class="meta">${x.intro}</div></div></div>`).join('')}
+    </div>
+
+    <h2>學員評價</h2>
+    <div class="reviews">
+      <div class="rv"><div class="stars">★★★★★</div><p>「${t.courses[0].name}」上了三個月，進步很有感，老師會依程度調整內容。</p><span>王小姐</span></div>
+      <div class="rv"><div class="stars">★★★★★</div><p>線上預約很方便，臨時要改期也能自己處理，不用打電話。</p><span>陳先生</span></div>
+      <div class="rv"><div class="stars">★★★★☆</div><p>環境乾淨、老師有耐心，小班制不會被冷落。</p><span>林太太</span></div>
+    </div>
+  </div></div></section>`},
+
+D:{ label:'D 雜誌圖文', assets:'required', schedule:'any', fit:['talent','sport','music','language','beauty','custom'],
+  note:'<b>五套裡唯一以照片為主體的版型</b>（素材需求＝需要照片）：全幅照片 Hero＋課程區塊左右交錯，一課一張大圖、一個舞台。照片取自主題素材包的行業示意圖，租戶上架後換成自己的課程照。<b>缺圖時降級</b>為色塊＋序號＋放大標題（切「自建主題」可看降級後的樣子），不出現空白灰框。<b>首頁只放前 3 門精選</b>，其餘走「查看全部課程」頁。',
+  render:t=>`<section class="D">
+  <div class="hero"><div class="wrap inner">
+    <span class="eyebrow">${t.courses.length} 門課程 · 現正開放預約</span>
+    <h1>${t.brand}</h1><p>${t.tagline}</p><a class="btn" href="#">立即預約</a>
+  </div><span class="ring"></span></div>
+  <div class="wrap">
+  ${t.courses.slice(0,3).map((c,i)=>`<div class="feature"><div class="plate v${i}">
+      <span class="ghost">${String(i+1).padStart(2,'0')}</span>
+      <span class="plate-title">${c.name}</span>
+    </div><div class="txt">
+    <div class="kicker">${c.k}</div><h3>${c.name}</h3><p>${c.desc}</p>
+    <div class="meta">⏱ ${c.dur} · 👥 至多 ${c.cap} 人 · ${money(c.price)} / 堂</div>
+    <a class="btn small" href="#">預約這堂課</a></div></div>`).join('')}
+  ${t.courses.length>3?`<div style="text-align:center;margin:0 0 40px;"><a class="btn ghost" href="#">查看全部 ${t.courses.length} 門課程</a></div>`:''}
+  </div>
+  <div class="band"><h2>準備好開始了嗎？</h2><p>${HOURS_TEXT} · ${CONTACT.addr}</p><a class="btn" href="#">立即預約</a></div></section>`},
+
+E:{ label:'E 沉浸玻璃卡', assets:'none', schedule:'any', fit:['talent','sport','music','language','beauty','custom'],
+  note:'全幅漸層視覺＋<b>玻璃擬態資訊卡疊在 Hero 上</b>，課程橫向捲動（參考 SimplyBook Inspiration／模糊）。補足「疊層面板」結構家族；氛圍感最強，適合視覺系品牌，且<b>不依賴照片</b>。',
+  render:t=>`<section class="E">
+  <div class="hero"><div class="wrap">
+    <div class="glass">
+      <span class="eyebrow">${t.courses.length} 門課程 · 現正開放預約</span>
+      <h1>${t.brand}</h1>
+      <p>${t.tagline}</p>
+      <div class="hours-mini">${HOURS_TEXT}</div>
+      <div class="cta"><a class="btn" href="#">立即預約</a><a class="btn ghost" href="#">地圖顯示</a></div>
+    </div>
+  </div></div>
+  <div class="wrap">
+    <div class="scroller">
+      ${t.courses.map((c,i)=>`<div class="ecard"><span class="cap v${i%3}"></span><div class="in">
+        <div class="kick">${c.k}</div><h3>${c.name}</h3>
+        <p>${c.desc}</p>
+        <div class="meta">⏱ ${c.dur} · 👥 至多 ${c.cap} 人</div>
+        <div class="foot"><span class="price">${money(c.price)}</span><a class="btn small" href="#">預約</a></div>
+      </div></div>`).join('')}
+    </div>
+    <h2>老師</h2>
+    <div class="tgrid">
+      ${t.teachers.map(x=>`<div class="tcard"><span class="avatar" style="width:52px;height:52px;flex:0 0 52px;background:${x.color}">${x.name[0]}</span><div><b>${x.name}</b><div class="meta">${x.intro}</div></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="strip"><div class="wrap">📞 ${CONTACT.tel}　✉️ ${CONTACT.mail}　📍 ${CONTACT.addr}</div></div></section>`},
+
+G:{ label:'G 純色極簡', assets:'none', schedule:'any', fit:['talent','sport','music','language','beauty','custom'],
+  note:'純色塊 Hero＋<b>營業時間橫排</b>＋目錄式虛線課程列表，全程零照片（對應 SimplyBook Minimal／預設）——沒有圖片素材也不空洞，<b>自訂主題的通用預設版型</b>。',
+  render:t=>`<section class="G">
+  <div class="hero"><h1>${t.brand}</h1><p>${t.tagline}</p><a class="btn" href="#">立即預約</a></div>
+  <div class="hoursbar">
+    ${['一','二','三','四','五','六'].map(d=>`<span><b>${d}</b>09:00–18:00</span>`).join('')}<span class="off"><b>日</b>公休</span>
+  </div>
+  <div class="infoline">午休 12:00–13:00 不開課｜${CONTACT.tel}｜${CONTACT.addr}</div>
+  <div class="list">
+    ${t.courses.map(c=>`<div class="row"><div><h3>${c.name}</h3><div class="meta">${c.dur} · 至多 ${c.cap} 人</div></div><div class="dots"></div><span class="p">${money(c.price)}</span><a href="#">預約</a></div>`).join('')}
+  </div></section>`},
+
+};
+
+/* ---- 切換邏輯 ---- */
+const state = { layout:'A', theme:'talent' };
+const stage = document.getElementById('stage');
+const note = document.getElementById('noteBar');
+
+/* D 雜誌圖文是「需要照片」等級的版型（規格「官網版型範本」1.2）：
+   行業示意圖來自主題素材包，鋪到全幅 Hero 與課程大圖。
+   自建主題套通用素材包、沒有行業示意圖 → 自動走 1.7 的降級呈現（色塊＋放大標題）。 */
+/* 照片要合框：Hero 與課程大圖的框會隨視窗寬度改變比例（桌機 3.27:1／1.81:1，
+   窄螢幕變成更扁的橫條），所以不用固定比例，改成量每一個框的實際尺寸去要圖——
+   Unsplash 伺服器端按該尺寸裁切（crop=entropy 優先保住人臉），CSS cover 就不會再切掉東西。
+   視窗改變時重抓（debounce）。 */
+const IMG=(id,w,h)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&crop=entropy&q=72&w=${w}&h=${h}`;
+const DPR=()=>Math.min(window.devicePixelRatio||1,2);
+function fitURL(el,id){
+  const r=el.getBoundingClientRect(), d=DPR();
+  const w=Math.min(2400,Math.max(320,Math.round(r.width*d)));
+  const h=Math.min(1600,Math.max(200,Math.round(r.height*d)));
+  return IMG(id,w,h);
+}
+const SHADE='linear-gradient(rgba(22,18,14,.45),rgba(22,18,14,.45))';
+function paintPhotos(){
+  if(state.layout!=='D') return;
+  const P=THEMES[state.theme].photos; if(!P) return;   // 自建主題：無素材，維持色塊
+  const hero=stage.querySelector('.hero');
+  if(hero){ hero.classList.add('pic'); hero.style.backgroundImage=`${SHADE},url("${fitURL(hero,P.hero)}")`; }
+  stage.querySelectorAll('.plate').forEach((el,i)=>{
+    el.classList.add('pic');
+    el.style.backgroundImage=`url("${fitURL(el,P.pool[i%P.pool.length])}")`;
+  });
+}
+
+function render(){
+  const L = LAYOUTS[state.layout], T = THEMES[state.theme];
+  document.documentElement.style.setProperty('--theme-a', T.hue[0]);
+  document.documentElement.style.setProperty('--theme-b', T.hue[1]);
+  document.documentElement.style.setProperty('--theme-ink', T.ink || '#33302c');
+  stage.innerHTML = L.render(T);
+  paintPhotos();
+  const fitNames = L.fit.map(k=>THEMES[k].name).join('、');
+  const fitTag = L.fit.includes(state.theme)
+    ? `<span class="fit">✓ 適用主題：${fitNames}</span>`
+    : `<span class="fit" style="opacity:.7;">△ 此版型未標記適用「${T.name}」——開通時不會優先顯示（仍可展開全部選用）</span>`;
+  const ASSET_LABEL = {none:'免照片', optional:'選配照片', required:'需要照片'};
+  const assetTag = `<span class="fit" style="opacity:.75;">素材需求：${ASSET_LABEL[L.assets]}${L.assets==='none'?'（租戶零素材也成立）':''}</span>`;
+  const schedTag = L.schedule === 'any'
+    ? `<span class="fit" style="opacity:.75;">排課型態：不限（單次／循環／套組／一次性活動皆可）</span>`
+    : `<span class="fit" style="color:#b26a00;">⚠ 排課型態：僅適合<b>預約制</b>（單次／一對一）——套組與一次性活動不建議</span>`;
+  const photoTag = state.layout!=='D' ? ''
+    : T.photos
+      ? `<span class="fit">📷 照片來自「${T.name}」主題素材包的行業示意圖（Unsplash 外連，需連網）</span>`
+      : `<span class="fit" style="color:#b26a00;">⚠ 自建主題沒有行業示意圖 → 照片區塊<b>降級</b>為色塊＋放大標題（規格 1.7）</span>`;
+  note.innerHTML = `<b>${L.label}</b>：${L.note}${fitTag}${assetTag}${schedTag}${photoTag}`;
+  document.querySelectorAll('#layoutBtns button').forEach(b=>b.classList.toggle('on', b.dataset.l===state.layout));
+  document.querySelectorAll('#themeBtns button').forEach(b=>b.classList.toggle('on', b.dataset.t===state.theme));
+  window.scrollTo({top:0});
+}
+
+document.getElementById('layoutBtns').innerHTML =
+  Object.entries(LAYOUTS).map(([k,v])=>`<button data-l="${k}">${v.label}</button>`).join('');
+document.getElementById('themeBtns').innerHTML =
+  Object.entries(THEMES).map(([k,v])=>`<button data-t="${k}">${v.name}</button>`).join('');
+
+document.getElementById('layoutBtns').addEventListener('click', e=>{ if(e.target.dataset.l){ state.layout=e.target.dataset.l; render(); }});
+document.getElementById('themeBtns').addEventListener('click', e=>{ if(e.target.dataset.t){ state.theme=e.target.dataset.t; render(); }});
+document.getElementById('schemeBtns').addEventListener('click', e=>{
+  if(e.target.dataset.s===undefined) return;
+  document.documentElement.dataset.scheme = e.target.dataset.s;
+  document.querySelectorAll('#schemeBtns button').forEach(b=>b.classList.toggle('on', b===e.target));
+});
+render();
+
+/* 視窗尺寸改變 → 框的比例變了，重抓合尺寸的照片 */
+let rz;
+addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(state.layout==='D') paintPhotos(); }, 220); });
+</script>
+</body>
+</html>
